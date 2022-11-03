@@ -1,0 +1,10 @@
+{
+    "laser_wavelength": 532.18,
+    "name_separator": "_",
+    "Si_bir": "basalt 1",
+    "H2O_left": 2800,
+    "H2O_right": 3850,
+    "interpolate_left": 780,
+    "interpolate_right": 900,
+    "interpolation_smoothing": 1
+}
