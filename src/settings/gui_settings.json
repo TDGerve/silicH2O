@@ -1,0 +1,14 @@
+{
+    "theme": "Breeze",
+    "geometry": {
+        "size": "1200x1000",
+        "size_min": [
+            1000,
+            830
+        ]
+    },
+    "font": {
+        "family": "helvetica",
+        "size": 13
+    }
+}
