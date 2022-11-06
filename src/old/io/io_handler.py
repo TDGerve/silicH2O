@@ -3,12 +3,14 @@ from tkinter import filedialog
 
 import os
 
-from ..spectrum_processing.sample_database import samples
+from ..spectrum_processing.sample_database import sample_processing
 from ..sample_navigation import sample_selection
 
 
 class io_handler:
-    def __init__(self, sample_database: samples, sample_selector: sample_selection):
+    def __init__(
+        self, sample_database: sample_processing, sample_selector: sample_selection
+    ):
 
         self.sample_selector = sample_selector
         self.samples = sample_database

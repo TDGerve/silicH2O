@@ -24,7 +24,7 @@ _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
 
 
-class GUI:
+class app:
     def __init__(self, root: tk.Tk, sample_database: samples):
 
         self.root = root
@@ -33,12 +33,14 @@ class GUI:
         self.set_theme()
         self.set_geometry()
 
-        self.create_frames(sample_database)
+        self.create_navigation_frame(sample_database)
+        self.create_main_frame()
+
         self.io_handler = io_handler(
             sample_database, self.root.nametowidget("sample_selection")
         )
-        self.create_menus(self.io_handler)
         self.create_tabs()
+        self.create_menus(self.io_handler)
 
     def set_theme(self):
         self.style = ttk.Style()
@@ -63,19 +65,16 @@ class GUI:
         self.root["menu"] = menubar
         io_menu(menubar, io_handler)
 
-    def create_frames(self, sample_database):
+    def create_navigation_frame(self, sample_database):
         # Create the two main frames
         sample_selection(self.root, sample_database, name="sample_selection").grid(
             row=0, column=0, rowspan=1, columnspan=1, sticky=("nesw")
         )
 
+    def create_main_frame(self):
         ttk.Frame(self.root, name="main_frame").grid(
             row=0, column=1, rowspan=1, columnspan=1, sticky=("nesw")
         )
-
-        for w in ["sample_selection", "main_frame"]:
-            self.root.nametowidget(w).rowconfigure(0, weight=1)
-            self.root.nametowidget(w).columnconfigure(0, weight=1)
 
     def create_tabs(self):
         main_frame = self.root.nametowidget("main_frame")

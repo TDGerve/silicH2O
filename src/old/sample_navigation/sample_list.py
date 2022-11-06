@@ -1,16 +1,24 @@
 import tkinter as tk
 from tkinter import ttk
 
+from functools import partial
+
 from .. import settings
-from ..spectrum_processing.sample_database import samples
+from ..spectrum_processing.sample_database import sample_processing
 
 
-class sample_selection(ttk.Frame):
+class sample_navigation(ttk.Frame):
     def __init__(
-        self, parent: ttk.Frame, sample_database: samples = None, *args, **kwargs
+        self,
+        parent: ttk.Frame,
+        sample_database: sample_processing = None,
+        *args,
+        **kwargs
     ):
         self.samples = sample_database
         super().__init__(parent, *args, **kwargs)
+        self.columnconfigure(0, weight=1)
+        self.rownconfigure(0, weight=1)
 
         self.list = tk.StringVar(value=[])
         self.make_listbox()

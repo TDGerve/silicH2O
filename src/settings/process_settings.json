@@ -1,10 +1,36 @@
 {
-    "laser_wavelength": 532.18,
-    "name_separator": "_",
-    "Si_bir": "basalt 1",
-    "H2O_left": 2800,
-    "H2O_right": 3850,
-    "interpolate_left": 780,
-    "interpolate_right": 900,
-    "interpolation_smoothing": 1
+    "birs": {
+        "Si_left": [
+            200,
+            300
+        ],
+        "Si_middle_1": [
+            640,
+            655
+        ],
+        "Si_middle_2": [
+            800,
+            810
+        ],
+        "Si_right": [
+            1220,
+            1600
+        ],
+        "H2O_left": [
+            1500,
+            2800
+        ],
+        "H2O_right": [
+            3850,
+            4000
+        ]
+    },
+    "interpolate": {
+        "use": false,
+        "smoothing": 1,
+        "region": [
+            780,
+            900
+        ]
+    }
 }
