@@ -2,12 +2,12 @@ import pandas as pd
 import numpy as np
 
 import os, ast
-from typing import List, Protocol
+from typing import List, Protocol, Tuple, Dict
 import blinker as bl
 
 import ramCOH as ram
 
-from .. import settings
+from . import settings
 
 
 class Sample_proccessor(Protocol):
@@ -34,6 +34,7 @@ class h2o_processor:
         self.data = ram.H2O(x, y, laser=settings.general["laser_wavelength"])
 
     def calculate(self) -> None:
+
         self.calculate_interpolation()
         self.data.baselineCorrect(baseline_regions=self.construct_birs())
         self.data.calculate_SiH2Oareas()
@@ -41,6 +42,7 @@ class h2o_processor:
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
 
     def calculate_interpolation(self):
+
         if not self.settings[("interpolate", "use")]:
             return
         region = self.settings[("interpolate", "region")]
@@ -48,7 +50,7 @@ class h2o_processor:
         self.data.interpolate(interpolate=region, smooth_factor=smoothing)
 
     def construct_birs(self) -> List[List[int]]:
-        return [bir for bir in self.settings["birs"].items()]
+        return [bir for bir in self.settings["birs"]]
 
     def set_birs(self, **kwargs) -> None:
         for bir, values in kwargs.items():
@@ -64,3 +66,6 @@ class h2o_processor:
         if interpolate is None:
             return
         self.set_interpolation(interpolate)
+
+    def retrieve_plot_data(self) -> Tuple[str, np.ndarray, Dict[str, np.ndarray]]:
+        return self.name, self.data.x, self.data.signal.all

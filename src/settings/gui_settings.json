@@ -5,7 +5,8 @@
         "size_min": [
             1000,
             830
-        ]
+        ],
+        "dpi": 80
     },
     "font": {
         "family": "helvetica",

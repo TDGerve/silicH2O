@@ -2,13 +2,13 @@ from tkinter import ttk
 import tkinter as tk
 
 import pathlib
-import json
+from typing import List, Dict
 
 from .menus import io_menu
+from .sample_navigation import Sample_navigation
+from .tabs import Baseline_correction_frame
+from .plots import Plot
 from .. import settings
-from ..spectrum_processing.sample_database import samples
-from ..sample_navigation import sample_selection
-from ..io import io_handler
 
 
 # Move all constants and settings outside the code
@@ -24,67 +24,69 @@ _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
 
 
-class app:
-    def __init__(self, root: tk.Tk, sample_database: samples):
+class Main_window(tk.Tk):
+    def __init__(self, title: str):
 
-        self.root = root
-        self.root.title("silic-H2O by Thomas van Gerve")
+        super().__init__()
+
+        self.title(title)
 
         self.set_theme()
         self.set_geometry()
 
-        self.create_navigation_frame(sample_database)
-        self.create_main_frame()
-
-        self.io_handler = io_handler(
-            sample_database, self.root.nametowidget("sample_selection")
-        )
-        self.create_tabs()
-        self.create_menus(self.io_handler)
-
     def set_theme(self):
         self.style = ttk.Style()
-        self.root.tk.call("source", _theme_file)
+        self.tk.call("source", _theme_file)
         self.style.theme_use(settings.gui["theme"])
         self.style.configure(".", settings.gui["font"]["family"])
 
+        self.background_color = self.style.lookup(settings.gui["theme"], "background")
+        self.background_color = self.winfo_rgb(self.background_color)
+
     def set_geometry(self):
-        self.root.minsize(*settings.gui["geometry"]["size_min"])
-        self.root.geometry(settings.gui["geometry"]["size"])
-        self.root.resizable(True, True)
+        self.minsize(*settings.gui["geometry"]["size_min"])
+        self.geometry(settings.gui["geometry"]["size"])
+        self.resizable(True, True)
 
-        ttk.Sizegrip(self.root).grid(row=0, sticky=("se"))
+        ttk.Sizegrip(self).grid(row=0, sticky=("se"))
 
-        self.root.rowconfigure(0, weight=1)
-        self.root.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
 
-    def create_menus(self, io_handler: io_handler):
+    def create_menus(self):
 
-        self.root.option_add("*tearOff", False)
-        menubar = tk.Menu(self.root, name="menus")
-        self.root["menu"] = menubar
-        io_menu(menubar, io_handler)
+        self.option_add("*tearOff", False)
+        menubar = tk.Menu(self, name="menus")
+        self["menu"] = menubar
+        io_menu(menubar)
 
-    def create_navigation_frame(self, sample_database):
+    def create_navigation_frame(self, gui_variables: dict, widget_list: List):
         # Create the two main frames
-        sample_selection(self.root, sample_database, name="sample_selection").grid(
+        Sample_navigation(self, gui_variables, widget_list).grid(
             row=0, column=0, rowspan=1, columnspan=1, sticky=("nesw")
         )
 
     def create_main_frame(self):
-        ttk.Frame(self.root, name="main_frame").grid(
-            row=0, column=1, rowspan=1, columnspan=1, sticky=("nesw")
+        main_frame = ttk.Frame(self, name="main_frame")
+        main_frame.grid(row=0, column=1, rowspan=1, columnspan=1, sticky=("nesw"))
+        main_frame.rowconfigure(0, weight=1)
+        main_frame.columnconfigure(0, weight=1)
+
+    def create_tabs(
+        self, variables: Dict[str, any], widgets: Dict[str, any], plots: Dict[str, Plot]
+    ):
+        main_frame = self.nametowidget("main_frame")
+        self.tabs = ttk.Notebook(main_frame, name="tabs")
+        self.tabs.grid(column=0, row=0, sticky=("nesw"))
+        self.tabs.rowconfigure(0, weight=1)
+        self.tabs.columnconfigure(0, weight=1)
+
+        baseline_correction = Baseline_correction_frame(
+            self.tabs, name="baseline_correction", plots=plots
         )
+        baseline_correction.grid(column=0, row=0, sticky=("nesw"))
 
-    def create_tabs(self):
-        main_frame = self.root.nametowidget("main_frame")
-        tabs = ttk.Notebook(main_frame, name="tabs")
-
-        # self.baseline_tab = baseline(self.tabs, self)
-        # self.interpolation = interpolation(self.tabs, self)
-        # self.subtract = subtraction(self.tabs, self)
-
-        tabs.grid(column=0, row=0, sticky=("nesw"))
+        self.tabs.add(baseline_correction, text="Baseline correction")
         # self.water_calc.grid(column=0, row=0, sticky=("nesw"))
         # self.interpolation.grid(column=0, row=0, sticky=("nesw"))
         # self.subtract.grid(column=0, row=0, sticky=("nesw"))
@@ -94,10 +96,8 @@ class app:
         # self.tabs.add(self.subtract, text="Host correction")
         # Adjust resizability
 
-        tabs.rowconfigure(0, weight=1)
-        tabs.columnconfigure(0, weight=1)
         # trigger function on tab change
-        # tabs.bind("<<NotebookTabChanged>>", self.on_tab_change)
+        self.tabs.bind("<<NotebookTabChanged>>", lambda event: self.on_tab_change)
 
     def refresh_plots(self):
         # update = {
@@ -109,12 +109,11 @@ class app:
         # update[current_tab]()
         pass
 
-    def _on_tab_change(self, event):
+    def on_tab_change(self):
         """
         Refresh plot on the opened tab
         """
 
-        pass
         # tab = event.widget.tab("current")["text"]
 
         # update = {

@@ -1,11 +1,6 @@
-from src.app import raman_app
-
-
-def run_app():
-
-    app = raman_app()
-    app.run()
+from src.raman_app import Raman_app
 
 
 if __name__ == "__main__":
-    run_app()
+    app = Raman_app(title="Silic-H2O by Thomas van Gerve")
+    app.run()
