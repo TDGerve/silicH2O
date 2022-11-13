@@ -67,5 +67,17 @@ class h2o_processor:
             return
         self.set_interpolation(interpolate)
 
-    def retrieve_plot_data(self) -> Tuple[str, np.ndarray, Dict[str, np.ndarray]]:
-        return self.name, self.data.x, self.data.signal.all
+    def retrieve_plot_data(self) -> Tuple[str, np.ndarray, Dict[str, np.ndarray], str]:
+        """
+        Returns
+        -------
+        str
+            Sample name
+        np.ndarray
+            x axis
+        dict
+            Dictionary with all caclulated spectra
+        str
+            Name of the spectrum used for baseline correction
+        """
+        return self.name, self.data.x, self.data.signal.all, self.data._spectrumSelect

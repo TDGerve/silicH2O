@@ -14,22 +14,13 @@ class App_interface:
         widgets: Dict[str, any],
         plots: Dict[str, Plot],
     ):
-
+        # rRot
         self.main_window: tk.Tk = Main_window(title=title)
+        # Root frames
         self.main_window.create_navigation_frame(variables, widgets)
-
         self.main_window.create_main_frame()
-        self.main_window.create_tabs(variables, widgets, plots)
+        # Tabs
+        self.main_window.create_tabs(variables, widgets)
 
-        self.set_plot_background_color(plots)
-
+        # Menus
         self.main_window.create_menus()
-
-    def set_plot_background_color(self, plots):
-        # calculate background color to something matplotlib understands
-        background_color = tuple(
-            (c / 2**16 for c in self.main_window.background_color)
-        )
-
-        for plot in plots.values():
-            plot.fig.patch.set_facecolor(background_color)

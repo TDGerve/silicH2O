@@ -1,9 +1,6 @@
 from matplotlib.font_manager import FontProperties
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from importlib import resources
-import pandas as pd
-import seaborn as sns
+
 
 # Color palettes
 class colors:
@@ -38,28 +35,31 @@ class colors:
     )
 
 
-def plot_layout(
-    linewidth=1.2,
-    fontSize=14,
-    axTitleSize=14,
-    axLabelSize=14,
-    tickLabelSize=10,
-    colors=colors.bella,
+def Plot_layout(
+    scaling,
+    linewidth=0.8,
+    fontSize=8,
+    colors=colors.vitaminC,
 ):
+    fontSize = fontSize / scaling
+    axTitleSize = fontSize + 3
+    axLabelSize = fontSize + 2
+    tickLabelSize = fontSize + 1
+
+    linewidth = linewidth / scaling
 
     plt.rcParams["figure.constrained_layout.use"] = True
     plt.rcParams["savefig.dpi"] = 300
-
-    plt.rc("figure", figsize=(8, 7), facecolor="white")
 
     # Text
     plt.rc("font", family="sans-serif", size=fontSize)
 
     # Legend
-    plt.rc("legend", fontsize=fontSize / 1.5, fancybox=False, facecolor="white")
+    plt.rc("legend", fontsize=fontSize, fancybox=False, facecolor="white")
 
     # Axes
     plt.rc("xtick", direction="in", labelsize=tickLabelSize)
+    plt.rc("xtick.major", size=3 / scaling, width=linewidth)
     plt.rc("ytick", direction="in", labelsize=tickLabelSize)
     plt.rc(
         "axes",
@@ -69,11 +69,9 @@ def plot_layout(
         axisbelow=True,
         linewidth=linewidth,
         prop_cycle=colors,
-        facecolor="whitesmoke",
+        facecolor="white",
     )
-    plt.rc("grid", color="snow")
+    plt.rc("grid", color="whitesmoke", alpha=1)
 
     # Lines
-    plt.rc("lines", linewidth=linewidth, markersize=10, markeredgecolor="k")
-
-
+    plt.rc("lines", linewidth=linewidth, markersize=10 / scaling, markeredgecolor="k")

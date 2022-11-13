@@ -11,6 +11,7 @@ class Calculation_listener:
 
     def __init__(self, sample_database: Sample_handler):
         self.sample_database = sample_database
+
         self.subscribe_to_signals()
 
     def switch_sample(self, *args, index: int):
@@ -27,8 +28,19 @@ class Calculation_listener:
         self.refresh_plots("settings change")
 
     def refresh_plots(self, *args):
-        name, x, spectra = self.sample_database.retrieve_plot_data()
-        self.on_plot_change.send(*args, name=name, x=x, spectra=spectra)
+        (
+            sample_name,
+            x,
+            spectra,
+            baseline_spectrum,
+        ) = self.sample_database.retrieve_plot_data()
+        self.on_plot_change.send(
+            "refresh plot",
+            sample_name=sample_name,
+            x=x,
+            spectra=spectra,
+            baseline_spectrum=baseline_spectrum,
+        )
 
     def subscribe_to_signals(self):
         self.on_sample_change.connect(self.switch_sample)

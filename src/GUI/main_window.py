@@ -1,13 +1,16 @@
 from tkinter import ttk
 import tkinter as tk
 
-import pathlib
-from typing import List, Dict
+import pathlib, sys
+from typing import List, Dict, Tuple
+
+from .sample_navigation import Sample_navigation
 
 from .menus import io_menu
-from .sample_navigation import Sample_navigation
 from .tabs import Baseline_correction_frame
 from .plots import Plot
+from .screens import Computer_screen
+
 from .. import settings
 
 
@@ -28,11 +31,14 @@ class Main_window(tk.Tk):
     def __init__(self, title: str):
 
         super().__init__()
+        self.screen = self.get_screen_info()
 
         self.title(title)
 
         self.set_theme()
         self.set_geometry()
+
+        print()
 
     def set_theme(self):
         self.style = ttk.Style()
@@ -44,14 +50,27 @@ class Main_window(tk.Tk):
         self.background_color = self.winfo_rgb(self.background_color)
 
     def set_geometry(self):
+
+        width, height = self.screen.resolution
+
         self.minsize(*settings.gui["geometry"]["size_min"])
-        self.geometry(settings.gui["geometry"]["size"])
+        resolution_str = f"{int(width * 0.8)}x{int(height * 0.8)}"
+
+        self.geometry(resolution_str)
+
         self.resizable(True, True)
 
         ttk.Sizegrip(self).grid(row=0, sticky=("se"))
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
+
+    def get_screen_info(self) -> None:
+
+        resolution = self.winfo_screenwidth(), self.winfo_screenheight()
+        dpi = self.winfo_fpixels("1i")
+
+        return Computer_screen(resolution, dpi)
 
     def create_menus(self):
 
@@ -66,15 +85,13 @@ class Main_window(tk.Tk):
             row=0, column=0, rowspan=1, columnspan=1, sticky=("nesw")
         )
 
-    def create_main_frame(self):
+    def create_main_frame(self, variables, widgets):
         main_frame = ttk.Frame(self, name="main_frame")
         main_frame.grid(row=0, column=1, rowspan=1, columnspan=1, sticky=("nesw"))
         main_frame.rowconfigure(0, weight=1)
         main_frame.columnconfigure(0, weight=1)
 
-    def create_tabs(
-        self, variables: Dict[str, any], widgets: Dict[str, any], plots: Dict[str, Plot]
-    ):
+    def create_tabs(self, variables: Dict[str, any], widgets: Dict[str, any]):
         main_frame = self.nametowidget("main_frame")
         self.tabs = ttk.Notebook(main_frame, name="tabs")
         self.tabs.grid(column=0, row=0, sticky=("nesw"))
@@ -82,7 +99,7 @@ class Main_window(tk.Tk):
         self.tabs.columnconfigure(0, weight=1)
 
         baseline_correction = Baseline_correction_frame(
-            self.tabs, name="baseline_correction", plots=plots
+            self.tabs, name="baseline_correction", variables=widgets
         )
         baseline_correction.grid(column=0, row=0, sticky=("nesw"))
 
@@ -98,6 +115,17 @@ class Main_window(tk.Tk):
 
         # trigger function on tab change
         self.tabs.bind("<<NotebookTabChanged>>", lambda event: self.on_tab_change)
+
+    def add_plots(self, plots):
+        for name, plot in plots.items():
+            frame = self.tabs.nametowidget(name)
+            self.set_plot_background_color(plot)
+            frame.draw_plot(plot)
+
+    def set_plot_background_color(self, plot: Plot):
+        # calculate background color to something matplotlib understands
+        background_color = tuple((c / 2**16 for c in self.background_color))
+        plot.fig.patch.set_facecolor(background_color)
 
     def refresh_plots(self):
         # update = {

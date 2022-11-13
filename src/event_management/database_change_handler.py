@@ -16,6 +16,8 @@ class Database_listener:
         self.sample_handler = sample_handler
         self.app = app
 
+        self.subscribe_to_signals()
+
     def remove_samples(self, *args, index: List[int]) -> None:
         self.sample_handler.remove_samples(index)
 

@@ -104,7 +104,7 @@ class Sample_handler:
         except TypeError:
             self.current_sample_index = 0
 
-    def retrieve_plot_data(self) -> Tuple[str, np.ndarray, Dict[str, np.ndarray]]:
+    def retrieve_plot_data(self) -> Tuple[str, np.ndarray, Dict[str, np.ndarray], str]:
         return self.current_sample.retrieve_plot_data()
 
 

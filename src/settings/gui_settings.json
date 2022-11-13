@@ -1,12 +1,16 @@
 {
     "theme": "Breeze",
+    "plot_theme": "buddha",
     "geometry": {
-        "size": "1200x1000",
+        "size": [
+            1200,
+            1000
+        ],
         "size_min": [
             1000,
             830
         ],
-        "dpi": 80
+        "dpi": 150
     },
     "font": {
         "family": "helvetica",
