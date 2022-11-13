@@ -28,8 +28,8 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.canvas = None
 
-        self.variables = []
-        self.widgets = []
+        self.variables = []  # MAKE THIS INTO A FLAT LIST, INSTEAD OF A NESTED LIST
+        self.widgets = []  # SAMPLE HERE
         variables["bir_settings"] = self.variables
         widgets["bir_settings"] = self.widgets
 
