@@ -3,8 +3,8 @@ import numpy as np
 
 from typing import Dict
 
-from ..GUI.plots import Plot
-from ..GUI import Main_window
+from ..interface.plots import Plot
+from ..interface import Main_window
 
 
 class Plot_listener:
@@ -30,7 +30,6 @@ class Plot_listener:
             plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
 
     def draw_plots(self, *args):
-
         self.window.add_plots(self.plots)
 
     def subscribe_to_signals(self):

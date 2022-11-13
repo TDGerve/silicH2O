@@ -1,15 +1,9 @@
 import sys
-import blinker as bl
-
-import tkinter as tk
-from typing import Dict
 
 from .sample_handlers import Sample_handler
 from .event_management import Calculation_listener, Database_listener, Plot_listener
 
-from .GUI.plots import Plot, Baseline_correction_plot
-from .GUI import App_interface
-from .app import App_state
+from .interface import App_interface
 
 
 """
@@ -28,52 +22,18 @@ https://stackoverflow.com/questions/1092531/which-python-packages-offer-a-stand-
 
 """
 
-on_plots_initialised = bl.signal("plots initialised")
-
 
 class Raman_app:
     def __init__(self, title):
 
         self.samples = Sample_handler()
-        self.variables: Dict[str, any] = {}
-        self.widgets: Dict[str, any] = {}
-        self.plots: Dict[Plot] = {}
+        self.gui = App_interface(title=title)
 
-        self.gui = App_interface(
-            title=title,
-            variables=self.variables,
-            widgets=self.widgets,
-            plots=self.plots,
-        )
+        self.calulcation_listener = Calculation_listener(self.samples, self.gui)
+        self.database_listener = Database_listener(self.samples, self.gui)
+        self.plot_listener = Plot_listener(self.gui.main_window, self.gui.plots)
 
-        self.calulcation_listener = Calculation_listener(self.samples)
-        self.database_listener = Database_listener(self.samples, self)
-        self.plot_listener = Plot_listener(self.gui.main_window, self.plots)
-
-        self.create_plots()
-
-        self.state = App_state.DISABLED
-
-    def set_state(self, state: App_state) -> None:
-        self.state = state
-
-    def update_variables(self, **kwargs) -> None:
-
-        for name, value in kwargs.items():
-            if name not in self.variables.keys():
-                return
-            self.variables[name].set(value)
-
-    def activate_widgets(self) -> None:
-        for widgets in self.widgets.values():
-            for w in widgets:
-                w.configure(state=tk.NORMAL)
-
-    def create_plots(self):
-        self.plots["baseline_correction"] = Baseline_correction_plot(
-            self.gui.main_window.screen
-        )
-        on_plots_initialised.send("plots created")
+        self.gui.create_plots()
 
     def run(self) -> None:
         # Make sure the matplotlib backend also closes

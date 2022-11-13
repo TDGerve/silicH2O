@@ -38,7 +38,8 @@ class Main_window(tk.Tk):
         self.set_theme()
         self.set_geometry()
 
-        print()
+        self.create_main_frame()
+        self.create_tabs()
 
     def set_theme(self):
         self.style = ttk.Style()
@@ -54,7 +55,7 @@ class Main_window(tk.Tk):
         width, height = self.screen.resolution
 
         self.minsize(*settings.gui["geometry"]["size_min"])
-        resolution_str = f"{int(width * 0.8)}x{int(height * 0.8)}"
+        resolution_str = f"{int(width * 0.3)}x{int(height * 0.4)}"
 
         self.geometry(resolution_str)
 
@@ -79,42 +80,37 @@ class Main_window(tk.Tk):
         self["menu"] = menubar
         io_menu(menubar)
 
-    def create_navigation_frame(self, gui_variables: dict, widget_list: List):
+    def create_navigation_frame(self, variables: Dict, widgets: Dict):
         # Create the two main frames
-        Sample_navigation(self, gui_variables, widget_list).grid(
+        Sample_navigation(self, variables, widgets).grid(
             row=0, column=0, rowspan=1, columnspan=1, sticky=("nesw")
         )
 
-    def create_main_frame(self, variables, widgets):
+    def create_main_frame(self):
         main_frame = ttk.Frame(self, name="main_frame")
         main_frame.grid(row=0, column=1, rowspan=1, columnspan=1, sticky=("nesw"))
         main_frame.rowconfigure(0, weight=1)
         main_frame.columnconfigure(0, weight=1)
 
-    def create_tabs(self, variables: Dict[str, any], widgets: Dict[str, any]):
+    def create_tabs(self):
         main_frame = self.nametowidget("main_frame")
         self.tabs = ttk.Notebook(main_frame, name="tabs")
         self.tabs.grid(column=0, row=0, sticky=("nesw"))
         self.tabs.rowconfigure(0, weight=1)
         self.tabs.columnconfigure(0, weight=1)
 
-        baseline_correction = Baseline_correction_frame(
-            self.tabs, name="baseline_correction", variables=widgets
-        )
-        baseline_correction.grid(column=0, row=0, sticky=("nesw"))
-
-        self.tabs.add(baseline_correction, text="Baseline correction")
-        # self.water_calc.grid(column=0, row=0, sticky=("nesw"))
-        # self.interpolation.grid(column=0, row=0, sticky=("nesw"))
-        # self.subtract.grid(column=0, row=0, sticky=("nesw"))
-        # # Label the notebook tabs
-        # self.tabs.add(self.water_calc, text="Baseline correction")
-        # self.tabs.add(self.interpolation, text="Interpolation")
-        # self.tabs.add(self.subtract, text="Host correction")
-        # Adjust resizability
-
         # trigger function on tab change
         self.tabs.bind("<<NotebookTabChanged>>", lambda event: self.on_tab_change)
+
+    def populate_tabs(self, variables: Dict[str, any], widgets: Dict[str, any]):
+        frame = self.nametowidget("main_frame")
+        tabs = frame.nametowidget("tabs")
+
+        baseline_correction = Baseline_correction_frame(
+            tabs, name="baseline_correction", variables=variables, widgets=widgets
+        )
+        baseline_correction.grid(column=0, row=0, sticky=("nesw"))
+        tabs.add(baseline_correction, text="Baseline correction")
 
     def add_plots(self, plots):
         for name, plot in plots.items():

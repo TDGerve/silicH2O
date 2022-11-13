@@ -14,16 +14,16 @@ on_samples_removed = bl.signal("samples removed")
 
 class Sample_navigation(ttk.Frame):
     def __init__(
-        self, parent: ttk.Frame, gui_variables: dict, widget_list: List, *args, **kwargs
+        self, parent: ttk.Frame, variables: dict, widgets: List, *args, **kwargs
     ):
 
         super().__init__(parent, name="sample_navigation", *args, **kwargs)
 
-        self.sample_list = tk.StringVar([])
-        gui_variables["sample_list"] = self.sample_list
+        self.variables = []
+        variables["sample_navigation"] = self.variables
 
         self.widgets = []
-        widget_list["sample_navigation"] = self.widgets
+        widgets["sample_navigation"] = self.widgets
 
         self.make_listbox()
         self.make_scrollbar()
@@ -34,11 +34,13 @@ class Sample_navigation(ttk.Frame):
             self.columnconfigure(c, weight=1)
 
     def make_listbox(self):
+        var = tk.StringVar([])
+        self.variables.append(var)
         listbox = tk.Listbox(
             self,
-            listvariable=self.sample_list,
+            listvariable=var,
             selectmode=tk.BROWSE,
-            name="listbox",
+            name="sample_list",
             state=tk.DISABLED,
             font=(
                 settings.gui["font"]["family"],
@@ -57,7 +59,7 @@ class Sample_navigation(ttk.Frame):
     # def update(self, names):
     #     # Update listbox widget
 
-    #     listbox = self.nametowidget("listbox")
+    #     listbox = self.nametowidget("sample_list")
 
     #     if listbox["state"] == "disabled":
     #         listbox.configure(state=tk.NORMAL)
@@ -72,13 +74,13 @@ class Sample_navigation(ttk.Frame):
     #     self.select_sample(current_selection)
 
     def select_sample(self, selection):
-        listbox = self.nametowidget("listbox")
+        listbox = self.nametowidget("sample_list")
 
         listbox.selection_set(selection)
         listbox.see(selection)
 
     def make_scrollbar(self):
-        listbox = self.nametowidget("listbox")
+        listbox = self.nametowidget("sample_list")
         sample_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=listbox.yview)
         sample_scroll.grid(row=0, column=3, sticky=("ns"))
         listbox["yscrollcommand"] = sample_scroll.set
@@ -103,7 +105,7 @@ class Sample_navigation(ttk.Frame):
         self.widgets += [button_previous, button_next]
 
     def next_sample(self):
-        listbox = self.nametowidget("listbox")
+        listbox = self.nametowidget("sample_list")
 
         current = listbox.curselection()
         if not current:  # See if selection exists
@@ -117,7 +119,7 @@ class Sample_navigation(ttk.Frame):
             self.change_sample(new)
 
     def previous_sample(self):
-        listbox = self.nametowidget("listbox")
+        listbox = self.nametowidget("sample_list")
         current = listbox.curselection()[-1]
         if not current:
             return
@@ -128,5 +130,5 @@ class Sample_navigation(ttk.Frame):
             self.change_sample(new)
 
     def change_sample(self, index: int):
-        # listbox = self.nametowidget("listbox")
+        # listbox = self.nametowidget("sample_list")
         on_sample_change.send("sample selected", index=index)
