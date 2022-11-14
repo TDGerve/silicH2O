@@ -30,8 +30,8 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.bir_variables = []  # MAKE THIS INTO A FLAT LIST, INSTEAD OF A NESTED LIST
         self.bir_widgets = []  # SAMPLE HERE
-        variables["bir_settings"] = self.bir_variables
-        widgets["bir_settings"] = self.bir_widgets
+        variables["birs"] = self.bir_variables
+        widgets["birs"] = self.bir_widgets
 
         self.make_settings_frame()
         self.make_widgets()
@@ -138,10 +138,10 @@ class Baseline_correction_frame(ttk.Frame):
         if index == 0:
             lower_boundary = 200
         else:
-            lower_boundary = int(self.bir_variables[index - 1].get()) + 10
+            lower_boundary = int(self.bir_variables[index - 1].get()) + 20
 
         try:
-            upper_boundary = int(self.bir_variables[index + 1].get()) - 10
+            upper_boundary = int(self.bir_variables[index + 1].get()) - 20
         except (ValueError, IndexError):
             upper_boundary = 4000
 

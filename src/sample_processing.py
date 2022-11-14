@@ -69,7 +69,7 @@ class h2o_processor:
             return
         self.set_interpolation(interpolate)
 
-    def retrieve_plot_data(self) -> Tuple[str, np.ndarray, Dict[str, np.ndarray], str]:
+    def retrieve_plot_data(self) -> Dict[str, any]:
         """
         Returns
         -------
@@ -82,4 +82,10 @@ class h2o_processor:
         str
             Name of the spectrum used for baseline correction
         """
-        return self.name, self.data.x, self.data.signal.all, self.data._spectrumSelect
+        return {
+            "sample_name": self.name,
+            "x": self.data.x,
+            "spectra": self.data.signal.all,
+            "baseline_spectrum": self.data._spectrumSelect,
+            "birs": self.construct_birs(),
+        }
