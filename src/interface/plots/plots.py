@@ -26,7 +26,7 @@ class Baseline_correction_plot(Double_plot):
 
         self.setup_ax1(
             title="Silicate region",
-            limits=(200, 1400),
+            limits=(100, 1400),
         )
         self.setup_ax2(title="H$_2$O region", limits=(2000, 4000))
 

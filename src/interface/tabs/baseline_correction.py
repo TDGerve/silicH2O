@@ -9,7 +9,7 @@ import numpy as np
 from typing import Union, List, Tuple
 from functools import partial
 
-from ..plots import Plot
+from ..plots import Plot, vertical_toolbar
 from ..validate_input import validate_numerical_input, invalid_input
 
 
@@ -28,10 +28,10 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.canvas = None
 
-        self.variables = []  # MAKE THIS INTO A FLAT LIST, INSTEAD OF A NESTED LIST
-        self.widgets = []  # SAMPLE HERE
-        variables["bir_settings"] = self.variables
-        widgets["bir_settings"] = self.widgets
+        self.bir_variables = []  # MAKE THIS INTO A FLAT LIST, INSTEAD OF A NESTED LIST
+        self.bir_widgets = []  # SAMPLE HERE
+        variables["bir_settings"] = self.bir_variables
+        widgets["bir_settings"] = self.bir_widgets
 
         self.make_settings_frame()
         self.make_widgets()
@@ -50,12 +50,20 @@ class Baseline_correction_frame(ttk.Frame):
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0, sticky=("nesw"))
 
+        # Plot navigation toolbar
+        toolbar = vertical_toolbar(self.canvas, self)
+        # Don't pack 'configure subplots' and 'save figure'
+        toolbar.children["!button4"].pack_forget()
+        toolbar.children["!button5"].pack_forget()
+        toolbar.update()
+        toolbar.grid(row=0, column=1, sticky="nw")
+
     def make_settings_frame(self):
         baseline_label = ttk.Label(
             text="Baseline interpolation regions", font=(_font, _fontsize + 5, "bold")
         )
         frame = ttk.Labelframe(self, labelwidget=baseline_label, name="settings")
-        frame.grid(row=0, column=1, sticky=("nesw"))
+        frame.grid(row=0, column=2, sticky=("nesw"))
 
         frame.rowconfigure(0, weight=0)
         frame.columnconfigure(0, weight=0)
@@ -74,8 +82,6 @@ class Baseline_correction_frame(ttk.Frame):
             label = ttk.Label(frame, text=f"{i + 1}", font=(_font, _fontsize))
             label.grid(row=i + 1, column=0, sticky=("nse"))
 
-            _vars = []
-            _entries = []
             for j in range(2):
                 var = tk.StringVar()
                 entry = tk.Entry(
@@ -83,40 +89,68 @@ class Baseline_correction_frame(ttk.Frame):
                     textvariable=var,
                     validate="focus",
                     validatecommand=(
-                        self.register(partial(self.validate_bir_input, index=(i, j))),
+                        self.register(
+                            partial(self.validate_bir_input, index=i * 2 + j)
+                        ),
                         "%P %W",
                     ),
                     invalidcommand=(
-                        self.register(partial(self.invalid_bir_input, index=(i, j))),
+                        self.register(partial(self.invalid_bir_input, index=i * 2 + j)),
                         r"%s",
                     ),
                     width=5,
                     background="white",
                     font=(_font, _fontsize),
                     state=tk.DISABLED,
-                    name=f"{i},{j}",
+                    name=f"bir_{i * 2 + j}",
                 )
                 entry.grid(row=i + 1, column=j + 1, sticky=("nesw"))
-                _vars.append(var)
-                _entries.append(entry)
-            self.widgets.append(_entries)
-            self.variables.append(_vars)
 
-    def validate_bir_input(self, new_value, index=Tuple[int, int]):
+                self.bir_widgets.append(entry)
+                self.bir_variables.append(var)
 
-        i0, i1 = index
-        widget = self.widgets[i0][i1]
-        variable = self.variables[i0][i1]
+    def validate_bir_input(self, new_value: str, index: int):
 
-        return partial(
-            validate_numerical_input,
+        new_value = new_value[: new_value.index(" ")]
+        widget = self.bir_widgets[index]
+        variable = self.bir_variables[index]
+
+        accepted_range = self.get_bir_range(index)
+
+        if validate_numerical_input(
+            new_value,
+            accepted_range=accepted_range,
             widget=widget,
             variable=variable,
-            accepted_range=[200, 4000],
-        )(new_value)
+        ):
+            self.change_bir(index=index)
+            return True
+        else:
+            return False
 
-    def invalid_bir_input(self, old_value, index=Tuple[int, int]):
-        i0, i1 = index
-        variable = self.variables[i0][i1]
+    def invalid_bir_input(self, old_value: str, index: int):
+        old_value = old_value[: old_value.index(" ")]
+        variable = self.variables[index]
 
         return partial(invalid_input, variable=variable)(old_value)
+
+    def get_bir_range(self, index: int):
+        if index == 0:
+            lower_boundary = 200
+        else:
+            lower_boundary = int(self.bir_variables[index - 1].get()) + 10
+
+        try:
+            upper_boundary = int(self.bir_variables[index + 1].get()) - 10
+        except (ValueError, IndexError):
+            upper_boundary = 4000
+
+        return lower_boundary, upper_boundary
+
+    def change_bir(self, *args, index, **kwargs):
+
+        bir = str(index // 2)
+        position = index % 2
+        value = int(self.bir_variables[index].get())
+
+        on_settings_change.send("bir change", birs={bir: [position, value]})

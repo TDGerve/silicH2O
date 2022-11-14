@@ -1,7 +1,10 @@
 import numpy as np
+from typing import Union, List
 
 
-def validate_numerical_input(new_value, widget, variable, accepted_range):
+def validate_numerical_input(
+    new_value: Union[str, float], accepted_range: List[int], widget, variable
+) -> bool:
     """
     Return False if the value is not numeric and reset the validate command if not.
     Resetting validate is neccessary, because tkinter disables validation after changing
@@ -10,27 +13,19 @@ def validate_numerical_input(new_value, widget, variable, accepted_range):
     If the value is numerical clip it to range
     """
 
-    new_value = new_value[: new_value.index(" ")]
     try:
-        value_clipped = np.clip(
-            float(new_value), a_min=accepted_range[0], a_max=accepted_range[1]
-        )
-        print(value_clipped)
+        value_clipped = np.clip(float(new_value), *accepted_range)
+
         variable.set(int(value_clipped))
         valid = True
-        print("valid")
+
     except ValueError:
         valid = False
-        print("invalid")
-    if not valid:
-        pass
-        # self.bell()
+
     widget.after_idle(lambda: widget.config(validate="focus"))
     return valid
 
 
-def invalid_input(old_value, variable):
-    old_value = old_value[: old_value.index(" ")]
-    print(f"resetting: {old_value}")
+def invalid_input(old_value: Union[str, float], variable) -> None:
+
     variable.set(int(old_value))
-    pass

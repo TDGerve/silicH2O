@@ -1,5 +1,6 @@
 from .plots import *
 from .double_plots import *
+from .plot_toolbar_vertical import *
 import sys
 
 if sys.platform != "win":

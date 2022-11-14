@@ -53,8 +53,9 @@ class h2o_processor:
         return [bir for bir in self.settings["birs"]]
 
     def set_birs(self, **kwargs) -> None:
-        for bir, values in kwargs.items():
-            self.settings[("birs", bir)] = values
+        for bir, (position, new_value) in kwargs.items():
+            old_values = self.settings[("birs", bir)]
+            old_values[position] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
         for key, value in kwargs.items():
@@ -62,7 +63,8 @@ class h2o_processor:
 
     def change_settings(self, birs: dict = None, interpolate: dict = None) -> None:
         if birs is not None:
-            self.set_birs(birs)
+
+            self.set_birs(**birs)
         if interpolate is None:
             return
         self.set_interpolation(interpolate)

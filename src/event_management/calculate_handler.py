@@ -1,4 +1,5 @@
 import blinker as bl
+import numpy as np
 
 from ..sample_handlers import Sample_handler
 from ..interface import Gui
@@ -22,6 +23,7 @@ class Calculation_listener:
         self.sample_database.current_sample.calculate()
 
         bir_settings = self.sample_database.current_sample.construct_birs()
+        bir_settings = np.concatenate(bir_settings)  # Flatten nested list
         self.gui.update_variables(bir_settings=bir_settings)
 
         self.refresh_plots("sample change")

@@ -2,11 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import blinker as bl
-from typing import List
-
+from typing import List, Tuple
 
 from .. import settings
-
 
 on_sample_change = bl.signal("sample change")
 on_samples_removed = bl.signal("samples removed")
@@ -53,25 +51,8 @@ class Sample_navigation(ttk.Frame):
         # Bind listobx selection to sample selection
         listbox.bind(
             "<<ListboxSelect>>",
-            lambda event: self.change_sample(listbox.curselection()[-1]),
+            lambda event: self.change_sample(listbox.curselection()),
         )
-
-    # def update(self, names):
-    #     # Update listbox widget
-
-    #     listbox = self.nametowidget("sample_list")
-
-    #     if listbox["state"] == "disabled":
-    #         listbox.configure(state=tk.NORMAL)
-
-    #         for button in ["previous", "next"]:
-    #             button = self.nametowidget(button)
-    #             button.configure(state=tk.NORMAL)
-
-    #     current_selection = listbox.curselection()
-
-    #     self.sample_list.set(names)
-    #     self.select_sample(current_selection)
 
     def select_sample(self, selection):
         listbox = self.nametowidget("sample_list")
@@ -129,6 +110,9 @@ class Sample_navigation(ttk.Frame):
             self.select_sample(new)
             self.change_sample(new)
 
-    def change_sample(self, index: int):
+    def change_sample(self, selection: Tuple[int]):
+        if not selection:
+            return
+        index = selection[-1]
         # listbox = self.nametowidget("sample_list")
         on_sample_change.send("sample selected", index=index)

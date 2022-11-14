@@ -40,16 +40,9 @@ class App_interface:
         for name, values in kwargs.items():
             if name not in self.variables.keys():
                 return
-            try:
-                # For lists
-                for variable, value in zip(self.variables[name], values):
-                    variable.set(value)
-            except AttributeError:
-                # For nested lists
-                for variable, value in zip(
-                    np.concatenate(self.variables[name]), np.concatenate(values)
-                ):
-                    variable.set(value)
+
+            for variable, value in zip(self.variables[name], values):
+                variable.set(value)
 
     def activate_widgets(self) -> None:
         for widgets in self.widgets.values():
