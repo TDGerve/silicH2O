@@ -152,5 +152,4 @@ class Baseline_correction_frame(ttk.Frame):
         bir = str(index // 2)
         new_values[index % 2] = int(self.bir_variables[index].get())
 
-        print("BC sending bir change")
         on_settings_change.send("bir change", birs={bir: new_values})

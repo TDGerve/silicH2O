@@ -38,14 +38,12 @@ class h2o_processor:
         return [list(bir[1]) for bir in self.settings.groupby(level=0)]
 
     def calculate(self) -> None:
-        print("calculating sample")
-        print(self.birs)
+
         self.calculate_interpolation()
         self.data.baselineCorrect(baseline_regions=self.birs)
         self.data.calculate_SiH2Oareas()
         self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
-        print("calculated")
 
     def calculate_interpolation(self):
 

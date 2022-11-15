@@ -57,12 +57,17 @@ class Double_plot:
             ymax = []
             for (name, spectrum), color in zip(spectra.items(), colors):
                 try:
-                    lines[name][0].remove()  # Remove old line
+                    if np.array_equal(lines[name][0].get_ydata(), spectrum):
+
+                        continue
+                    lines[name][0].set_xdata(x)
+                    lines[name][0].set_ydata(spectrum)
                 except KeyError:
-                    pass
-                lines[name] = ax.plot(x, spectrum, label=name, color=color)
+                    lines[name] = ax.plot(x, spectrum, label=name, color=color)
                 ymax.append(spectrum[(xmin < x) & (x < xmax)].max())
-            ymax = max(ymax) * 1.1
-            ax.set_ylim(0, ymax)
+            if ymax:
+                ymax = max(ymax) * 1.1
+                ax.set_ylim(0, ymax)
+        print(len(self.lines["ax1"]), len(self.lines["ax2"]))
 
         self.fig.canvas.draw_idle()

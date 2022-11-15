@@ -28,18 +28,16 @@ class Plot_listener:
         birs: List[int],
         **kwargs,
     ):
-        print("refreshing plot")
+
         for name, plot in self.plots.items():
             plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
             if name == "baseline_correction":
 
                 plot.plot_birs(birs)
-                print(f"plot: '{name}' refreshed")
 
     def draw_canvas(self, *args):
-        print("initialising plots")
+
         self.window.add_plots(self.plots)
-        print("initialised")
 
     def subscribe_to_signals(self):
         self.on_plot_change.connect(self.plot_sample)

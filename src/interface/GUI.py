@@ -36,11 +36,9 @@ class App_interface:
         self.state = state
 
     def update_variables(self, **kwargs) -> None:
-        print("updating widgets")
         for name, values in kwargs.items():
             if name not in self.variables.keys():
                 return
-            print(f"widgets '{name}' updated")
             for variable, value in zip(self.variables[name], values):
                 variable.set(value)
 
