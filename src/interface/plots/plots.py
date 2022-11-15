@@ -78,7 +78,7 @@ class Baseline_correction_plot(Double_plot):
                         edgecolor=None,
                     )
                 )
-        print(len(self.birs))
+
         # self.birs = bir_plots
         # self.fig.canvas.draw_idle()
         if connect_mouse:

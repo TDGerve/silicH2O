@@ -68,6 +68,5 @@ class Double_plot:
             if ymax:
                 ymax = max(ymax) * 1.1
                 ax.set_ylim(0, ymax)
-        print(len(self.lines["ax1"]), len(self.lines["ax2"]))
 
         self.fig.canvas.draw_idle()
