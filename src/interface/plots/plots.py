@@ -156,9 +156,9 @@ class drag_polygons:
         elif id == (5, drag.RIGHT):
             x_max = np.Inf
 
-        x_new = np.clip(x_new, a_min=x_min, a_max=x_max)
-
         if id[1] != drag.BOTH:
+
+            x_new = np.clip(x_new, a_min=x_min, a_max=x_max)
 
             if id[1] == drag.LEFT:
 
@@ -173,16 +173,17 @@ class drag_polygons:
             current_bir = self.polygons[id[0]]
             x_coordinates = [c[0] for c in current_bir.get_xy()]
             half_width = (max(x_coordinates) - min(x_coordinates)) / 2
-            x_left = x_new - half_width
-            x_right = x_new + half_width
+            x_left = np.clip(x_new - half_width, x_min, x_max)
+            x_right = np.clip(x_new + half_width, x_min, x_max)
             new_coordinates = self._construct_coordinates(int(x_left), int(x_right))
             current_bir.set_xy(new_coordinates)
+
+        self.send_bir_change(id)
         self.fig.canvas.draw_idle()
 
     def on_release(self, event):
 
         self.dragging = None
-        pass
 
     def _construct_coordinates(self, xmin, xmax):
         return np.array(
@@ -210,3 +211,22 @@ class drag_polygons:
                     if distance < distance_threshold:
                         object_id = (i, drag_options[j])
         return object_id
+
+    def send_bir_change(self, id):
+        if not id:
+            return
+        current_bir = self.polygons[id[0]]
+        x_coordinates = [c[0] for c in current_bir.get_xy()]
+        if id[1] == drag.BOTH:
+
+            new_from = min(x_coordinates)
+            new_to = max(x_coordinates)
+            new_settings = {str(id[0]): [new_from, new_to]}
+        elif id[1] == drag.LEFT:
+            new_from = min(x_coordinates)
+            new_settings = {str(id[0]): [new_from, np.nan]}
+        elif id[1] == drag.RIGHT:
+            new_to = max(x_coordinates)
+            new_settings = {str(id[0]): [np.nan, new_to]}
+
+        on_settings_change.send("plot input", birs=new_settings)

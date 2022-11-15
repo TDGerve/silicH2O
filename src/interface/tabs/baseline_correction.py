@@ -148,9 +148,9 @@ class Baseline_correction_frame(ttk.Frame):
         return lower_boundary, upper_boundary
 
     def change_bir(self, *args, index, **kwargs):
-
+        new_values = [np.nan, np.nan]
         bir = str(index // 2)
-        position = index % 2
-        value = int(self.bir_variables[index].get())
+        new_values[index % 2] = int(self.bir_variables[index].get())
+
         print("BC sending bir change")
-        on_settings_change.send("bir change", birs={bir: [position, value]})
+        on_settings_change.send("bir change", birs={bir: new_values})
