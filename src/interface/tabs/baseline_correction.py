@@ -136,7 +136,7 @@ class Baseline_correction_frame(ttk.Frame):
 
     def get_bir_range(self, index: int):
         if index == 0:
-            lower_boundary = 200
+            lower_boundary = 000
         else:
             lower_boundary = int(self.bir_variables[index - 1].get()) + 20
 
@@ -152,5 +152,5 @@ class Baseline_correction_frame(ttk.Frame):
         bir = str(index // 2)
         position = index % 2
         value = int(self.bir_variables[index].get())
-
+        print("BC sending bir change")
         on_settings_change.send("bir change", birs={bir: [position, value]})

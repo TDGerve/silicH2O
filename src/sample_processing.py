@@ -24,38 +24,41 @@ class Sample_proccessor(Protocol):
 
 
 class h2o_processor:
-    def __init__(self, name, x, y):
+    def __init__(self, name, x, y, process_settings):
         self.name = name
-        self.settings = settings.process.copy()
+        self.settings = process_settings.copy()
 
         self.results = pd.Series(
             {data: np.nan for data in ["SiArea", "H2Oarea", "rWS"]}
         )
         self.data = ram.H2O(x, y, laser=settings.general["laser_wavelength"])
 
-    def calculate(self) -> None:
+    @property
+    def birs(self) -> List[List[int]]:
+        return [list(bir[1]) for bir in self.settings.groupby(level=0)]
 
+    def calculate(self) -> None:
+        print("calculating sample")
+        print(self.birs)
         self.calculate_interpolation()
-        self.data.baselineCorrect(baseline_regions=self.construct_birs())
+        self.data.baselineCorrect(baseline_regions=self.birs)
         self.data.calculate_SiH2Oareas()
         self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
+        print("calculated")
 
     def calculate_interpolation(self):
 
-        if not self.settings[("interpolate", "use")]:
+        if True:  # not self.settings[("interpolate", "use")]:
             return
         region = self.settings[("interpolate", "region")]
         smoothing = self.settings[("interpolate", "smoothing")]
         self.data.interpolate(interpolate=region, smooth_factor=smoothing)
 
-    def construct_birs(self) -> List[List[int]]:
-        return [bir for bir in self.settings["birs"]]
-
     def set_birs(self, **kwargs) -> None:
         for bir, (position, new_value) in kwargs.items():
-            old_values = self.settings[("birs", bir)]
-            old_values[position] = new_value
+            int_index = int(bir) * 2 + position
+            self.settings.iloc[int_index] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
         for key, value in kwargs.items():
@@ -87,5 +90,5 @@ class h2o_processor:
             "x": self.data.x,
             "spectra": self.data.signal.all,
             "baseline_spectrum": self.data._spectrumSelect,
-            "birs": self.construct_birs(),
+            "birs": self.birs,
         }

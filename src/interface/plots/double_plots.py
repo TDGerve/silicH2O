@@ -66,9 +66,3 @@ class Double_plot:
             ax.set_ylim(0, ymax)
 
         self.fig.canvas.draw_idle()
-
-    def plot_birs(self):
-        pass
-
-    def update(self):
-        pass

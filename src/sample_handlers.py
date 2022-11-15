@@ -22,7 +22,7 @@ class Sample_handler:
 
     @property
     def current_sample(self) -> h2o_processor:
-        return self.retrieve_sample(self.current_sample_index)
+        return self.retrieve_sample(self._current_sample_index)
 
     @current_sample.setter
     def current_sample(self) -> None:
@@ -39,20 +39,33 @@ class Sample_handler:
             raise ValueError(f"Index outside range (0,{idx_max}): {index}")
 
         self._current_sample_index = index
+        # Retrieve the saved settings
+        self.current_sample.settings = self.settings.loc[
+            self.current_sample.name
+        ].copy()
 
     def read_files(self, files: List[str]) -> None:
 
         names = get_names_from_files(files)
 
-        for file, name in zip(files, names):
-            x, y = np.genfromtxt(file, unpack=True)
-            self.spectra = np.append(self.spectra, h2o_processor(name, x, y))
+        for i, _ in enumerate(names):
+            occurences = names.count(names[i])
+            if occurences < 2:
+                continue
+            names[i] = f"{names[i]}_{occurences}"
+
+        new_settings = create_settings_df(names)
+        new_results = create_results_df(names)
 
         self.files = np.append(self.files, files)
         self.names = np.append(self.names, names)
 
-        new_settings = create_settings_df(names)
-        new_results = create_results_df(names)
+        for file, name in zip(files, names):
+            x, y = np.genfromtxt(file, unpack=True)
+            print(new_settings.loc[name].copy())
+            self.spectra = np.append(
+                self.spectra, h2o_processor(name, x, y, new_settings.loc[name].copy())
+            )
 
         if self.settings is None:
             self.settings = new_settings
@@ -66,10 +79,7 @@ class Sample_handler:
             self.results = pd.concat([self.results, new_results], axis=0)
 
     def retrieve_sample(self, index: int) -> h2o_processor:
-        sample = self.spectra[index]
-        sample.settings = self.settings.loc[sample.name].copy()
-
-        return sample
+        return self.spectra[index]
 
     def save_current_sample(self) -> None:
 
@@ -107,18 +117,12 @@ class Sample_handler:
 
 def create_settings_df(names: List) -> pd.DataFrame:
 
-    settings_df = pd.DataFrame(
-        np.nan, index=names, columns=settings.process.index, dtype=object
-    )
+    birs, interpolate = settings.process
 
-    settings_df.loc[:, "birs"] = pd.concat(
-        [settings.process["birs"]] * settings_df.index.size, axis=1
-    ).T.values
-    settings_df.loc[:, "interpolate"] = pd.concat(
-        [settings.process["interpolate"]] * settings_df.index.size, axis=1
-    ).T.values
+    birs_df = pd.concat([birs.copy()] * len(names), axis=1).T
+    birs_df.index = names
 
-    return settings_df
+    return birs_df
 
 
 def create_results_df(names: List) -> pd.DataFrame:
@@ -128,13 +132,13 @@ def create_results_df(names: List) -> pd.DataFrame:
 
 def get_names_from_files(files: List) -> List:
     separator = settings.general["name_separator"]
-    names = tuple()
+    names = []
 
     for file in files:
         name = os.path.basename(file)
         if separator not in name:
-            names = names + tuple([name])
+            names.append(name)
         else:
-            names = names + tuple([name[: name.find(separator)]])
+            names.append(name[: name.index(separator)])
 
     return names

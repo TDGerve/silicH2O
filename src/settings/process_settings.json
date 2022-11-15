@@ -24,7 +24,7 @@
     "interpolate": {
         "use": false,
         "smoothing": 1,
-        "regions": [
+        "region": [
             [
                 780,
                 900
