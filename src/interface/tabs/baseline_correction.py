@@ -60,7 +60,7 @@ class Baseline_correction_frame(ttk.Frame):
 
     def make_settings_frame(self):
         baseline_label = ttk.Label(
-            text="Baseline interpolation regions", font=(_font, _fontsize + 5, "bold")
+            text="Baseline interpolation regions", font=(_font, _fontsize + 2, "bold")
         )
         frame = ttk.Labelframe(self, labelwidget=baseline_label, name="settings")
         frame.grid(row=0, column=2, sticky=("nesw"))
@@ -79,7 +79,7 @@ class Baseline_correction_frame(ttk.Frame):
             )
 
         for i in range(5):
-            label = ttk.Label(frame, text=f"{i + 1}", font=(_font, _fontsize))
+            label = ttk.Label(frame, text=f"{i + 1}. ", font=(_font, _fontsize))
             label.grid(row=i + 1, column=0, sticky=("nse"))
 
             for j in range(2):
