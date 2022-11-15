@@ -24,7 +24,7 @@ class Calculation_listener:
 
         bir_settings = self.sample_database.current_sample.construct_birs()
         bir_settings = np.concatenate(bir_settings)  # Flatten nested list
-        self.gui.update_variables(bir_settings=bir_settings)
+        self.gui.update_variables(birs=bir_settings)
 
         self.refresh_plots("sample change")
 
@@ -32,22 +32,14 @@ class Calculation_listener:
         self.sample_database.current_sample.change_settings(**kwargs)
         self.sample_database.current_sample.calculate()
 
+        # self.gui.update_variables(**kwargs)
+
         self.refresh_plots("settings change")
 
     def refresh_plots(self, *args):
-        (
-            sample_name,
-            x,
-            spectra,
-            baseline_spectrum,
-        ) = self.sample_database.current_sample.retrieve_plot_data()
-        self.on_plot_change.send(
-            "refresh plot",
-            sample_name=sample_name,
-            x=x,
-            spectra=spectra,
-            baseline_spectrum=baseline_spectrum,
-        )
+        plot_data = self.sample_database.current_sample.retrieve_plot_data()
+
+        self.on_plot_change.send("refresh plot", **plot_data)
 
     def subscribe_to_signals(self):
         self.on_sample_change.connect(self.switch_sample)

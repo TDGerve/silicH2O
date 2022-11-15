@@ -1,7 +1,7 @@
 import blinker as bl
 import numpy as np
 
-from typing import Dict
+from typing import Dict, List
 
 from ..interface.plots import Plot
 from ..interface import Main_window
@@ -24,10 +24,16 @@ class Plot_listener:
         sample_name: str,
         x: np.ndarray,
         spectra: Dict[str, np.ndarray],
-        baseline_spectrum: str
+        baseline_spectrum: str,
+        birs: List[int],
+        **kwargs
     ):
-        for plot in self.plots.values():
+        for name, plot in self.plots.items():
             plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
+            if name == "baseline_correction":
+
+                plot.plot_birs(birs)
+                print(birs)
 
     def draw_plots(self, *args):
         self.window.add_plots(self.plots)

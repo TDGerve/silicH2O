@@ -97,7 +97,7 @@ class Sample_navigation(ttk.Frame):
         if current < (total - 1):
             listbox.select_clear(current)
             self.select_sample(new)
-            self.change_sample(new)
+            self.change_sample([new])
 
     def previous_sample(self):
         listbox = self.nametowidget("sample_list")
@@ -108,7 +108,7 @@ class Sample_navigation(ttk.Frame):
         if current > 0:
             listbox.select_clear(current)
             self.select_sample(new)
-            self.change_sample(new)
+            self.change_sample([new])
 
     def change_sample(self, selection: Tuple[int]):
         if not selection:
