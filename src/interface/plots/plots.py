@@ -64,7 +64,9 @@ class Baseline_correction_plot(Double_plot):
         ):
             try:
                 current_bir = self.birs[i]
-                coordinates = construct_bir_coordinates(left_boundary, right_boundary)
+                coordinates = construct_polygon_coordinates(
+                    left_boundary, right_boundary
+                )
 
                 if np.array_equal(coordinates, current_bir.get_xy()):
                     continue
@@ -87,10 +89,10 @@ class Baseline_correction_plot(Double_plot):
 
     def connect_mouse_events(self):
         drag_ax1 = drag_polygons(
-            self.fig, ax=self.axs[0], polygons=self.birs[:5], drag_polygons=[1, 2]
+            ax=self.axs[0], polygons=self.birs[:5], drag_polygons=[1, 2]
         )
         drag_ax2 = drag_polygons(
-            self.fig, ax=self.axs[1], polygons=self.birs[5:], drag_polygons=[1, 2]
+            ax=self.axs[1], polygons=self.birs[5:], drag_polygons=[1, 2]
         )
         self.mouse_connections += [drag_ax1, drag_ax2]
 
@@ -106,25 +108,24 @@ class drag(Enum):
     BOTH = auto()
 
 
-def construct_bir_coordinates(xmin, xmax):
+def construct_polygon_coordinates(xmin, xmax):
     return np.array([[xmin, 0.0], [xmin, 1.0], [xmax, 1.0], [xmax, 0.0], [xmin, 0.0]])
 
 
 class drag_polygons:
     def __init__(
         self,
-        fig,
         ax,
         polygons: List[Polygon],
         drag_polygons: List[int],
     ):
-        # self.fig = fig
+
         self.ax = ax
         self.polygons = polygons
         self.drag_polygons = drag_polygons  # Drag these entire polygons, for al others only the left and right borders will be dragged
 
         self.dragging = None
-        self.bir_width = None
+        self.width = None
 
     def on_click(self, event):
         """
@@ -150,20 +151,20 @@ class drag_polygons:
         id = self.dragging
 
         if id[1] in [drag.LEFT, drag.BOTH]:
-            previous_bir = self.polygons[id[0] - 1]
-            x_coordinates = [c[0] for c in previous_bir.get_xy()]
+            previous_polygon = self.polygons[id[0] - 1]
+            x_coordinates = [c[0] for c in previous_polygon.get_xy()]
             x_min = max(x_coordinates) + buffer
             if id[1] == drag.LEFT:
-                current_bir = self.polygons[id[0]]
-                x_coordinates = [c[0] for c in current_bir.get_xy()]
+                current_polygon = self.polygons[id[0]]
+                x_coordinates = [c[0] for c in current_polygon.get_xy()]
                 x_max = max(x_coordinates) - buffer
         if id[1] in [drag.RIGHT, drag.BOTH]:
-            next_bir = self.polygons[id[0] + 1]
-            x_coordinates = [c[0] for c in next_bir.get_xy()]
+            next_polygon = self.polygons[id[0] + 1]
+            x_coordinates = [c[0] for c in next_polygon.get_xy()]
             x_max = min(x_coordinates) - buffer
             if id[1] == drag.RIGHT:
-                current_bir = self.polygons[id[0]]
-                x_coordinates = [c[0] for c in current_bir.get_xy()]
+                current_polygon = self.polygons[id[0]]
+                x_coordinates = [c[0] for c in current_polygon.get_xy()]
                 x_min = min(x_coordinates) + buffer
 
         if id == (0, drag.LEFT):
@@ -178,28 +179,29 @@ class drag_polygons:
             if id[1] == drag.LEFT:
 
                 x_right = max(x_coordinates)
-                new_coordinates = construct_bir_coordinates(int(x_new), int(x_right))
-                current_bir.set_xy(new_coordinates)
+                new_coordinates = construct_polygon_coordinates(
+                    int(x_new), int(x_right)
+                )
+                current_polygon.set_xy(new_coordinates)
             elif id[1] == drag.RIGHT:
                 x_left = min(x_coordinates)
-                new_coordinates = construct_bir_coordinates(int(x_left), int(x_new))
-                current_bir.set_xy(new_coordinates)
+                new_coordinates = construct_polygon_coordinates(int(x_left), int(x_new))
+                current_polygon.set_xy(new_coordinates)
         else:
-            current_bir = self.polygons[id[0]]
-            x_coordinates = [c[0] for c in current_bir.get_xy()]
-            half_width = self.bir_width / 2
+            current_polygon = self.polygons[id[0]]
+            x_coordinates = [c[0] for c in current_polygon.get_xy()]
+            half_width = self.width / 2
             x_left = np.clip(x_new - half_width, x_min, x_max)
             x_right = np.clip(x_left + half_width * 2, x_min, x_max)
-            new_coordinates = construct_bir_coordinates(int(x_left), int(x_right))
-            current_bir.set_xy(new_coordinates)
+            new_coordinates = construct_polygon_coordinates(int(x_left), int(x_right))
+            current_polygon.set_xy(new_coordinates)
 
         self.send_bir_change(id)
-        # self.fig.canvas.draw_idle()
 
     def on_release(self, event):
 
         self.dragging = None
-        self.bir_width = None
+        self.width = None
 
     def find_neighbor_object(self, event, distance_threshold=2):
         """
@@ -229,19 +231,9 @@ class drag_polygons:
             return
         current_bir = self.polygons[id[0]]
         x_coordinates = [c[0] for c in current_bir.get_xy()]
-        # if id[1] == drag.BOTH:
 
         new_from = min(x_coordinates)
         new_to = max(x_coordinates)
-        # new_settings = {str(id[0]): [new_from, new_to]}
         new_settings = {str(id[0] * 2): int(new_from), str(id[0] * 2 + 1): int(new_to)}
-        # elif id[1] == drag.LEFT:
-        #     new_from = min(x_coordinates)
-        #     # new_settings = {str(id[0]): [new_from, np.nan]}
-        #     new_settings = {str(id[0] *2): new_from}
-        # elif id[1] == drag.RIGHT:
-        #     new_to = max(x_coordinates)
-        #     # new_settings = {str(id[0]): [np.nan, new_to]}
-        #     new_settings = {str(id[0]*2+1):new_to}
 
         on_settings_change.send("plot input", birs=new_settings)
