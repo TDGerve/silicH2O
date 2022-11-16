@@ -39,8 +39,13 @@ class App_interface:
         for name, values in kwargs.items():
             if name not in self.variables.keys():
                 return
-            for variable, value in zip(self.variables[name], values):
-                variable.set(value)
+            if name == "birs":
+                for index, value in values.items():
+                    variable = self.variables["birs"][int(index)]
+                    variable.set(int(value))
+            else:
+                for variable, value in zip(self.variables[name], values):
+                    variable.set(value)
 
     def activate_widgets(self) -> None:
         for widgets in self.widgets.values():

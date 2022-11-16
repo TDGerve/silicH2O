@@ -32,6 +32,7 @@ class Double_plot:
 
         for ax in self.axs:
             ax.set_yticks([])
+            ax.set_ylim(0, 1e-2)
 
     def setup_ax1(self, title: str, limits: Tuple[int, int]):
 
@@ -48,25 +49,24 @@ class Double_plot:
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
     ):
+        colors = self.colors.by_key()["color"]
 
         for ax, lines in zip(self.axs, self.lines.values()):
-
-            colors = self.colors.by_key()["color"]
 
             xmin, xmax = ax.get_xlim()
             ymax = []
             for (name, spectrum), color in zip(spectra.items(), colors):
+                ymax.append(spectrum[(xmin < x) & (x < xmax)].max())
                 try:
                     if np.array_equal(lines[name][0].get_ydata(), spectrum):
-
                         continue
+
                     lines[name][0].set_xdata(x)
                     lines[name][0].set_ydata(spectrum)
                 except KeyError:
                     lines[name] = ax.plot(x, spectrum, label=name, color=color)
-                ymax.append(spectrum[(xmin < x) & (x < xmax)].max())
-            if ymax:
-                ymax = max(ymax) * 1.1
-                ax.set_ylim(0, ymax)
+
+            ymax = max(ymax) * 1.1
+            ax.set_ylim(0, ymax)
 
         self.fig.canvas.draw_idle()

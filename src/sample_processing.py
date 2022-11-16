@@ -54,11 +54,11 @@ class h2o_processor:
         self.data.interpolate(interpolate=region, smooth_factor=smoothing)
 
     def set_birs(self, **kwargs) -> None:
-        for bir, new_values in kwargs.items():
+        for bir, new_value in kwargs.items():
             index = int(bir)
-            old_values = self.settings.loc[index]
-            new_values = np.where(np.isnan(new_values), old_values, new_values)
-            self.settings.loc[index] = new_values
+            # old_values = self.settings.loc[index]
+            # new_values = np.where(np.isnan(new_values), old_values, new_values)
+            self.settings.iloc[index] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
         for key, value in kwargs.items():

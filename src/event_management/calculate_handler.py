@@ -25,6 +25,7 @@ class Calculation_listener:
 
         bir_settings = self.sample_database.current_sample.birs
         bir_settings = np.concatenate(bir_settings)  # Flatten nested list
+        bir_settings = {i: value for i, value in enumerate(bir_settings)}
 
         self.gui.update_variables(birs=bir_settings)
         # Recalculate current sample
@@ -36,7 +37,7 @@ class Calculation_listener:
         self.sample_database.current_sample.change_settings(**kwargs)
         self.sample_database.current_sample.calculate()
 
-        # self.gui.update_variables(**kwargs)
+        self.gui.update_variables(**kwargs)
         self.refresh_plots()
 
     def refresh_plots(self, *args):

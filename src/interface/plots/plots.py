@@ -65,9 +65,12 @@ class Baseline_correction_plot(Double_plot):
             try:
                 current_bir = self.birs[i]
                 coordinates = construct_bir_coordinates(left_boundary, right_boundary)
+
                 if np.array_equal(coordinates, current_bir.get_xy()):
                     continue
+
                 current_bir.set_xy(coordinates)  # Replace old bir
+
             except IndexError:
                 self.birs.append(
                     ax.axvspan(
@@ -79,8 +82,6 @@ class Baseline_correction_plot(Double_plot):
                     )
                 )
 
-        # self.birs = bir_plots
-        # self.fig.canvas.draw_idle()
         if connect_mouse:
             self.connect_mouse_events()
 
@@ -117,12 +118,13 @@ class drag_polygons:
         polygons: List[Polygon],
         drag_polygons: List[int],
     ):
-        self.fig = fig
+        # self.fig = fig
         self.ax = ax
         self.polygons = polygons
         self.drag_polygons = drag_polygons  # Drag these entire polygons, for al others only the left and right borders will be dragged
 
         self.dragging = None
+        self.bir_width = None
 
     def on_click(self, event):
         """
@@ -143,7 +145,7 @@ class drag_polygons:
         if not self.dragging:
             return
 
-        buffer = 10
+        buffer = 5
         x_new = event.xdata
         id = self.dragging
 
@@ -185,25 +187,26 @@ class drag_polygons:
         else:
             current_bir = self.polygons[id[0]]
             x_coordinates = [c[0] for c in current_bir.get_xy()]
-            half_width = (max(x_coordinates) - min(x_coordinates)) / 2
+            half_width = self.bir_width / 2
             x_left = np.clip(x_new - half_width, x_min, x_max)
-            x_right = np.clip(x_new + half_width, x_min, x_max)
+            x_right = np.clip(x_left + half_width * 2, x_min, x_max)
             new_coordinates = construct_bir_coordinates(int(x_left), int(x_right))
             current_bir.set_xy(new_coordinates)
 
         self.send_bir_change(id)
-        self.fig.canvas.draw_idle()
+        # self.fig.canvas.draw_idle()
 
     def on_release(self, event):
 
         self.dragging = None
+        self.bir_width = None
 
-    def find_neighbor_object(self, event):
+    def find_neighbor_object(self, event, distance_threshold=2):
         """
         Find lines around mouse position
         """
         drag_options = [drag.LEFT, drag.RIGHT]
-        distance_threshold = 5
+
         object_id = None
         for i, polygon in enumerate(self.polygons):
             x_coordinates = [c[0] for c in polygon.get_xy()]
@@ -212,6 +215,7 @@ class drag_polygons:
             if i in self.drag_polygons:
                 if xmin < event.xdata < xmax:
                     object_id = (i, drag.BOTH)
+                    self.bir_width = xmax - xmin
 
             else:
                 for j, x in enumerate([xmin, xmax]):
@@ -225,16 +229,19 @@ class drag_polygons:
             return
         current_bir = self.polygons[id[0]]
         x_coordinates = [c[0] for c in current_bir.get_xy()]
-        if id[1] == drag.BOTH:
+        # if id[1] == drag.BOTH:
 
-            new_from = min(x_coordinates)
-            new_to = max(x_coordinates)
-            new_settings = {str(id[0]): [new_from, new_to]}
-        elif id[1] == drag.LEFT:
-            new_from = min(x_coordinates)
-            new_settings = {str(id[0]): [new_from, np.nan]}
-        elif id[1] == drag.RIGHT:
-            new_to = max(x_coordinates)
-            new_settings = {str(id[0]): [np.nan, new_to]}
+        new_from = min(x_coordinates)
+        new_to = max(x_coordinates)
+        # new_settings = {str(id[0]): [new_from, new_to]}
+        new_settings = {str(id[0] * 2): int(new_from), str(id[0] * 2 + 1): int(new_to)}
+        # elif id[1] == drag.LEFT:
+        #     new_from = min(x_coordinates)
+        #     # new_settings = {str(id[0]): [new_from, np.nan]}
+        #     new_settings = {str(id[0] *2): new_from}
+        # elif id[1] == drag.RIGHT:
+        #     new_to = max(x_coordinates)
+        #     # new_settings = {str(id[0]): [np.nan, new_to]}
+        #     new_settings = {str(id[0]*2+1):new_to}
 
         on_settings_change.send("plot input", birs=new_settings)

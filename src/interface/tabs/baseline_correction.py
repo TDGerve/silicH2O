@@ -134,22 +134,23 @@ class Baseline_correction_frame(ttk.Frame):
 
         return partial(invalid_input, variable=variable)(old_value)
 
-    def get_bir_range(self, index: int):
+    def get_bir_range(self, index: int, buffer=10):
         if index == 0:
             lower_boundary = 000
         else:
-            lower_boundary = int(self.bir_variables[index - 1].get()) + 20
+            lower_boundary = int(self.bir_variables[index - 1].get()) + buffer
 
         try:
-            upper_boundary = int(self.bir_variables[index + 1].get()) - 20
+            upper_boundary = int(self.bir_variables[index + 1].get()) - buffer
         except (ValueError, IndexError):
             upper_boundary = 4000
 
         return lower_boundary, upper_boundary
 
     def change_bir(self, *args, index, **kwargs):
-        new_values = [np.nan, np.nan]
-        bir = str(index // 2)
-        new_values[index % 2] = int(self.bir_variables[index].get())
+        # new_values = [np.nan, np.nan]
+        # bir = str(index // 2)
+        # new_values[index % 2] = int(self.bir_variables[index].get())
+        new_value = int(self.bir_variables[index].get())
 
-        on_settings_change.send("bir change", birs={bir: new_values})
+        on_settings_change.send("bir change", birs={str(index): new_value})
