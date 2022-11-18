@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 
-import os, ast
-from typing import List, Protocol, Tuple, Dict
+from typing import List, Protocol, Dict
 import blinker as bl
 
 import ramCOH as ram
@@ -35,15 +34,18 @@ class h2o_processor:
 
     @property
     def birs(self) -> List[List[int]]:
-        return [list(bir[1]) for bir in self.settings.groupby(level=0)]
+        # birs = [list(bir[1]) for bir in self.settings.groupby(level=0)]
+        birs = self.settings.copy()
+        birs.index = range(len(birs))
+        return dict(birs)
 
-    def calculate(self) -> None:
+    # def calculate(self) -> None:
 
-        self.calculate_interpolation()
-        self.data.baselineCorrect(baseline_regions=self.birs)
-        self.data.calculate_SiH2Oareas()
-        self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
-        self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
+    #     self.calculate_interpolation()
+    #     self.data.baselineCorrect(baseline_regions=self.birs)
+    #     self.data.calculate_SiH2Oareas()
+    #     self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
+    #     self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
 
     def calculate_interpolation(self):
 
@@ -56,21 +58,19 @@ class h2o_processor:
     def set_birs(self, **kwargs) -> None:
         for bir, new_value in kwargs.items():
             index = int(bir)
-            # old_values = self.settings.loc[index]
-            # new_values = np.where(np.isnan(new_values), old_values, new_values)
             self.settings.iloc[index] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
         for key, value in kwargs.items():
             self.settings[("interpolate", key)] = value
 
-    def change_settings(self, birs: dict = None, interpolate: dict = None) -> None:
-        if birs is not None:
+    # def change_settings(self, birs: dict = None, interpolate: dict = None) -> None:
+    #     if birs is not None:
 
-            self.set_birs(**birs)
-        if interpolate is None:
-            return
-        self.set_interpolation(interpolate)
+    #         self.set_birs(**birs)
+    #     if interpolate is None:
+    #         return
+    #     self.set_interpolation(interpolate)
 
     def retrieve_plot_data(self) -> Dict[str, any]:
         """

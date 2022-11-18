@@ -1,7 +1,7 @@
 import blinker as bl
 import tkinter as tk
 
-from ..sample_handlers import Sample_handler
+from ..sample_controller import Sample_controller
 from ..interface import Gui, GUI_state
 
 from typing import List
@@ -12,23 +12,23 @@ class Database_listener:
     on_samples_added = bl.signal("samples added")
     on_samples_removed = bl.signal("samples removed")
 
-    def __init__(self, sample_handler: Sample_handler, gui: Gui):
-        self.sample_handler = sample_handler
+    def __init__(self, sample_controller: Sample_controller, gui: Gui):
+        self.sample_controller = sample_controller
         self.gui = gui
 
         self.subscribe_to_signals()
 
     def remove_samples(self, *args, index: List[int]) -> None:
-        self.sample_handler.remove_samples(index)
+        self.sample_controller.remove_samples(index)
 
-        names = list(self.sample_handler.names)
+        names = list(self.sample_controller.names)
         self.gui.update_variables(sample_navigation=[names])
 
     def add_samples(self, *args, files: List[str]) -> None:
 
-        self.sample_handler.read_files(files)
+        self.sample_controller.read_files(files)
 
-        names = list(self.sample_handler.names)
+        names = list(self.sample_controller.names)
         self.gui.update_variables(sample_navigation=[names])
 
         if self.gui.state == GUI_state.DISABLED:

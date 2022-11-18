@@ -59,6 +59,8 @@ class Baseline_correction_plot(Double_plot):
         else:
             connect_mouse = False
 
+        birs = np.reshape(list(birs.values()), (5, 2))
+
         for i, (ax, (left_boundary, right_boundary)) in enumerate(
             product(self.axs, birs)
         ):

@@ -9,7 +9,7 @@ from . import settings
 from .sample_processing import h2o_processor
 
 
-class Sample_handler:
+class Sample_controller:
     def __init__(self):
         self.files: np.ndarray[str] = np.array([], dtype=str)
         self.names: np.ndarray[str] = np.array([], dtype=str)
@@ -62,7 +62,6 @@ class Sample_handler:
 
         for file, name in zip(files, names):
             x, y = np.genfromtxt(file, unpack=True)
-            print(new_settings.loc[name].copy())
             self.spectra = np.append(
                 self.spectra, h2o_processor(name, x, y, new_settings.loc[name].copy())
             )
@@ -81,7 +80,34 @@ class Sample_handler:
     def retrieve_sample(self, index: int) -> h2o_processor:
         return self.spectra[index]
 
-    def save_current_sample(self) -> None:
+    def calculate_sample(self):
+        sample = self.current_sample
+
+        sample.calculate_interpolation()
+        birs = np.reshape(list(sample.birs.values()), (5, 2))
+        sample.data.baselineCorrect(baseline_regions=birs)
+
+        sample.data.calculate_SiH2Oareas()
+        sample.results[["SiArea", "H2Oarea"]] = sample.data.SiH2Oareas
+        sample.results["rWS"] = sample.results["H2Oarea"] / sample.results["SiArea"]
+
+        return sample.results["rWS"]
+
+    def change_sample_settings(
+        self, birs: dict = None, interpolate: dict = None
+    ) -> None:
+        sample = self.current_sample
+        if birs is not None:
+
+            sample.set_birs(**birs)
+        if interpolate is None:
+            return
+        sample.set_interpolation(interpolate)
+
+    def get_sample_settings(self):
+        return self.current_sample.retrieve_plot_data
+
+    def save_sample(self) -> None:
 
         self.settings.loc[
             self.current_sample.name
@@ -89,7 +115,7 @@ class Sample_handler:
 
         self.results.loc[self.current_sample.name] = self.current_sample.results.copy()
 
-    def restore_current_sample(self) -> None:
+    def restore_sample(self) -> None:
 
         self.current_sample.settings = self.settings.loc[
             self.current_sample.name
