@@ -5,22 +5,11 @@ import pathlib
 from typing import Dict
 
 from .sample_navigation import Sample_navigation
-
 from .menus import io_menu
 from .tabs import Baseline_correction_frame
 from .screens import Computer_screen
 
 from .. import settings
-
-
-# Move all constants and settings outside the code
-
-# Don't store widgets in variables, but give them names and call them from their parent, see:
-# https://stackoverflow.com/questions/71902896/tkinter-access-specifc-widgets-created-with-for-loop/71906287#71906287
-
-# Set up draw methods to create the GUI, instead of doing it inside the initialiser
-
-# Separate all GUI code from datamanagement and calculations
 
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"

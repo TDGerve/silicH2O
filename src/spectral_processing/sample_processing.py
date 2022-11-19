@@ -3,7 +3,6 @@ import numpy as np
 
 from typing import List, Protocol, Dict
 
-
 import ramCOH as ram
 
 from .. import settings

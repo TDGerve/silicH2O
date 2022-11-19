@@ -6,23 +6,6 @@ from .event_management import Calculation_listener, Database_listener, Plot_list
 from .interface import App_interface
 
 
-"""
-Decouple by with an event manager:
-
-Blinker:
-https://blinker.readthedocs.io/en/stable/#decoupling-with-named-signals
-
-Pymitter:
-https://github.com/riga/pymitter
-
-Pydispatcher:
-https://mcfletch.github.io/pydispatcher/
-
-https://stackoverflow.com/questions/1092531/which-python-packages-offer-a-stand-alone-event-system
-
-"""
-
-
 class Raman_app:
     def __init__(self, title):
 
