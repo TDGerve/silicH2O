@@ -19,15 +19,9 @@ class App_interface:
         self.variables: Dict[str, any] = {}
         self.widgets: Dict[str, any] = {}
         # rRot
-        self.main_window: tk.Tk = Main_window(title=title)
-        # Root frames
-        self.main_window.create_navigation_frame(self.variables, self.widgets)
-
-        # Tabs
-        self.main_window.populate_tabs(self.variables, self.widgets)
-
-        # Menus
-        self.main_window.create_menus()
+        self.window: tk.Tk = Main_window(
+            title=title, variables=self.variables, widgets=self.widgets
+        )
 
         self.create_plots()
 
@@ -58,21 +52,17 @@ class App_interface:
                         i.configure(state=tk.NORMAL)
 
     def create_plots(self):
-        self.plots["baseline_correction"] = Baseline_correction_plot(
-            self.main_window.screen
-        )
+        self.plots["baseline_correction"] = Baseline_correction_plot(self.window.screen)
         self.add_plots()
 
     def add_plots(self):
 
         for name, plot in self.plots.items():
-            frame = self.main_window.tabs.nametowidget(name)
+            frame = self.window.tabs.nametowidget(name)
             self.set_plot_background_color(plot)
             frame.draw_plot(plot)
 
     def set_plot_background_color(self, plot: Plot):
         # calculate background color to something matplotlib understands
-        background_color = tuple(
-            (c / 2**16 for c in self.main_window.background_color)
-        )
+        background_color = tuple((c / 2**16 for c in self.window.background_color))
         plot.fig.patch.set_facecolor(background_color)

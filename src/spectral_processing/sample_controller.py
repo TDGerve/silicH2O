@@ -124,7 +124,12 @@ class Sample_controller:
         sample.set_interpolation(interpolate)
 
     def get_sample_settings(self):
-        return self.current_sample.settings
+        birs = self.current_sample.get_birs()
+        results = list(self.current_sample.results.values)
+        results[:2] = [int(i) for i in results[:2]]
+        results[2] = round(results[2], 2)
+
+        return birs, results
 
     def get_sample_plotdata(self):
         sample = self.current_sample

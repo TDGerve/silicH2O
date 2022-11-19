@@ -14,9 +14,12 @@ from .. import settings
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
 
+_font = settings.gui["font"]["family"]
+_fontsize = settings.gui["font"]["size"]
+
 
 class Main_window(tk.Tk):
-    def __init__(self, title: str):
+    def __init__(self, title: str, variables: Dict[str, any], widgets: Dict[str, any]):
 
         super().__init__()
         self.screen = self.get_screen_info()
@@ -27,13 +30,22 @@ class Main_window(tk.Tk):
         self.set_geometry()
 
         self.create_main_frame()
+        self.create_navigation_frame(variables, widgets)
         self.create_tabs()
+
+        self.populate_tabs(variables, widgets)
+
+        self.create_menus()
 
     def set_theme(self):
         self.style = ttk.Style()
         self.tk.call("source", _theme_file)
         self.style.theme_use(settings.gui["theme"])
-        self.style.configure(".", settings.gui["font"]["family"])
+        self.style.configure(".", _font)
+
+        self.style.configure(
+            "TNotebook.Tab", font=(_font, _fontsize, "bold"), padding=[1, 2]
+        )
 
         self.background_color = self.style.lookup(settings.gui["theme"], "background")
         self.background_color = self.winfo_rgb(self.background_color)
@@ -98,17 +110,8 @@ class Main_window(tk.Tk):
             tabs, name="baseline_correction", variables=variables, widgets=widgets
         )
         baseline_correction.grid(column=0, row=0, sticky=("nesw"))
-        tabs.add(baseline_correction, text="Baseline correction")
 
-    def refresh_plots(self):
-        # update = {
-        # "Baseline correction": self.water_calc.update_plot,
-        # "Interpolation": self.interpolation.update_plot,
-        # "Host correction": self.subtract.update_plot,
-        # }
-        # current_tab = self.tabs.tab(self.tabs.select(), "text")
-        # update[current_tab]()
-        pass
+        tabs.add(baseline_correction, text="Baseline correction")
 
     def on_tab_change(self):
         """
@@ -127,20 +130,3 @@ class Main_window(tk.Tk):
         #     # selected_sample = self.current_sample.index
         #     update[tab]()
         pass
-
-
-# # Grab some theme elements, for passing on to widgets
-# self.font = style.lookup(theme, "font")
-# self.fontsize = 13
-# self.bgClr = style.lookup(theme, "background")
-# # calculate background color to something matplotlib understands
-# self.bgClr_plt = tuple((c / 2**16 for c in root.winfo_rgb(self.bgClr)))
-
-# ##### INITIALISE VARIABLES #####
-# self.data_bulk = None
-# self.current_sample = None
-
-# ##### INITIATE SETTINGS #####
-# self.settings = settings(root, self)
-
-# # Create tabs inside the main frame

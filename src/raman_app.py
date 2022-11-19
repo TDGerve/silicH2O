@@ -18,8 +18,8 @@ class Raman_app:
 
     def run(self) -> None:
         # Make sure the matplotlib backend also closes
-        self.gui.main_window.protocol("WM_DELETE_WINDOW", sys.exit)
-        self.gui.main_window.mainloop()
+        self.gui.window.protocol("WM_DELETE_WINDOW", sys.exit)
+        self.gui.window.mainloop()
 
 
 def run_raman_app():
