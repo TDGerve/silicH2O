@@ -1,7 +1,6 @@
 import blinker as bl
-import numpy as np
 
-from ..sample_controller import Sample_controller
+from ..spectral_processing import Sample_controller
 from ..interface import Gui
 
 

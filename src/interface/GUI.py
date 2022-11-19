@@ -1,12 +1,11 @@
 import tkinter as tk
 
-from typing import Dict, Protocol
+from typing import Dict
 import blinker as bl
-import numpy as np
 
 from .main_window import Main_window
 from .GUIs import GUI_state
-from .plots import Plot, Baseline_correction_plot
+from ..plots import Plot, Baseline_correction_plot
 
 on_plots_initialised = bl.signal("plots initialised")
 

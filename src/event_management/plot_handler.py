@@ -3,8 +3,7 @@ import numpy as np
 
 from typing import Dict, List
 
-from ..interface.plots import Plot
-from ..interface import Main_window
+from ..plots import Plot
 
 
 class Plot_listener:

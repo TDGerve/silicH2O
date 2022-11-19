@@ -1,15 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
 
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 import blinker as bl
-import numpy as np
-from typing import Union, List, Tuple
 from functools import partial
 
-from ..plots import Plot, vertical_toolbar
+from ..vertical_toolbar import vertical_toolbar
+from ...plots import Plot
 from ..validate_input import validate_numerical_input, invalid_input
 
 
@@ -28,8 +26,8 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.canvas = None
 
-        self.bir_variables = []  # MAKE THIS INTO A FLAT LIST, INSTEAD OF A NESTED LIST
-        self.bir_widgets = []  # SAMPLE HERE
+        self.bir_variables = []
+        self.bir_widgets = []
         variables["birs"] = self.bir_variables
         widgets["birs"] = self.bir_widgets
 

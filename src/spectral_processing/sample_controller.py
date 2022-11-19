@@ -2,10 +2,10 @@ import os
 import numpy as np
 import pandas as pd
 
-from typing import List, Optional, Tuple, Dict
+from typing import List, Optional
 import warnings as w
 
-from . import settings
+from .. import settings
 from .sample_processing import h2o_processor
 
 

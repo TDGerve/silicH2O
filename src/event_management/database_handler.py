@@ -1,7 +1,7 @@
 import blinker as bl
 import tkinter as tk
 
-from ..sample_controller import Sample_controller
+from ..spectral_processing import Sample_controller
 from ..interface import Gui, GUI_state
 
 from typing import List

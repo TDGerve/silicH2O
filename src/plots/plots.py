@@ -1,13 +1,23 @@
-from typing import Dict
 import matplotlib.pyplot as plt
 import numpy as np
 
-from typing import Tuple, Union
+from typing import Tuple, Protocol, Dict
 
 from . import plot_layout as pl
-from ..screens import Screen
+from ..interface.screens import Screen
 
-from ... import settings
+from .. import settings
+
+
+class Plot(Protocol):
+    def update(self):
+        ...
+
+    def plot_lines(self):
+        ...
+
+    def plot_birs(self):
+        ...
 
 
 class Double_plot:

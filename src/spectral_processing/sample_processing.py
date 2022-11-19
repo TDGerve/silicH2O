@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 
 from typing import List, Protocol, Dict
-import blinker as bl
+
 
 import ramCOH as ram
 
-from . import settings
+from .. import settings
 
 
 class Sample_proccessor(Protocol):

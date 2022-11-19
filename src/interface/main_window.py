@@ -1,14 +1,13 @@
 from tkinter import ttk
 import tkinter as tk
 
-import pathlib, sys
-from typing import List, Dict, Tuple
+import pathlib
+from typing import Dict
 
 from .sample_navigation import Sample_navigation
 
 from .menus import io_menu
 from .tabs import Baseline_correction_frame
-from .plots import Plot
 from .screens import Computer_screen
 
 from .. import settings
