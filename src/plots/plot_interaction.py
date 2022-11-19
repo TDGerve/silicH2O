@@ -50,7 +50,7 @@ class drag_polygons:
 
         """
 
-        if not self.dragging:
+        if not self.dragging or not event.xdata:
             return
 
         buffer = 5

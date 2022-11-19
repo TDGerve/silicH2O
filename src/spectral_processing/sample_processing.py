@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from typing import List, Protocol, Dict
+from typing import List, Protocol, Dict, Any
 
 import ramCOH as ram
 
@@ -33,7 +33,7 @@ class h2o_processor:
         )
         self.data = ram.H2O(x, y, laser=settings.general["laser_wavelength"])
 
-    def get_birs(self) -> List[List[int]]:
+    def get_birs(self) -> Dict[str, int]:
         # birs = [list(bir[1]) for bir in self.settings.groupby(level=0)]
         birs = self.baseline_regions
         birs.index = range(len(birs))
@@ -71,7 +71,7 @@ class h2o_processor:
     #         return
     #     self.set_interpolation(interpolate)
 
-    def get_plot_data(self) -> Dict[str, any]:
+    def get_plot_data(self) -> Dict[str, Any]:
         """
         Returns
         -------

@@ -7,7 +7,7 @@ import blinker as bl
 from functools import partial
 
 from ..vertical_toolbar import vertical_toolbar
-from ...plots import Plot
+from ...plots import Baseline_correction_plot
 from ..validate_input import validate_numerical_input, invalid_input
 
 
@@ -46,7 +46,7 @@ class Baseline_correction_frame(ttk.Frame):
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=3, pady=3)
 
-    def draw_plot(self, plot: Plot):
+    def draw_plot(self, plot: Baseline_correction_plot):
         fig = plot.fig
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.draw()
@@ -77,7 +77,7 @@ class Baseline_correction_frame(ttk.Frame):
             frame,
             text="Baseline interpolation regions",
             font=(_font, _fontsize + 2, "bold"),
-        ).grid(row=0, column=1, columnspan=2)
+        ).grid(row=0, column=0, columnspan=3, sticky=("nsw"))
 
         self.make_bir_widgets(frame)
 
@@ -157,9 +157,9 @@ class Baseline_correction_frame(ttk.Frame):
                 textvariable=var,
                 anchor="se",
                 background="white",
-                width=13,
+                width=10,
                 font=(_font, _fontsize),
-                padding=3,
+                padding=2,
                 relief="sunken",
                 borderwidth=1,
             )
@@ -188,7 +188,7 @@ class Baseline_correction_frame(ttk.Frame):
 
     def invalid_bir_input(self, old_value: str, index: int):
         old_value = old_value[: old_value.index(" ")]
-        variable = self.variables[index]
+        variable = self.bir_variables[index]
 
         return partial(invalid_input, variable=variable)(old_value)
 
@@ -203,7 +203,7 @@ class Baseline_correction_frame(ttk.Frame):
         except (ValueError, IndexError):
             upper_boundary = 4000
 
-        return lower_boundary, upper_boundary
+        return [lower_boundary, upper_boundary]
 
     def change_bir(self, *args, index, **kwargs):
 

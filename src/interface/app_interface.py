@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from typing import Dict
+from typing import Dict, Any
 import blinker as bl
 
 from .main_window import Main_window
@@ -15,9 +15,9 @@ class App_interface:
         self,
         title: str,
     ):
-        self.plots: Dict[Plot] = {}
-        self.variables: Dict[str, any] = {}
-        self.widgets: Dict[str, any] = {}
+        self.plots: Dict[str, Any] = {}
+        self.variables: Dict[str, Any] = {}
+        self.widgets: Dict[str, Any] = {}
         # rRot
         self.window: tk.Tk = Main_window(
             title=title, variables=self.variables, widgets=self.widgets

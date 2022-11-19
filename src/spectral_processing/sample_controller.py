@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from typing import List, Optional
+from typing import List, Optional, Dict
 import warnings as w
 
 from .. import settings
@@ -11,9 +11,9 @@ from .sample_processing import h2o_processor
 
 class Sample_controller:
     def __init__(self):
-        self.files: np.ndarray[str] = np.array([], dtype=str)
-        self.names: np.ndarray[str] = np.array([], dtype=str)
-        self.spectra: np.ndarray[h2o_processor] = np.array([], dtype=h2o_processor)
+        self.files: np.ndarray = np.array([], dtype=str)
+        self.names: np.ndarray = np.array([], dtype=str)
+        self.spectra: np.ndarray = np.array([], dtype=h2o_processor)
 
         self.settings: Optional[pd.DataFrame] = None
         self.baseline_regions: Optional[pd.DataFrame] = None
@@ -21,7 +21,7 @@ class Sample_controller:
 
         self.results: Optional[pd.DataFrame] = None
 
-        self._current_sample_index: Optional[str] = None
+        self._current_sample_index: Optional[int] = None
 
     @property
     def current_sample(self) -> h2o_processor:
@@ -113,7 +113,7 @@ class Sample_controller:
         return sample.results["rWS"]
 
     def change_sample_settings(
-        self, birs: dict = None, interpolate: dict = None
+        self, birs: Optional[Dict] = None, interpolate: Optional[Dict] = None
     ) -> None:
         sample = self.current_sample
         if birs is not None:

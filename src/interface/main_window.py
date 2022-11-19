@@ -2,7 +2,7 @@ from tkinter import ttk
 import tkinter as tk
 
 import pathlib
-from typing import Dict
+from typing import Dict, Any
 
 from .sample_navigation import Sample_navigation
 from .menus import io_menu
@@ -19,7 +19,7 @@ _fontsize = settings.gui["font"]["size"]
 
 
 class Main_window(tk.Tk):
-    def __init__(self, title: str, variables: Dict[str, any], widgets: Dict[str, any]):
+    def __init__(self, title: str, variables: Dict[str, Any], widgets: Dict[str, Any]):
 
         super().__init__()
         self.screen = self.get_screen_info()
@@ -66,7 +66,7 @@ class Main_window(tk.Tk):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
-    def get_screen_info(self) -> None:
+    def get_screen_info(self) -> Computer_screen:
 
         resolution = self.winfo_screenwidth(), self.winfo_screenheight()
         dpi = self.winfo_fpixels("1i")
@@ -102,7 +102,7 @@ class Main_window(tk.Tk):
         # trigger function on tab change
         self.tabs.bind("<<NotebookTabChanged>>", lambda event: self.on_tab_change)
 
-    def populate_tabs(self, variables: Dict[str, any], widgets: Dict[str, any]):
+    def populate_tabs(self, variables: Dict[str, Any], widgets: Dict[str, Any]):
         frame = self.nametowidget("main_frame")
         tabs = frame.nametowidget("tabs")
 

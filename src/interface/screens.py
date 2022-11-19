@@ -21,7 +21,7 @@ class Computer_screen:
         self.dpi = dpi * self.scaling
 
     @property
-    def resolution(self):
+    def resolution(self) -> Tuple[int, int]:
         return self._resolution_x, self._resolution_y
 
     def get_scaling(self):

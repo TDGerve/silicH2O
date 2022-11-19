@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import blinker as bl
-from typing import List, Tuple
+from typing import Tuple, Dict
 
 from .. import settings
 
@@ -12,7 +12,7 @@ on_samples_removed = bl.signal("samples removed")
 
 class Sample_navigation(ttk.Frame):
     def __init__(
-        self, parent: ttk.Frame, variables: dict, widgets: List, *args, **kwargs
+        self, parent: ttk.Frame, variables: Dict, widgets: Dict, *args, **kwargs
     ):
 
         super().__init__(parent, name="sample_navigation", *args, **kwargs)
@@ -32,7 +32,7 @@ class Sample_navigation(ttk.Frame):
             self.columnconfigure(c, weight=1)
 
     def make_listbox(self):
-        var = tk.StringVar([])
+        var = tk.StringVar()
         self.variables.append(var)
         listbox = tk.Listbox(
             self,
@@ -97,7 +97,7 @@ class Sample_navigation(ttk.Frame):
         if current < (total - 1):
             listbox.select_clear(current)
             self.select_sample(new)
-            self.change_sample([new])
+            self.change_sample((new,))
 
     def previous_sample(self):
         listbox = self.nametowidget("sample_list")
@@ -108,7 +108,7 @@ class Sample_navigation(ttk.Frame):
         if current > 0:
             listbox.select_clear(current)
             self.select_sample(new)
-            self.change_sample([new])
+            self.change_sample((new,))
 
     def change_sample(self, selection: Tuple[int]):
         if not selection:
