@@ -134,7 +134,7 @@ class Baseline_correction_frame(ttk.Frame):
 
         return partial(invalid_input, variable=variable)(old_value)
 
-    def get_bir_range(self, index: int, buffer=10):
+    def get_bir_range(self, index: int, buffer=5):
         if index == 0:
             lower_boundary = 0
         else:

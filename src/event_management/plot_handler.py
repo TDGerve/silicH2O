@@ -12,9 +12,8 @@ class Plot_listener:
     on_plot_change = bl.signal("refresh plot")
     on_plots_initialised = bl.signal("plots initialised")
 
-    def __init__(self, window: Main_window, plots: Dict[str, Plot]):
+    def __init__(self, plots: Dict[str, Plot]):
         self.plots = plots
-        self.window = window
 
         self.subscribe_to_signals()
 
@@ -35,10 +34,5 @@ class Plot_listener:
 
                 plot.plot_birs(birs)
 
-    def draw_canvas(self, *args):
-
-        self.window.add_plots(self.plots)
-
     def subscribe_to_signals(self):
         self.on_plot_change.connect(self.plot_sample)
-        self.on_plots_initialised.connect(self.draw_canvas)

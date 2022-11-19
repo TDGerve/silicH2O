@@ -112,17 +112,6 @@ class Main_window(tk.Tk):
         baseline_correction.grid(column=0, row=0, sticky=("nesw"))
         tabs.add(baseline_correction, text="Baseline correction")
 
-    def add_plots(self, plots):
-        for name, plot in plots.items():
-            frame = self.tabs.nametowidget(name)
-            self.set_plot_background_color(plot)
-            frame.draw_plot(plot)
-
-    def set_plot_background_color(self, plot: Plot):
-        # calculate background color to something matplotlib understands
-        background_color = tuple((c / 2**16 for c in self.background_color))
-        plot.fig.patch.set_facecolor(background_color)
-
     def refresh_plots(self):
         # update = {
         # "Baseline correction": self.water_calc.update_plot,

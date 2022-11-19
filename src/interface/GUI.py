@@ -30,6 +30,8 @@ class App_interface:
         # Menus
         self.main_window.create_menus()
 
+        self.create_plots()
+
         self.state = GUI_state.DISABLED
 
     def set_state(self, state: GUI_state) -> None:
@@ -60,4 +62,18 @@ class App_interface:
         self.plots["baseline_correction"] = Baseline_correction_plot(
             self.main_window.screen
         )
-        on_plots_initialised.send("plots created")
+        self.add_plots()
+
+    def add_plots(self):
+
+        for name, plot in self.plots.items():
+            frame = self.main_window.tabs.nametowidget(name)
+            self.set_plot_background_color(plot)
+            frame.draw_plot(plot)
+
+    def set_plot_background_color(self, plot: Plot):
+        # calculate background color to something matplotlib understands
+        background_color = tuple(
+            (c / 2**16 for c in self.main_window.background_color)
+        )
+        plot.fig.patch.set_facecolor(background_color)

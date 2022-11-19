@@ -192,6 +192,7 @@ class drag_polygons:
         else:
             current_polygon = self.polygons[id[0]]
             x_coordinates = [c[0] for c in current_polygon.get_xy()]
+
             half_width = self.width / 2
             x_left = np.clip(x_new - half_width, x_min, x_max)
             x_right = np.clip(x_left + half_width * 2, x_min, x_max)
@@ -205,7 +206,7 @@ class drag_polygons:
         self.dragging = None
         self.width = None
 
-    def find_neighbor_object(self, event, distance_threshold=2):
+    def find_neighbor_object(self, event, distance_threshold=3):
         """
         Find lines around mouse position
         """
@@ -219,7 +220,7 @@ class drag_polygons:
             if i in self.drag_polygons:
                 if xmin < event.xdata < xmax:
                     object_id = (i, drag.BOTH)
-                    self.bir_width = xmax - xmin
+                    self.width = xmax - xmin
 
             else:
                 for j, x in enumerate([xmin, xmax]):

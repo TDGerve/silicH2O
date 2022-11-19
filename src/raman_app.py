@@ -31,9 +31,7 @@ class Raman_app:
 
         self.calulcation_listener = Calculation_listener(self.samples, self.gui)
         self.database_listener = Database_listener(self.samples, self.gui)
-        self.plot_listener = Plot_listener(self.gui.main_window, self.gui.plots)
-
-        self.gui.create_plots()
+        self.plot_listener = Plot_listener(self.gui.plots)
 
     def run(self) -> None:
         # Make sure the matplotlib backend also closes

@@ -23,7 +23,7 @@ class Calculation_listener:
         self.sample_controller.current_sample_index = index
         # Update GUI variables
 
-        bir_settings = self.sample_controller.current_sample.birs
+        bir_settings = self.sample_controller.current_sample.get_birs()
 
         self.gui.update_variables(birs=bir_settings)
         # Recalculate current sample
@@ -39,7 +39,7 @@ class Calculation_listener:
         self.refresh_plots()
 
     def refresh_plots(self, *args):
-        plot_data = self.sample_controller.current_sample.retrieve_plot_data()
+        plot_data = self.sample_controller.get_sample_plotdata()
 
         self.on_plot_change.send("refresh plot", **plot_data)
 

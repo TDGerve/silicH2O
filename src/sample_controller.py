@@ -16,13 +16,16 @@ class Sample_controller:
         self.spectra: np.ndarray[h2o_processor] = np.array([], dtype=h2o_processor)
 
         self.settings: Optional[pd.DataFrame] = None
+        self.baseline_regions: Optional[pd.DataFrame] = None
+        self.interpolation_regions: Optional[pd.DataFrame] = None
+
         self.results: Optional[pd.DataFrame] = None
 
         self._current_sample_index: Optional[str] = None
 
     @property
     def current_sample(self) -> h2o_processor:
-        return self.retrieve_sample(self._current_sample_index)
+        return self.get_sample(self._current_sample_index)
 
     @current_sample.setter
     def current_sample(self) -> None:
@@ -39,7 +42,7 @@ class Sample_controller:
             raise ValueError(f"Index outside range (0,{idx_max}): {index}")
 
         self._current_sample_index = index
-        # Retrieve the saved settings
+        # get the saved settings
         self.current_sample.settings = self.settings.loc[
             self.current_sample.name
         ].copy()
@@ -54,7 +57,7 @@ class Sample_controller:
                 continue
             names[i] = f"{names[i]}_{occurences}"
 
-        new_settings = create_settings_df(names)
+        new_settings, new_birs, new_interpolation_regions = get_settings(names)
         new_results = create_results_df(names)
 
         self.files = np.append(self.files, files)
@@ -63,11 +66,22 @@ class Sample_controller:
         for file, name in zip(files, names):
             x, y = np.genfromtxt(file, unpack=True)
             self.spectra = np.append(
-                self.spectra, h2o_processor(name, x, y, new_settings.loc[name].copy())
+                self.spectra,
+                h2o_processor(
+                    name,
+                    x,
+                    y,
+                    new_settings.loc[name].copy(),
+                    new_birs.loc[name].copy(),
+                    new_interpolation_regions.loc[name].copy(),
+                ),
             )
 
         if self.settings is None:
             self.settings = new_settings
+            self.baseline_regions = new_birs
+            self.interpolation_regions = new_interpolation_regions
+
             self.results = new_results
 
             self.current_sample_index = 0
@@ -75,16 +89,21 @@ class Sample_controller:
 
         else:
             self.settings = pd.concat([self.settings, new_settings], axis=0)
+            self.baseline_regions = pd.concat([self.settings, new_birs], axis=0)
+            self.interpolation_regions = pd.concat(
+                [self.settings, new_interpolation_regions], axis=0
+            )
+
             self.results = pd.concat([self.results, new_results], axis=0)
 
-    def retrieve_sample(self, index: int) -> h2o_processor:
+    def get_sample(self, index: int) -> h2o_processor:
         return self.spectra[index]
 
     def calculate_sample(self):
         sample = self.current_sample
 
         sample.calculate_interpolation()
-        birs = np.reshape(list(sample.birs.values()), (5, 2))
+        birs = np.reshape(list(sample.get_birs().values()), (5, 2))
         sample.data.baselineCorrect(baseline_regions=birs)
 
         sample.data.calculate_SiH2Oareas()
@@ -105,7 +124,11 @@ class Sample_controller:
         sample.set_interpolation(interpolate)
 
     def get_sample_settings(self):
-        return self.current_sample.retrieve_plot_data
+        return self.current_sample.settings
+
+    def get_sample_plotdata(self):
+        sample = self.current_sample
+        return sample.get_plot_data()
 
     def save_sample(self) -> None:
 
@@ -141,14 +164,28 @@ class Sample_controller:
             self.current_sample_index = 0
 
 
-def create_settings_df(names: List) -> pd.DataFrame:
+def get_settings(names: List) -> pd.DataFrame:
 
-    birs, interpolate = settings.process
+    baseline_correction, interpolation = settings.process
 
-    birs_df = pd.concat([birs.copy()] * len(names), axis=1).T
-    birs_df.index = names
+    birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
+    birs.index = names
 
-    return birs_df
+    interpolation_regions = pd.concat(
+        [interpolation["regions"].copy()] * len(names), axis=1
+    ).T
+    interpolation_regions.index = names
+
+    settings_df = pd.DataFrame(
+        {
+            "baseline_smoothing": baseline_correction["smoothing"],
+            "interpolation": interpolation["use"],
+            "interpolation_smoothing": interpolation["smoothing"],
+        },
+        index=names,
+    )
+
+    return settings_df, birs, interpolation_regions
 
 
 def create_results_df(names: List) -> pd.DataFrame:

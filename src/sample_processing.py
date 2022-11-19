@@ -23,19 +23,20 @@ class Sample_proccessor(Protocol):
 
 
 class h2o_processor:
-    def __init__(self, name, x, y, process_settings):
+    def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
         self.name = name
-        self.settings = process_settings.copy()
+        self.settings = sample_settings.copy()
+        self.baseline_regions = birs.copy()
+        self.interpolation_regions = interpolation_regions.copy()
 
         self.results = pd.Series(
             {data: np.nan for data in ["SiArea", "H2Oarea", "rWS"]}
         )
         self.data = ram.H2O(x, y, laser=settings.general["laser_wavelength"])
 
-    @property
-    def birs(self) -> List[List[int]]:
+    def get_birs(self) -> List[List[int]]:
         # birs = [list(bir[1]) for bir in self.settings.groupby(level=0)]
-        birs = self.settings.copy()
+        birs = self.baseline_regions
         birs.index = range(len(birs))
         return dict(birs)
 
@@ -58,11 +59,10 @@ class h2o_processor:
     def set_birs(self, **kwargs) -> None:
         for bir, new_value in kwargs.items():
             index = int(bir)
-            self.settings.iloc[index] = new_value
+            self.baseline_regions.iloc[index] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
-        for key, value in kwargs.items():
-            self.settings[("interpolate", key)] = value
+        pass
 
     # def change_settings(self, birs: dict = None, interpolate: dict = None) -> None:
     #     if birs is not None:
@@ -72,7 +72,7 @@ class h2o_processor:
     #         return
     #     self.set_interpolation(interpolate)
 
-    def retrieve_plot_data(self) -> Dict[str, any]:
+    def get_plot_data(self) -> Dict[str, any]:
         """
         Returns
         -------
@@ -90,5 +90,5 @@ class h2o_processor:
             "x": self.data.x,
             "spectra": self.data.signal.all,
             "baseline_spectrum": self.data._spectrumSelect,
-            "birs": self.birs,
+            "birs": self.get_birs(),
         }
