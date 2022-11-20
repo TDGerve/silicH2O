@@ -23,7 +23,9 @@ class Sample_proccessor(Protocol):
 
 class h2o_processor:
     def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
+
         self.name = name
+
         self.settings = sample_settings.copy()
         self.baseline_regions = birs.copy()
         self.interpolation_regions = interpolation_regions.copy()
@@ -34,42 +36,47 @@ class h2o_processor:
         self.data = ram.H2O(x, y, laser=settings.general["laser_wavelength"])
 
     def get_birs(self) -> Dict[str, int]:
-        # birs = [list(bir[1]) for bir in self.settings.groupby(level=0)]
+
         birs = self.baseline_regions
         birs.index = range(len(birs))
         return dict(birs)
 
-    # def calculate(self) -> None:
+    def calculate_baseline(self):
 
-    #     self.calculate_interpolation()
-    #     self.data.baselineCorrect(baseline_regions=self.birs)
-    #     self.data.calculate_SiH2Oareas()
-    #     self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
-    #     self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
+        birs = np.reshape(self.baseline_regions.values, (5, 2))
+        smooth_factor = self.settings["baseline_smoothing"]
+        self.data.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)
 
     def calculate_interpolation(self):
 
-        if True:  # not self.settings[("interpolate", "use")]:
+        if not self.settings["interpolate"]:
             return
-        region = self.settings[("interpolate", "region")]
-        smoothing = self.settings[("interpolate", "smoothing")]
-        self.data.interpolate(interpolate=region, smooth_factor=smoothing)
+        amount = self.interpolation_regions.shape[0] / 2
+        regions = np.reshape(self.interpolation_regions.values, (amount, 2))
+        smoothing = self.settings["interpolation_smoothing"]
+        self.data.interpolate(
+            interpolate=regions,
+            smooth_factor=smoothing,
+            use=self.settings["interpolate"],
+        )
+
+    def calculate_areas(self):
+
+        self.data.calculate_SiH2Oareas()
+        self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
+        self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
 
     def set_birs(self, **kwargs) -> None:
+
         for bir, new_value in kwargs.items():
             index = int(bir)
             self.baseline_regions.iloc[index] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
-        pass
 
-    # def change_settings(self, birs: dict = None, interpolate: dict = None) -> None:
-    #     if birs is not None:
-
-    #         self.set_birs(**birs)
-    #     if interpolate is None:
-    #         return
-    #     self.set_interpolation(interpolate)
+        for region, new_value in kwargs.items():
+            index = int(region)
+            self.baseline_regions.iloc[index] = new_value
 
     def get_plot_data(self) -> Dict[str, Any]:
         """
@@ -83,6 +90,8 @@ class h2o_processor:
             Dictionary with all caclulated spectra
         str
             Name of the spectrum used for baseline correction
+        dict
+            Dictionary with baseline interpolation region boundaries
         """
         return {
             "sample_name": self.name,

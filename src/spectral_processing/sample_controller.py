@@ -102,15 +102,13 @@ class Sample_controller:
     def calculate_sample(self):
         sample = self.current_sample
 
+        sample.calculate_baseline()
+        sample.calculate_areas()
+
+    def calculate_interpolation(self):
+        sample = self.current_sample
+
         sample.calculate_interpolation()
-        birs = np.reshape(list(sample.get_birs().values()), (5, 2))
-        sample.data.baselineCorrect(baseline_regions=birs)
-
-        sample.data.calculate_SiH2Oareas()
-        sample.results[["SiArea", "H2Oarea"]] = sample.data.SiH2Oareas
-        sample.results["rWS"] = sample.results["H2Oarea"] / sample.results["SiArea"]
-
-        return sample.results["rWS"]
 
     def change_sample_settings(
         self, birs: Optional[Dict] = None, interpolate: Optional[Dict] = None
