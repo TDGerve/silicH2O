@@ -144,4 +144,5 @@ class drag_polygons:
         new_to = max(x_coordinates)
         new_settings = {str(id[0] * 2): int(new_from), str(id[0] * 2 + 1): int(new_to)}
 
-        on_settings_change.send("plot input", birs=new_settings)
+        print("plot ", new_settings)
+        on_settings_change.send("plot", birs=new_settings)

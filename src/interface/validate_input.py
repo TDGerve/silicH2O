@@ -22,8 +22,9 @@ def validate_numerical_input(
     except ValueError:
         valid = False
 
-    widget.after_idle(lambda: widget.config(validate="focus"))
-    return valid
+        widget.after_idle(lambda: widget.config(validate="focus"))
+
+    return valid, value_clipped
 
 
 def invalid_input(old_value: Union[str, float], variable) -> None:

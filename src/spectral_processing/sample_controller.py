@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 import warnings as w
 
 from .. import settings
@@ -42,9 +42,12 @@ class Sample_controller:
             raise ValueError(f"Index outside range (0,{idx_max}): {index}")
 
         self._current_sample_index = index
+        name = self.current_sample.name
         # get the saved settings
-        self.current_sample.settings = self.settings.loc[
-            self.current_sample.name
+        self.current_sample.settings = self.settings.loc[name].copy()
+        self.current_sample.baseline_regions = self.baseline_regions.loc[name].copy()
+        self.current_sample.interpolation_regions = self.interpolation_regions.loc[
+            name
         ].copy()
 
     def read_files(self, files: List[str]) -> None:
@@ -111,28 +114,48 @@ class Sample_controller:
 
         sample.calculate_interpolation()
 
-    def change_sample_settings(
-        self, birs: Optional[Dict] = None, interpolate: Optional[Dict] = None
-    ) -> None:
+    def change_sample_settings(self, **kwargs) -> None:
         sample = self.current_sample
-        if birs is not None:
 
-            sample.set_birs(**birs)
-        if interpolate is None:
-            return
-        sample.set_interpolation(interpolate)
+        func_dict = {
+            "birs": sample.set_birs,
+            "baseline_smoothing": sample.set_baseline_smoothing,
+            "interpolate": sample.set_interpolation,
+        }
+
+        for key, value in kwargs.items():
+            func_dict[key](value)
+
+        # if birs is not None:
+
+        #     sample.set_birs(**birs)
+        # if baseline_smoothing is not None:
+        #     sample.set_baseline_smoothing(baseline_smoothing)
+
+        # if interpolate is None:
+        #     return
+        # sample.set_interpolation(interpolate)
 
     def get_sample_settings(self):
         birs = self.current_sample.get_birs()
 
-        results = list(self.current_sample.results.values)
-        areas = results[:3]
-        areas[:2] = [int(i) for i in results[:2]]
-        areas[2] = round(results[2], 2)
+        baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
 
-        signal = results[3:]
+        return {
+            "birs": birs,
+            "baseline_smoothing": baseline_smoothing,
+        }
 
-        return birs, areas, signal
+    def get_sample_results(self):
+
+        all_results = list(self.current_sample.results.values)
+        areas = all_results[:3]
+        areas[:2] = [int(i) for i in all_results[:2]]
+        areas[2] = round(all_results[2], 2)
+
+        signal = all_results[3:]
+
+        return {"areas": areas, "signal": signal}
 
     def get_sample_plotdata(self):
         sample = self.current_sample

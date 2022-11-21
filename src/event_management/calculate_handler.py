@@ -22,10 +22,11 @@ class Calculation_listener:
         self.sample_controller.current_sample_index = index
         # Update GUI variables
         self.sample_controller.calculate_sample()
-        bir_settings, areas, signal = self.sample_controller.get_sample_settings()
 
-        self.gui.update_variables(birs=bir_settings, areas=areas, signal=signal)
-        # Recalculate current sample
+        settings = self.sample_controller.get_sample_settings()
+
+        self.gui.update_variables(**settings)
+        self.update_gui_results()
 
         self.refresh_plots("sample change")
 
@@ -33,10 +34,25 @@ class Calculation_listener:
         self.sample_controller.change_sample_settings(**kwargs)
         self.sample_controller.calculate_sample()
 
-        _, areas, signal = self.sample_controller.get_sample_settings()
+    def update_gui_results(self):
+        results = self.sample_controller.get_sample_results()
+        self.gui.update_variables(**results)
 
-        self.gui.update_variables(areas=areas, signal=signal, **kwargs)
-        self.refresh_plots()
+    def update_from_plot(self, *args, **settings):
+
+        self.change_settings(**settings)
+
+        self.gui.update_variables(**settings)
+        self.update_gui_results()
+
+        self.refresh_plots("settings change")
+
+    def update_from_widgets(self, *args, **kwargs):
+
+        self.change_settings(**kwargs)
+        self.update_gui_results()
+
+        self.refresh_plots("settings change")
 
     def refresh_plots(self, *args):
         plot_data = self.sample_controller.get_sample_plotdata()
@@ -45,4 +61,5 @@ class Calculation_listener:
 
     def subscribe_to_signals(self):
         self.on_sample_change.connect(self.switch_sample)
-        self.on_settings_change.connect(self.change_settings)
+        self.on_settings_change.connect(self.update_from_plot, sender="plot")
+        self.on_settings_change.connect(self.update_from_widgets, sender="widget")

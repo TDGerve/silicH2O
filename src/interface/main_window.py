@@ -37,6 +37,9 @@ class Main_window(tk.Tk):
 
         self.create_menus()
 
+        # Give focus to the main window when pressing return
+        self.bind("<Return>", lambda event: self.focus_set())
+
     def set_theme(self):
         self.style = ttk.Style()
         self.tk.call("source", _theme_file)
@@ -130,3 +133,7 @@ class Main_window(tk.Tk):
         #     # selected_sample = self.current_sample.index
         #     update[tab]()
         pass
+
+    def on_return(self, *event):
+
+        self.focus_set()

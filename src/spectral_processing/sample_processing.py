@@ -41,6 +41,7 @@ class h2o_processor:
     def get_birs(self) -> Dict[str, int]:
 
         birs = self.baseline_regions
+
         birs.index = range(len(birs))
         return dict(birs)
 
@@ -48,6 +49,7 @@ class h2o_processor:
 
         birs = np.reshape(self.baseline_regions.values, (5, 2))
         smooth_factor = self.settings["baseline_smoothing"]
+
         self.data.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)
 
     def calculate_interpolation(self):
@@ -77,7 +79,7 @@ class h2o_processor:
         self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
 
-    def set_birs(self, **kwargs) -> None:
+    def set_birs(self, kwargs) -> None:
 
         for bir, new_value in kwargs.items():
             index = int(bir)
@@ -88,6 +90,10 @@ class h2o_processor:
         for region, new_value in kwargs.items():
             index = int(region)
             self.baseline_regions.iloc[index] = new_value
+
+    def set_baseline_smoothing(self, value: List[float]):
+
+        self.settings["baseline_smoothing"] = value[-1]
 
     def get_plot_data(self) -> Dict[str, Any]:
         """
@@ -104,6 +110,7 @@ class h2o_processor:
         dict
             Dictionary with baseline interpolation region boundaries
         """
+
         return {
             "sample_name": self.name,
             "x": self.data.x,
