@@ -103,6 +103,7 @@ class Sample_controller:
         sample = self.current_sample
 
         sample.calculate_baseline()
+        sample.calculate_noise()
         sample.calculate_areas()
 
     def calculate_interpolation(self):
@@ -123,11 +124,15 @@ class Sample_controller:
 
     def get_sample_settings(self):
         birs = self.current_sample.get_birs()
-        results = list(self.current_sample.results.values)
-        results[:2] = [int(i) for i in results[:2]]
-        results[2] = round(results[2], 2)
 
-        return birs, results
+        results = list(self.current_sample.results.values)
+        areas = results[:3]
+        areas[:2] = [int(i) for i in results[:2]]
+        areas[2] = round(results[2], 2)
+
+        signal = results[3:]
+
+        return birs, areas, signal
 
     def get_sample_plotdata(self):
         sample = self.current_sample
@@ -192,7 +197,7 @@ def get_settings(names: List) -> pd.DataFrame:
 
 
 def create_results_df(names: List) -> pd.DataFrame:
-    colnames = ["SiArea", "H2Oarea", "rWS"]
+    colnames = ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
     return pd.DataFrame(index=names, columns=colnames, dtype=float)
 
 

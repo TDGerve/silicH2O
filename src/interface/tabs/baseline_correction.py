@@ -17,6 +17,7 @@ on_settings_change = bl.signal("settings change")
 
 _font = settings.gui["font"]["family"]
 _fontsize = settings.gui["font"]["size"]
+_fontsize_head = _fontsize
 
 
 class Baseline_correction_frame(ttk.Frame):
@@ -30,27 +31,41 @@ class Baseline_correction_frame(ttk.Frame):
         self.bir_widgets = []
 
         self.areas_variables = []
+        self.signal_variables = []
 
         variables["birs"] = self.bir_variables
         variables["areas"] = self.areas_variables
+        variables["signal"] = self.signal_variables
+
         widgets["birs"] = self.bir_widgets
 
-        self.make_settings_frame()
+        self.make_bir_frame()
         self.make_areas_frame()
+        self.make_signal_frame()
+        self.make_dividers()
 
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(2, weight=1)
+        self.rowconfigure(5, weight=1)
 
         for child in self.winfo_children():
             child.grid_configure(padx=5, pady=2)
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=3, pady=3)
 
+    def make_dividers(self):
+
+        ttk.Separator(self, orient=tk.VERTICAL).grid(
+            row=0, column=2, rowspan=6, sticky=("ns")
+        )
+
+        ttk.Separator(self, orient=tk.HORIZONTAL).grid(row=1, column=3, sticky=("nesw"))
+        ttk.Separator(self, orient=tk.HORIZONTAL).grid(row=3, column=3, sticky=("new"))
+
     def draw_plot(self, plot: Baseline_correction_plot):
         fig = plot.fig
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=3, sticky=("nesw"))
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=6, sticky=("nesw"))
 
         # Plot navigation toolbar
         toolbar = vertical_toolbar(self.canvas, self)
@@ -60,23 +75,24 @@ class Baseline_correction_frame(ttk.Frame):
         toolbar.update()
         toolbar.grid(row=0, column=1, sticky="nw")
 
-    def make_settings_frame(self):
-        ttk.Separator(self, orient=tk.VERTICAL).grid(
-            row=0, column=2, rowspan=3, sticky=("ns")
-        )
+    def make_bir_frame(self):
+
         # baseline_label =
-        frame = ttk.Frame(self, name="settings")
+        frame = ttk.Frame(self, name="birs")
         frame.grid(row=0, column=3, sticky=("nesw"))
 
         # frame.rowconfigure(0, weight=0)
+
+        for i in range(7):
+            frame.rowconfigure(i, weight=1)
         frame.columnconfigure(0, weight=0)
         for i in [1, 2]:
-            frame.columnconfigure(i, weight=2)
+            frame.columnconfigure(i, weight=1)
 
         ttk.Label(
             frame,
             text="Baseline interpolation regions",
-            font=(_font, _fontsize + 2, "bold"),
+            font=(_font, _fontsize_head, "bold"),
         ).grid(row=0, column=0, columnspan=3, sticky=("nsw"))
 
         self.make_bir_widgets(frame)
@@ -121,51 +137,47 @@ class Baseline_correction_frame(ttk.Frame):
                 self.bir_widgets.append(entry)
                 self.bir_variables.append(var)
 
-    def make_buttons(self):
-        pass
-
     def make_areas_frame(self):
 
-        ttk.Separator(self, orient=tk.HORIZONTAL).grid(row=1, column=3, sticky=("nesw"))
         frame = ttk.Frame(self, name="areas")
         frame.grid(row=2, column=3, sticky=("nesw"))
 
-        # frame.rowconfigure(0, weight=1)
-        frame.columnconfigure(0, weight=1)
-        frame.columnconfigure(1, weight=2)
+        for i in range(4):
+            frame.rowconfigure(i, weight=1)
+        for i in range(2):
+            frame.columnconfigure(i, weight=1)
 
         ttk.Label(
             frame,
             text="Areas",
-            font=(_font, _fontsize + 2, "bold"),
+            font=(_font, _fontsize_head, "bold"),
         ).grid(row=0, column=0, columnspan=2, sticky=("nsw"))
 
-        self.make_area_widgets(frame)
-
-    def make_area_widgets(self, frame):
-
-        labels = ["Silicate", "H\u2082O", "H\u2082O / silicate"]
+        labels = ["Silicate", "H\u2082O", "H\u2082O:silicate"]
         names = ["Silicate", "H2O", "H2OSi"]
 
-        for i, (name, label) in enumerate(zip(names, labels)):
-            text_label = ttk.Label(frame, text=label, width=7, font=(_font, _fontsize))
-            text_label.grid(row=i + 1, sticky="nesw")
+        make_label_widgets(frame, labels, names, self.areas_variables)
 
-            var = tk.StringVar(name=name)
-            widget = ttk.Label(
-                frame,
-                textvariable=var,
-                anchor="se",
-                background="white",
-                width=10,
-                font=(_font, _fontsize),
-                padding=2,
-                relief="sunken",
-                borderwidth=1,
-            )
-            widget.grid(row=i + 1, column=1, sticky=("nse"))
+    def make_signal_frame(self):
 
-            self.areas_variables.append(var)
+        frame = ttk.Frame(self, name="signal")
+        frame.grid(row=4, column=3, sticky=("nesw"))
+
+        for i in range(4):
+            frame.rowconfigure(i, weight=1)
+        for i in range(2):
+            frame.columnconfigure(i, weight=1)
+
+        ttk.Label(
+            frame,
+            text="Signal",
+            font=(_font, _fontsize_head, "bold"),
+        ).grid(row=0, column=0, columnspan=2, sticky=("nsw"))
+
+        labels = ["noise", "Silicate S:N", "H\u2082O S:N"]
+        names = ["noise", "Si_SNR", "H2O_SNR"]
+
+        make_label_widgets(frame, labels, names, self.signal_variables)
 
     def validate_bir_input(self, new_value: str, index: int):
 
@@ -210,3 +222,26 @@ class Baseline_correction_frame(ttk.Frame):
         new_value = int(self.bir_variables[index].get())
 
         on_settings_change.send("bir change", birs={str(index): new_value})
+
+
+def make_label_widgets(frame, labels, names, variables):
+
+    for i, (name, label) in enumerate(zip(names, labels)):
+        text_label = ttk.Label(frame, text=label, width=7, font=(_font, _fontsize))
+        text_label.grid(row=i + 1, sticky="nesw")
+
+        var = tk.StringVar(name=name)
+        widget = ttk.Label(
+            frame,
+            textvariable=var,
+            anchor="se",
+            background="white",
+            width=10,
+            font=(_font, _fontsize),
+            padding=1,
+            relief="sunken",
+            borderwidth=1,
+        )
+        widget.grid(row=i + 1, column=1, sticky=("nse"))
+
+        variables.append(var)

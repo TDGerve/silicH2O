@@ -22,9 +22,9 @@ class Calculation_listener:
         self.sample_controller.current_sample_index = index
         # Update GUI variables
         self.sample_controller.calculate_sample()
-        bir_settings, areas = self.sample_controller.get_sample_settings()
+        bir_settings, areas, signal = self.sample_controller.get_sample_settings()
 
-        self.gui.update_variables(birs=bir_settings, areas=areas)
+        self.gui.update_variables(birs=bir_settings, areas=areas, signal=signal)
         # Recalculate current sample
 
         self.refresh_plots("sample change")
@@ -33,9 +33,9 @@ class Calculation_listener:
         self.sample_controller.change_sample_settings(**kwargs)
         self.sample_controller.calculate_sample()
 
-        _, areas = self.sample_controller.get_sample_settings()
+        _, areas, signal = self.sample_controller.get_sample_settings()
 
-        self.gui.update_variables(areas=areas, **kwargs)
+        self.gui.update_variables(areas=areas, signal=signal, **kwargs)
         self.refresh_plots()
 
     def refresh_plots(self, *args):

@@ -31,7 +31,10 @@ class h2o_processor:
         self.interpolation_regions = interpolation_regions.copy()
 
         self.results = pd.Series(
-            {data: np.nan for data in ["SiArea", "H2Oarea", "rWS"]}
+            {
+                data: np.nan
+                for data in ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
+            }
         )
         self.data = ram.H2O(x, y, laser=settings.general["laser_wavelength"])
 
@@ -59,6 +62,14 @@ class h2o_processor:
             smooth_factor=smoothing,
             use=self.settings["interpolate"],
         )
+
+    def calculate_noise(self):
+
+        self.data.calculate_noise()
+        self.data.calculate_SNR()
+        self.results[["noise", "Si_SNR", "H2O_SNR"]] = [
+            round(i, 1) for i in (self.data.noise, self.data.Si_SNR, self.data.H2O_SNR)
+        ]
 
     def calculate_areas(self):
 

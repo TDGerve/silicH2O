@@ -14,9 +14,7 @@ on_settings_change = bl.signal("settings change")
 class Baseline_correction_plot(Double_plot):
     def __init__(self, screen: Screen):
 
-        super().__init__(
-            screen, xlabel="Raman shift cm$^{-1}$", ylabel="Intensity (arbitr. units)"
-        )
+        super().__init__(screen, xlabel="Raman shift cm$^{-1}$", ylabel="Counts")
 
         self.setup_ax1(
             title="Silicate region",

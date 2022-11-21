@@ -9,11 +9,10 @@
         "size_min": [
             600,
             400
-        ],
-        "dpi": 150
+        ]
     },
     "font": {
-        "family": "deja vu",
-        "size": 12
+        "family": "DejaVu Sans",
+        "size": 10
     }
 }

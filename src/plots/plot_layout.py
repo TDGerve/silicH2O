@@ -37,13 +37,13 @@ class colors:
 def Plot_layout(
     scaling,
     linewidth=0.8,
-    fontSize=8,
+    font_size=8,
     colors=colors.vitaminC,
 ):
-    fontSize = fontSize / scaling
-    axTitleSize = fontSize + 3
-    axLabelSize = fontSize + 2
-    tickLabelSize = fontSize + 1
+    font_size = font_size / scaling
+    axtitle_size = font_size + 3
+    axlabel_size = font_size + 2
+    ticklabel_size = font_size + 1
 
     linewidth = linewidth / scaling
 
@@ -51,25 +51,27 @@ def Plot_layout(
     plt.rcParams["savefig.dpi"] = 300
 
     # Text
-    plt.rc("font", family="sans-serif", size=fontSize)
+    plt.rc("font", family="sans-serif", size=font_size)
 
     # Legend
-    plt.rc("legend", fontsize=fontSize, fancybox=False, facecolor="white")
+    plt.rc("legend", fontsize=font_size, fancybox=False, facecolor="white")
 
     # Axes
-    plt.rc("xtick", direction="in", labelsize=tickLabelSize)
+    plt.rc("xtick", direction="in", top=True, labelsize=ticklabel_size)
     plt.rc("xtick.major", size=3 / scaling, width=linewidth)
-    plt.rc("ytick", direction="in", labelsize=tickLabelSize)
+    plt.rc("ytick", right=True, direction="in", labelsize=ticklabel_size)
+
     plt.rc(
         "axes",
         grid=True,
-        titlesize=axTitleSize,
-        labelsize=axLabelSize,
+        titlesize=axtitle_size,
+        labelsize=axlabel_size,
         axisbelow=True,
         linewidth=linewidth,
         prop_cycle=colors,
         facecolor="white",
     )
+    plt.rc("axes.grid", axis="x")
     plt.rc("grid", color="whitesmoke", alpha=1)
 
     # Lines

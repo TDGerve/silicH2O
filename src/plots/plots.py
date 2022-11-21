@@ -41,7 +41,7 @@ class Double_plot:
         self.fig.supylabel(ylabel)
 
         for ax in self.axs:
-            ax.set_yticks([])
+            # ax.set_yticks([])
             ax.set_ylim(0, 1e-2)
 
     def setup_ax1(self, title: str, limits: Tuple[int, int]):
@@ -78,5 +78,7 @@ class Double_plot:
 
             ymax = max(ymax) * 1.1
             ax.set_ylim(0, ymax)
+            if ymax > 2e3:
+                ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
 
         self.fig.canvas.draw_idle()
