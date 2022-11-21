@@ -45,6 +45,12 @@ class h2o_processor:
         birs.index = range(len(birs))
         return dict(birs)
 
+    def set_birs(self, kwargs) -> None:
+
+        for bir, new_value in kwargs.items():
+            index = int(bir)
+            self.baseline_regions.iloc[index] = new_value
+
     def calculate_baseline(self):
 
         birs = np.reshape(self.baseline_regions.values, (5, 2))
@@ -78,12 +84,6 @@ class h2o_processor:
         self.data.calculate_SiH2Oareas()
         self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
-
-    def set_birs(self, kwargs) -> None:
-
-        for bir, new_value in kwargs.items():
-            index = int(bir)
-            self.baseline_regions.iloc[index] = new_value
 
     def set_interpolation(self, **kwargs) -> None:
 

@@ -36,20 +36,20 @@ class App_interface:
                 return
             if name == "birs":
 
+                repeat = []
                 for index, value in values.items():
                     widget = self.widgets["birs"][int(index)]
-                    # Hack to make sure, validation is triggered
+                    # Hack to make sure, validation is triggered for the bir widets
                     widget.focus_set()
 
                     variable = self.variables["birs"][int(index)]
-
                     variable.set(int(value))
-                    if index == 4:
-                        print(f"{variable}: new:{variable.get()}, real: {int(value)}")
-                    self.window.focus()
+
             else:
                 for variable, value in zip(self.variables[name], values):
                     variable.set(value)
+
+            self.window.focus()
 
     def activate_widgets(self) -> None:
         for widgets in self.widgets.values():

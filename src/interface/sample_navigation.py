@@ -115,4 +115,4 @@ class Sample_navigation(ttk.Frame):
             return
         index = selection[-1]
         # listbox = self.nametowidget("sample_list")
-        on_sample_change.send("sample selected", index=index)
+        on_sample_change.send("navigator", index=index)

@@ -22,7 +22,7 @@ _font = settings.gui["font"]["family"]
 _fontsize = settings.gui["font"]["size"]
 _fontsize_head = _fontsize
 
-padding = 2
+padding = 3
 
 
 class Baseline_correction_frame(ttk.Frame):
@@ -54,15 +54,15 @@ class Baseline_correction_frame(ttk.Frame):
         self.make_dividers()
 
         self.columnconfigure(0, weight=1)
-        for row in [0, 2, 4]:
+        for row in [2, 4]:
             self.rowconfigure(row, weight=1)
-        self.rowconfigure(0, weight=3)
+        self.rowconfigure(0, weight=5)
         self.rowconfigure(6, weight=15)
 
         for child in self.winfo_children():
             child.grid_configure(padx=5, pady=2)
-            for grandchild in child.winfo_children():
-                grandchild.grid_configure(padx=padding, pady=padding)
+            # for grandchild in child.winfo_children():
+            #     grandchild.grid_configure(padx=padding, pady=padding)
 
     def make_dividers(self):
 
@@ -103,15 +103,14 @@ class Baseline_correction_frame(ttk.Frame):
             frame.columnconfigure(i, weight=1)
         # frame.rowconfigure(7, weight=4)
 
-        ttk.Label(
-            frame, text="Baseline", font=(_font, _fontsize_head, "bold"), padding=2
-        ).grid(row=0, column=0, columnspan=3, sticky=("nsw"))
+        ttk.Label(frame, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
+            row=0, column=0, columnspan=3, sticky=("nsw")
+        )
 
         ttk.Label(
             frame,
             text="Interpolation regions",
             font=(_font, _fontsize_head),
-            padding=2,
         ).grid(row=1, column=0, columnspan=3, sticky=("nsw"))
 
         self.make_bir_widgets(frame)
@@ -120,9 +119,9 @@ class Baseline_correction_frame(ttk.Frame):
     def make_bir_widgets(self, frame):
 
         for k, name in zip(range(3), ["No.", "From", "to"]):
-            ttk.Label(
-                frame, text=name, font=(_font, _fontsize, "italic"), padding=2
-            ).grid(row=2, column=k, sticky=("nsw"))
+            ttk.Label(frame, text=name, font=(_font, _fontsize, "italic")).grid(
+                row=2, column=k, sticky=("nsw")
+            )
 
         for i in range(5):
             label = ttk.Label(frame, text=f"{i + 1}. ", font=(_font, _fontsize))
@@ -260,7 +259,6 @@ class Baseline_correction_frame(ttk.Frame):
         )
 
         if valid:
-            print(f"validated: {new_value}")
             self.change_bir(index=index, value=new_value)
             return True
         else:
@@ -344,10 +342,11 @@ def make_label_widgets(
             background="white",
             width=10,
             font=(_font, _fontsize),
-            padding=1,
             relief="sunken",
             borderwidth=1,
         )
-        widget.grid(row=i + row, column=column, sticky=("nse"))
+        widget.grid(
+            row=i + row, column=column, sticky=("nse"), padx=padding, pady=padding
+        )
 
         variables.append(var)
