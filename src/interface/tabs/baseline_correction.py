@@ -22,7 +22,7 @@ _font = settings.gui["font"]["family"]
 _fontsize = settings.gui["font"]["size"]
 _fontsize_head = _fontsize
 
-padding = 3
+padding = 1
 
 
 class Baseline_correction_frame(ttk.Frame):
@@ -60,7 +60,7 @@ class Baseline_correction_frame(ttk.Frame):
         self.rowconfigure(6, weight=15)
 
         for child in self.winfo_children():
-            child.grid_configure(padx=5, pady=2)
+            child.grid_configure(padx=5, pady=5)
             # for grandchild in child.winfo_children():
             #     grandchild.grid_configure(padx=padding, pady=padding)
 
@@ -118,7 +118,7 @@ class Baseline_correction_frame(ttk.Frame):
 
     def make_bir_widgets(self, frame):
 
-        for k, name in zip(range(3), ["No.", "From", "to"]):
+        for k, name in zip(range(3), ["No.  ", "From", "to"]):
             ttk.Label(frame, text=name, font=(_font, _fontsize, "italic")).grid(
                 row=2, column=k, sticky=("nsw")
             )
@@ -129,7 +129,7 @@ class Baseline_correction_frame(ttk.Frame):
 
             for j in range(2):
                 var = tk.StringVar()
-                entry = tk.Entry(
+                entry = ttk.Entry(
                     frame,
                     textvariable=var,
                     validate="focusout",
@@ -148,8 +148,8 @@ class Baseline_correction_frame(ttk.Frame):
                     font=(_font, _fontsize),
                     state=tk.DISABLED,
                     name=f"bir_{i * 2 + j}",
-                    relief="sunken",
-                    borderwidth=1,
+                    # relief="sunken",
+                    # borderwidth=1,
                 )
                 entry.grid(row=i + 3, column=j + 1, sticky=("nesw"))
 
@@ -338,12 +338,13 @@ def make_label_widgets(
         widget = ttk.Label(
             frame,
             textvariable=var,
-            anchor="se",
+            anchor="e",
             background="white",
             width=10,
             font=(_font, _fontsize),
-            relief="sunken",
-            borderwidth=1,
+            style="TButton"
+            # relief="sunken",
+            # borderwidth=1,
         )
         widget.grid(
             row=i + row, column=column, sticky=("nse"), padx=padding, pady=padding
