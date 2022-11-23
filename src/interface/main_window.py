@@ -37,8 +37,11 @@ class Main_window(tk.Tk):
 
         self.create_menus()
 
-        # Give focus to the main window when pressing return
-        self.bind("<Return>", lambda event: self.focus_set())
+        # # Give focus to the main window when pressing return
+        self.bind(
+            "<Return>",
+            lambda event: self.focus_set(),
+        )
 
     def set_theme(self):
         self.style = ttk.Style()

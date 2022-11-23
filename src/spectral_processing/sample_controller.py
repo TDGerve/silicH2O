@@ -21,34 +21,37 @@ class Sample_controller:
 
         self.results: Optional[pd.DataFrame] = None
 
-        self._current_sample_index: Optional[int] = None
+        self.current_sample_index: Optional[int] = None
 
     @property
     def current_sample(self) -> h2o_processor:
-        return self.get_sample(self._current_sample_index)
+        return self.get_sample(self.current_sample_index)
 
     @current_sample.setter
     def current_sample(self) -> None:
-        w.warn("Current sample is private")
+        w.warn("attribute is read only")
+
+    # @property
+    # def current_sample_index(self):
+    #     return self._current_sample_index
+
+    # @current_sample_index.setter
+    # def current_sample_index(self, index: int) -> None:
+    #     idx_max = len(self.spectra)
+    #     if (index < 0) or (index > idx_max):
+    #         raise ValueError(f"Index outside range (0,{idx_max}): {index}")
+
+    #     self._current_sample_index = index
 
     @property
-    def current_sample_index(self):
-        return self._current_sample_index
+    def sample_saved(self):
+        sample = self.current_sample
+        name = sample.name
+        return np.array_equal(self.results.loc[name], sample.results)
 
-    @current_sample_index.setter
-    def current_sample_index(self, index: int) -> None:
-        idx_max = len(self.spectra)
-        if (index < 0) or (index > idx_max):
-            raise ValueError(f"Index outside range (0,{idx_max}): {index}")
-
-        self._current_sample_index = index
-        name = self.current_sample.name
-        # get the saved settings
-        self.current_sample.settings = self.settings.loc[name].copy()
-        self.current_sample.baseline_regions = self.baseline_regions.loc[name].copy()
-        self.current_sample.interpolation_regions = self.interpolation_regions.loc[
-            name
-        ].copy()
+    @sample_saved.setter
+    def sample_saved(self):
+        print("attribute is read only")
 
     def read_files(self, files: List[str]) -> None:
 
@@ -163,19 +166,21 @@ class Sample_controller:
 
     def save_sample(self) -> None:
 
-        self.settings.loc[
-            self.current_sample.name
-        ] = self.current_sample.settings.copy()
+        sample = self.current_sample
+        name = sample.name
+        # get the saved settings
+        self.settings.loc[name] = self.sample.settings.copy()
+        self.baseline_regions.loc[name] = self.sample.baseline_regions.copy()
+        self.interpolation_regions.loc[name] = self.sample.interpolation_regions.copy()
 
-        self.results.loc[self.current_sample.name] = self.current_sample.results.copy()
+    def reset_sample(self) -> None:
 
-    def restore_sample(self) -> None:
-
-        self.current_sample.settings = self.settings.loc[
-            self.current_sample.name
-        ].copy()
-
-        self.current_sample.results = self.results.loc[self.current_sample.name].copy()
+        sample = self.current_sample
+        name = sample.name
+        # get the saved settings
+        self.sample.settings = self.settings.loc[name].copy()
+        self.sample.baseline_regions = self.baseline_regions.loc[name].copy()
+        self.sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
 
     def remove_samples(self, index: List[int]) -> None:
         current_sample = self.files[self.current_sample_index]

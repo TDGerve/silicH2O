@@ -22,7 +22,7 @@ _font = settings.gui["font"]["family"]
 _fontsize = settings.gui["font"]["size"]
 _fontsize_head = _fontsize
 
-padding = 1
+padding = 2
 
 
 class Baseline_correction_frame(ttk.Frame):
@@ -55,14 +55,14 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.columnconfigure(0, weight=1)
         for row in [2, 4]:
-            self.rowconfigure(row, weight=1)
-        self.rowconfigure(0, weight=5)
-        self.rowconfigure(6, weight=15)
+            self.rowconfigure(row, weight=0)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(6, weight=1)
 
         for child in self.winfo_children():
-            child.grid_configure(padx=5, pady=5)
-            # for grandchild in child.winfo_children():
-            #     grandchild.grid_configure(padx=padding, pady=padding)
+            child.grid_configure(padx=5, pady=3)
+            for grandchild in child.winfo_children():
+                grandchild.grid_configure(padx=padding, pady=padding)
 
     def make_dividers(self):
 
@@ -103,11 +103,11 @@ class Baseline_correction_frame(ttk.Frame):
             frame.columnconfigure(i, weight=1)
         # frame.rowconfigure(7, weight=4)
 
-        ttk.Label(frame, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
+        tk.Label(frame, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
             row=0, column=0, columnspan=3, sticky=("nsw")
         )
 
-        ttk.Label(
+        tk.Label(
             frame,
             text="Interpolation regions",
             font=(_font, _fontsize_head),
@@ -118,8 +118,8 @@ class Baseline_correction_frame(ttk.Frame):
 
     def make_bir_widgets(self, frame):
 
-        for k, name in zip(range(3), ["No.  ", "From", "to"]):
-            ttk.Label(frame, text=name, font=(_font, _fontsize, "italic")).grid(
+        for k, name in zip(range(3), ["No. ", "From", "to"]):
+            tk.Label(frame, text=name, font=(_font, _fontsize, "italic")).grid(
                 row=2, column=k, sticky=("nsw")
             )
 
@@ -340,14 +340,22 @@ def make_label_widgets(
             textvariable=var,
             anchor="e",
             background="white",
-            width=10,
+            width=8,
             font=(_font, _fontsize),
             style="TButton"
             # relief="sunken",
             # borderwidth=1,
         )
         widget.grid(
-            row=i + row, column=column, sticky=("nse"), padx=padding, pady=padding
+            row=i + row, column=column, sticky=("nse")  # , padx=padding, pady=padding
         )
 
         variables.append(var)
+
+
+"""
+Buttons
+-------
+reset sample    set as default
+save sample     save all
+"""

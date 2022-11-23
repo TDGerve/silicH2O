@@ -38,6 +38,7 @@ class Sample_navigation(ttk.Frame):
             self,
             listvariable=var,
             selectmode=tk.BROWSE,
+            exportselection=False,
             name="sample_list",
             state=tk.DISABLED,
             font=(
