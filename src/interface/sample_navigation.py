@@ -4,7 +4,7 @@ from tkinter import ttk
 import blinker as bl
 from typing import Tuple, Dict
 
-from .. import settings
+from .. import app_settings
 
 on_sample_change = bl.signal("sample change")
 on_samples_removed = bl.signal("samples removed")
@@ -42,8 +42,8 @@ class Sample_navigation(ttk.Frame):
             name="sample_list",
             state=tk.DISABLED,
             font=(
-                settings.gui["font"]["family"],
-                settings.gui["font"]["size"],
+                app_settings.gui["font"]["family"],
+                app_settings.gui["font"]["size"],
             ),
         )
         listbox.grid(column=0, row=0, columnspan=2, rowspan=1, sticky=("nesw"))

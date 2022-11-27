@@ -9,13 +9,13 @@ from .menus import io_menu
 from .tabs import Baseline_correction_frame
 from .screens import Computer_screen
 
-from .. import settings
+from .. import app_settings
 
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
 
-_font = settings.gui["font"]["family"]
-_fontsize = settings.gui["font"]["size"]
+_font = app_settings.gui["font"]["family"]
+_fontsize = app_settings.gui["font"]["size"]
 
 
 class Main_window(tk.Tk):
@@ -46,21 +46,23 @@ class Main_window(tk.Tk):
     def set_theme(self):
         self.style = ttk.Style()
         self.tk.call("source", _theme_file)
-        self.style.theme_use(settings.gui["theme"])
+        self.style.theme_use(app_settings.gui["theme"])
         self.style.configure(".", _font)
 
         self.style.configure(
             "TNotebook.Tab", font=(_font, _fontsize, "bold"), padding=[1, 2]
         )
 
-        self.background_color = self.style.lookup(settings.gui["theme"], "background")
+        self.background_color = self.style.lookup(
+            app_settings.gui["theme"], "background"
+        )
         self.background_color = self.winfo_rgb(self.background_color)
 
     def set_geometry(self):
 
         width, height = self.screen.resolution
 
-        self.minsize(*settings.gui["geometry"]["size_min"])
+        self.minsize(*app_settings.gui["geometry"]["size_min"])
         resolution_str = f"{int(width * 0.9)}x{int(height * 0.9)}"
 
         self.geometry(resolution_str)

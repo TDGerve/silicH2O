@@ -4,7 +4,7 @@ import pandas as pd
 
 from ..spectral_processing import Sample_controller
 from ..interface import Gui, GUI_state
-from .. import settings
+from .. import app_settings
 
 from typing import List
 import pathlib, tarfile
@@ -97,7 +97,7 @@ class Database_listener:
 
 
 def get_names_from_files(files: List) -> List:
-    separator = settings.general["name_separator"]
+    separator = app_settings.general["name_separator"]
     names = []
 
     for file in files:
@@ -110,4 +110,47 @@ def get_names_from_files(files: List) -> List:
         else:
             names.append(name[: name.index(separator)])
 
+    names = remove_duplicate_names(names)
+
     return names
+
+
+def remove_duplicate_names(names: List[str]) -> List[str]:
+
+    new_names = names.copy()
+    for i, _ in enumerate(new_names):
+        occurences = new_names.count(new_names[i])
+        if occurences < 2:
+            continue
+        new_names[i] = f"{new_names[i]}_{occurences}"
+
+    return new_names
+
+
+def get_settings(names: List) -> pd.DataFrame:
+
+    baseline_correction, interpolation = app_settings.process
+
+    birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
+    birs.index = names
+
+    interpolation_regions = pd.concat(
+        [interpolation["regions"].copy()] * len(names), axis=1
+    ).T
+    interpolation_regions.index = names
+
+    settings_df = pd.DataFrame(
+        {
+            "baseline_smoothing": baseline_correction["smoothing"],
+            "interpolation": interpolation["use"],
+            "interpolation_smoothing": interpolation["smoothing"],
+        },
+        index=names,
+    )
+
+    return settings_df, birs, interpolation_regions
+
+
+def create_results_df(names: List) -> pd.DataFrame:
+    colnames = ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
+    return pd.DataFrame(index=names, columns=colnames, dtype=float)

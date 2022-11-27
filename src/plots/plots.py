@@ -6,7 +6,7 @@ from typing import Tuple, Protocol, Dict
 from . import plot_layout as pl
 from ..interface.screens import Screen
 
-from .. import settings
+from .. import app_settings
 
 
 class Plot(Protocol):
@@ -23,7 +23,7 @@ class Plot(Protocol):
 class Double_plot:
     def __init__(self, screen: Screen, xlabel: str, ylabel: str):
 
-        self.colors = getattr(pl.colors, settings.gui["plot_theme"])
+        self.colors = getattr(pl.colors, app_settings.gui["plot_theme"])
 
         width, height = [
             size * screen.scaling / screen.dpi for size in screen.resolution

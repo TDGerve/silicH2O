@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Union
 import pathlib, tarfile
 import warnings as w
 
-from .. import settings
+from .. import app_settings
 from .sample_processing import h2o_processor
 
 
@@ -56,15 +56,17 @@ class Sample_controller:
     def sample_saved(self):
         print("attribute is read only")
 
-    def read_files(self, files: List, names=List[str], settings=None) -> None:
+    def read_files(
+        self, files: List, names: List[str], settings: Optional[Dict] = None
+    ) -> None:
 
         # names = get_names_from_files(files)
 
-        for i, _ in enumerate(names):
-            occurences = names.count(names[i])
-            if occurences < 2:
-                continue
-            names[i] = f"{names[i]}_{occurences}"
+        # for i, _ in enumerate(names):
+        #     occurences = names.count(names[i])
+        #     if occurences < 2:
+        #         continue
+        #     names[i] = f"{names[i]}_{occurences}"
 
         if settings is None:
             new_settings, new_birs, new_interpolation_regions = get_settings(names)
@@ -262,7 +264,7 @@ class Sample_controller:
 
 def get_settings(names: List) -> pd.DataFrame:
 
-    baseline_correction, interpolation = settings.process
+    baseline_correction, interpolation = app_settings.process
 
     birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
     birs.index = names
@@ -290,7 +292,7 @@ def create_results_df(names: List) -> pd.DataFrame:
 
 
 def get_names_from_files(files: List) -> List:
-    separator = settings.general["name_separator"]
+    separator = app_settings.general["name_separator"]
     names = []
 
     for file in files:

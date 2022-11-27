@@ -14,15 +14,15 @@ from ...plots import Baseline_correction_plot
 from ..validate_input import validate_numerical_input, invalid_input
 
 
-from ... import settings
+from ... import app_settings
 
 on_settings_change = bl.signal("settings change")
 on_save_sample = bl.signal("save sample")
 on_reset_sample = bl.signal("reset sample")
 on_save_all = bl.signal("save all")
 
-_font = settings.gui["font"]["family"]
-_fontsize = settings.gui["font"]["size"]
+_font = app_settings.gui["font"]["family"]
+_fontsize = app_settings.gui["font"]["size"]
 _fontsize_head = _fontsize
 
 padding = 2
