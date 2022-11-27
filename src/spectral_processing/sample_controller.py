@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from typing import List, Optional, Dict, Union
+import pathlib, tarfile
 import warnings as w
 
 from .. import settings
@@ -22,6 +23,8 @@ class Sample_controller:
         self.results: Optional[pd.DataFrame] = None
 
         self.current_sample_index: Optional[int] = None
+
+        self.project = None
 
     @property
     def current_sample(self) -> h2o_processor:
@@ -207,6 +210,31 @@ class Sample_controller:
             self.current_sample_index = int(current_sample_index)
         except TypeError:
             self.current_sample_index = 0
+
+    def save_project_as(self, filepath: pathlib.Path, name: str):
+
+        # project folder
+        temp_path = pathlib.Path(__file__).parents[1] / "temp" / name
+        temp_path.mkdir(parents=True, exist_ok=True)
+        # data folder
+        temp_datapath = temp_path / "data"
+        temp_datapath.mkdir(exist_ok=True)
+
+        for sample in self.spectra:
+            data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
+            np.savetxt(temp_datapath / sample.name, data)
+
+        fnames = ["settings", "baseline_regions", "interpolation regions"]
+        data = [self.settings, self.baseline_regions, self.interpolation_regions]
+        for f, name in zip(data, fnames):
+            f.to_csv(temp_path / f"{name}.csv")
+
+        with tarfile.open(filepath, mode="w") as tar:
+            tar.add(temp_path, arcname="")
+
+        filepath.rename(filepath.with_suffix(".h2o"))
+
+        self.project = filepath
 
 
 def get_settings(names: List) -> pd.DataFrame:

@@ -7,6 +7,8 @@ import os, glob
 
 on_samples_added = bl.signal("samples added")
 
+on_save_project_as = bl.signal("save project as")
+
 
 class io_menu:
     def __init__(self, parent):
@@ -21,8 +23,17 @@ class io_menu:
         io.add_command(label="export results", command=self.export_results)
         io.add_command(label="export sample", command=self.export_sample)
         io.add_command(label="export all samples", command=self.export_all_samples)
+        io.add_separator()
+        io.add_command(label="save project")
+        io.add_command(label="save project as", command=self.save_project_as)
 
-        for item in ["export results", "export sample", "export all samples"]:
+        for item in [
+            "export results",
+            "export sample",
+            "export all samples",
+            "save project",
+            "save project as",
+        ]:
             io.entryconfigure(item, state=tk.DISABLED)
 
         self.export_enabled = False
@@ -35,10 +46,13 @@ class io_menu:
             return
 
         io = self.parent.nametowidget("io")
+
         for item in [
             "export results",
             "export sample",
             "export all samples",
+            "save project",
+            "save project as",
         ]:
 
             io.entryconfigure(item, state=tk.NORMAL)
@@ -73,3 +87,14 @@ class io_menu:
 
     def export_all_samples(self):
         pass
+
+    def save_project_as(self):
+        try:
+            f = filedialog.asksaveasfilename(
+                defaultextension=".tar", title="Save project as ..."
+            )
+        except AttributeError:
+            print("Opening files cancelled by user")
+            return
+
+        on_save_project_as.send("io", filepath=f)
