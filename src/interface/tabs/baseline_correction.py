@@ -17,6 +17,9 @@ from ..validate_input import validate_numerical_input, invalid_input
 from ... import settings
 
 on_settings_change = bl.signal("settings change")
+on_save_sample = bl.signal("save sample")
+on_reset_sample = bl.signal("reset sample")
+on_save_all = bl.signal("save all")
 
 _font = settings.gui["font"]["family"]
 _fontsize = settings.gui["font"]["size"]
@@ -34,6 +37,7 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.bir_widgets = []
         self.baseline_smoothing_widgets = []
+        self.save_widgets = []
 
         self.bir_variables = []
         self.baseline_smoothing_variables = []
@@ -47,10 +51,12 @@ class Baseline_correction_frame(ttk.Frame):
 
         widgets["birs"] = self.bir_widgets
         widgets["baseline_smoothing"] = self.baseline_smoothing_widgets
+        widgets["baseline_save"] = self.save_widgets
 
         self.make_bir_frame(0, 3)
         self.make_signal_frame(2, 3)
         self.make_areas_frame(4, 3)
+        self.make_save_frame(7, 3)
         self.make_dividers()
 
         self.columnconfigure(0, weight=1)
@@ -66,7 +72,7 @@ class Baseline_correction_frame(ttk.Frame):
     def make_dividers(self):
 
         ttk.Separator(self, orient=tk.VERTICAL).grid(
-            row=0, column=2, rowspan=7, sticky=("ns")
+            row=0, column=2, rowspan=8, sticky=("ns")
         )
 
         ttk.Separator(self, orient=tk.HORIZONTAL).grid(row=1, column=3, sticky=("nesw"))
@@ -77,7 +83,7 @@ class Baseline_correction_frame(ttk.Frame):
         fig = plot.fig
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=7, sticky=("nesw"))
+        self.canvas.get_tk_widget().grid(row=0, column=0, rowspan=8, sticky=("nesw"))
 
         # Plot navigation toolbar
         toolbar = vertical_toolbar(self.canvas, self)
@@ -106,14 +112,8 @@ class Baseline_correction_frame(ttk.Frame):
         self.make_bir_widgets(frame)
         self.make_smoothing_widgets(frame, rowstart=8)
 
-        # frame.rowconfigure(0, weight=0)
-
-        # for i in range(11):
-        #     frame.rowconfigure(i, weight=2)
-        frame.columnconfigure(0, weight=0)
         for i in [1, 2]:
             frame.columnconfigure(i, weight=1)
-        # frame.rowconfigure(7, weight=4)
 
     def make_bir_widgets(self, frame):
 
@@ -205,8 +205,8 @@ class Baseline_correction_frame(ttk.Frame):
         frame = ttk.Frame(self, name="areas")
         frame.grid(row=row, column=col, sticky=("nesw"))
 
-        for i in range(4):
-            frame.rowconfigure(i, weight=0)
+        # for i in range(4):
+        #     frame.rowconfigure(i, weight=0)
         for i in range(2):
             frame.columnconfigure(i, weight=1)
 
@@ -226,8 +226,6 @@ class Baseline_correction_frame(ttk.Frame):
         frame = ttk.Frame(self, name="signal")
         frame.grid(row=row, column=col, sticky=("nesw"))
 
-        for i in range(4):
-            frame.rowconfigure(i, weight=0)
         for i in range(2):
             frame.columnconfigure(i, weight=1)
 
@@ -241,6 +239,43 @@ class Baseline_correction_frame(ttk.Frame):
         names = ["noise", "Si_SNR", "H2O_SNR"]
 
         make_label_widgets(frame, labels, names, [1, 1], self.signal_variables)
+
+    def make_save_frame(self, row, col):
+
+        frame = ttk.Frame(self, name="save")
+        frame.grid(row=row, column=col, sticky="esw")
+
+        reset = ttk.Button(
+            frame,
+            text="reset sample",
+            state=tk.DISABLED,
+            name="reset_sample",
+            command=lambda: on_reset_sample.send("baseline"),
+        )
+        reset.grid(row=0, column=0, sticky="nesw")
+
+        save = ttk.Button(
+            frame,
+            text="save sample",
+            state=tk.DISABLED,
+            name="save_sample",
+            command=lambda: on_save_sample.send("baseline"),
+        )
+        save.grid(row=0, column=1, sticky="nesw")
+
+        save_all = ttk.Button(
+            frame,
+            text="save all",
+            state=tk.DISABLED,
+            name="save all",
+            command=lambda: on_save_all.send("baseline"),
+        )
+        save_all.grid(row=1, column=1, sticky="nesw")
+
+        for i in range(2):
+            frame.columnconfigure(i, weight=1)
+
+        self.save_widgets += [reset, save, save_all]
 
     def validate_bir_input(self, new_value: str, index: int):
 
@@ -311,7 +346,6 @@ class Baseline_correction_frame(ttk.Frame):
             valid = False
 
         if not valid:
-            # self.bell()
             # widget.after_idle(widget.config(validate="focus"))
             pass
         return valid
@@ -350,11 +384,3 @@ def make_label_widgets(
         )
 
         variables.append(var)
-
-
-"""
-Buttons
--------
-reset sample    set as default
-save sample     save all
-"""

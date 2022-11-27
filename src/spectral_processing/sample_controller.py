@@ -140,6 +140,7 @@ class Sample_controller:
         # sample.set_interpolation(interpolate)
 
     def get_sample_settings(self):
+
         birs = self.current_sample.get_birs()
 
         baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
@@ -161,6 +162,7 @@ class Sample_controller:
         return {"areas": areas, "signal": signal}
 
     def get_sample_plotdata(self):
+
         sample = self.current_sample
         return sample.get_plot_data()
 
@@ -168,19 +170,26 @@ class Sample_controller:
 
         sample = self.current_sample
         name = sample.name
-        # get the saved settings
-        self.settings.loc[name] = self.sample.settings.copy()
-        self.baseline_regions.loc[name] = self.sample.baseline_regions.copy()
-        self.interpolation_regions.loc[name] = self.sample.interpolation_regions.copy()
+
+        # save current settings
+        self.settings.loc[name] = sample.settings.copy()
+        self.baseline_regions.loc[name] = sample.baseline_regions.copy()
+        self.interpolation_regions.loc[name] = sample.interpolation_regions.copy()
+
+        self.results.loc[name] = sample.results.copy()
+
+    def save_all_samples(self) -> None:
+        pass
 
     def reset_sample(self) -> None:
 
         sample = self.current_sample
         name = sample.name
-        # get the saved settings
-        self.sample.settings = self.settings.loc[name].copy()
-        self.sample.baseline_regions = self.baseline_regions.loc[name].copy()
-        self.sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
+
+        # restore previous settings
+        sample.settings = self.settings.loc[name].copy()
+        sample.baseline_regions = self.baseline_regions.loc[name].copy()
+        sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
 
     def remove_samples(self, index: List[int]) -> None:
         current_sample = self.files[self.current_sample_index]

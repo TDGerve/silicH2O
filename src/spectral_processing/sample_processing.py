@@ -40,7 +40,7 @@ class h2o_processor:
 
     def get_birs(self) -> Dict[str, int]:
 
-        birs = self.baseline_regions
+        birs = self.baseline_regions.copy()
 
         birs.index = range(len(birs))
         return dict(birs)
