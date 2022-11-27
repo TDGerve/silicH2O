@@ -54,9 +54,8 @@ class Baseline_correction_frame(ttk.Frame):
         self.make_dividers()
 
         self.columnconfigure(0, weight=1)
-        for row in [2, 4]:
-            self.rowconfigure(row, weight=0)
-        self.rowconfigure(0, weight=1)
+        self.columnconfigure(3, minsize="8cm")
+
         self.rowconfigure(6, weight=1)
 
         for child in self.winfo_children():
@@ -84,24 +83,15 @@ class Baseline_correction_frame(ttk.Frame):
         toolbar = vertical_toolbar(self.canvas, self)
         # Don't pack 'configure subplots' and 'save figure'
         toolbar.children["!button4"].pack_forget()
-        toolbar.children["!button5"].pack_forget()
+        # toolbar.children["!button5"].pack_forget()
         toolbar.update()
         toolbar.grid(row=0, column=1, sticky="nw")
 
     def make_bir_frame(self, row: int, col: int):
 
-        frame = ttk.Frame(self, name="birs", width="6cm")
+        frame = ttk.Frame(self, name="birs")
         frame.grid(row=row, column=col, sticky=("nesw"))
-        frame.grid_propagate(0)
-
-        # frame.rowconfigure(0, weight=0)
-
-        for i in range(11):
-            frame.rowconfigure(i, weight=1)
-        frame.columnconfigure(0, weight=0)
-        for i in [1, 2]:
-            frame.columnconfigure(i, weight=1)
-        # frame.rowconfigure(7, weight=4)
+        # frame.grid_propagate(0)
 
         tk.Label(frame, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
             row=0, column=0, columnspan=3, sticky=("nsw")
@@ -115,6 +105,15 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.make_bir_widgets(frame)
         self.make_smoothing_widgets(frame, rowstart=8)
+
+        # frame.rowconfigure(0, weight=0)
+
+        # for i in range(11):
+        #     frame.rowconfigure(i, weight=2)
+        frame.columnconfigure(0, weight=0)
+        for i in [1, 2]:
+            frame.columnconfigure(i, weight=1)
+        # frame.rowconfigure(7, weight=4)
 
     def make_bir_widgets(self, frame):
 
@@ -207,7 +206,7 @@ class Baseline_correction_frame(ttk.Frame):
         frame.grid(row=row, column=col, sticky=("nesw"))
 
         for i in range(4):
-            frame.rowconfigure(i, weight=1)
+            frame.rowconfigure(i, weight=0)
         for i in range(2):
             frame.columnconfigure(i, weight=1)
 
@@ -228,7 +227,7 @@ class Baseline_correction_frame(ttk.Frame):
         frame.grid(row=row, column=col, sticky=("nesw"))
 
         for i in range(4):
-            frame.rowconfigure(i, weight=1)
+            frame.rowconfigure(i, weight=0)
         for i in range(2):
             frame.columnconfigure(i, weight=1)
 
