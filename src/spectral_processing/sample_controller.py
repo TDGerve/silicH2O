@@ -232,8 +232,6 @@ class Sample_controller:
         with tarfile.open(filepath, mode="w") as tar:
             tar.add(temp_path, arcname="")
 
-        filepath.rename(filepath.with_suffix(".h2o"))
-
         self.project = filepath
 
 

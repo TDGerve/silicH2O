@@ -91,7 +91,7 @@ class io_menu:
     def save_project_as(self):
         try:
             f = filedialog.asksaveasfilename(
-                defaultextension=".tar", title="Save project as ..."
+                defaultextension=".h2o", title="Save project as ..."
             )
         except AttributeError:
             print("Opening files cancelled by user")
