@@ -56,9 +56,9 @@ class Sample_controller:
     def sample_saved(self):
         print("attribute is read only")
 
-    def read_files(self, files: List[str]) -> None:
+    def read_files(self, files: List, names=List[str], settings=None) -> None:
 
-        names = get_names_from_files(files)
+        # names = get_names_from_files(files)
 
         for i, _ in enumerate(names):
             occurences = names.count(names[i])
@@ -66,7 +66,14 @@ class Sample_controller:
                 continue
             names[i] = f"{names[i]}_{occurences}"
 
-        new_settings, new_birs, new_interpolation_regions = get_settings(names)
+        if settings is None:
+            new_settings, new_birs, new_interpolation_regions = get_settings(names)
+
+        else:
+            new_settings = settings["general"]
+            new_birs = settings["baseline_regions"]
+            new_interpolation_regions = settings["interpolation_regions"]
+
         new_results = create_results_df(names)
 
         self.files = np.append(self.files, files)
@@ -222,9 +229,9 @@ class Sample_controller:
 
         for sample in self.spectra:
             data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
-            np.savetxt(temp_datapath / sample.name, data)
+            np.savetxt(temp_datapath / f"{sample.name}.sp", data)
 
-        fnames = ["settings", "baseline_regions", "interpolation regions"]
+        fnames = ["settings", "baseline_regions", "interpolation_regions"]
         data = [self.settings, self.baseline_regions, self.interpolation_regions]
         for f, name in zip(data, fnames):
             f.to_csv(temp_path / f"{name}.csv")
@@ -233,6 +240,24 @@ class Sample_controller:
             tar.add(temp_path, arcname="")
 
         self.project = filepath
+
+    def load_project(self, filepath):
+
+        with tarfile.open(filepath, "r") as tar:
+            names = [member.name for member in tar]
+            # csvs = [name for name in names if name.endswith(".csv")]
+            spectra = [name for name in names if name.endswith(".sp")]
+            spectrum_files = [tar.extractfile(spectrum) for spectrum in spectra]
+
+            self.settings = pd.read_csv(tar.extractfile("settings.csv"), index_col=[0])
+            self.baseline_regions = pd.read_csv(
+                tar.extractfile("baseline_regions.csv"), index_col=[0], header=[0, 1]
+            )
+            self.interpolation_regions = pd.read_csv(
+                tar.extractfile("interpolation_regions.csv"),
+                index_col=[0],
+                header=[0, 1],
+            )
 
 
 def get_settings(names: List) -> pd.DataFrame:
@@ -269,7 +294,10 @@ def get_names_from_files(files: List) -> List:
     names = []
 
     for file in files:
-        name = os.path.basename(file)
+        try:
+            name = os.path.basename(file)
+        except TypeError:
+            name = file.name
         if separator not in name:
             names.append(name)
         else:

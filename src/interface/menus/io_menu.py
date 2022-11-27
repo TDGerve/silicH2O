@@ -5,6 +5,7 @@ from typing import List
 import blinker as bl
 import os, glob
 
+on_load_project = bl.signal("load project")
 on_samples_added = bl.signal("samples added")
 
 on_save_project_as = bl.signal("save project as")
@@ -17,6 +18,8 @@ class io_menu:
         io = tk.Menu(parent, name="io")
         parent.add_cascade(menu=io, label="File")
 
+        io.add_command(label="load project", command=self.load_project)
+        io.add_separator()
         io.add_command(label="load spectra", command=self.get_files)
         io.add_command(label="load directory", command=self.get_directory)
         io.add_separator()
@@ -45,18 +48,7 @@ class io_menu:
         if self.export_enabled:
             return
 
-        io = self.parent.nametowidget("io")
-
-        for item in [
-            "export results",
-            "export sample",
-            "export all samples",
-            "save project",
-            "save project as",
-        ]:
-
-            io.entryconfigure(item, state=tk.NORMAL)
-        self.export_enabled = True
+        self.activate_menus()
 
     def get_directory(self):
         try:
@@ -79,6 +71,22 @@ class io_menu:
             return
         self.load_files(files)
 
+    def load_project(self):
+        try:
+            project = filedialog.askopenfilename(
+                initialdir=os.getcwd(), filetypes=[("SilicH2O project", "*.h2o")]
+            )
+        except AttributeError:
+            print("Opening files cancelled by user")
+            return
+
+        on_load_project.send("io", filepath=project)
+
+        if self.export_enabled:
+            return
+
+        self.activate_menus()
+
     def export_results(self):
         pass
 
@@ -98,3 +106,18 @@ class io_menu:
             return
 
         on_save_project_as.send("io", filepath=f)
+
+    def activate_menus(self):
+
+        io = self.parent.nametowidget("io")
+
+        for item in [
+            "export results",
+            "export sample",
+            "export all samples",
+            "save project",
+            "save project as",
+        ]:
+
+            io.entryconfigure(item, state=tk.NORMAL)
+        self.export_enabled = True
