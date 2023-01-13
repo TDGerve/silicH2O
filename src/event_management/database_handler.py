@@ -1,21 +1,25 @@
 import os
+import pathlib
+import tarfile
+from typing import List
+
 import blinker as bl
 import pandas as pd
 
-from ..spectral_processing import Sample_controller
-from ..interface import Gui, GUI_state
 from .. import app_settings
-
-from typing import List
-import pathlib, tarfile
+from ..interface import Gui, GUI_state
+from ..spectral_processing import Sample_controller
 
 
 class Database_listener:
 
     on_samples_added = bl.signal("samples added")
-    on_samples_removed = bl.signal("samples removed")
-    on_save_project_as = bl.signal("save project as")
     on_load_project = bl.signal("load project")
+
+    on_samples_removed = bl.signal("samples removed")
+
+    on_save_project_as = bl.signal("save project as")
+    on_export_results = bl.signal("export results")
 
     def __init__(self, sample_controller: Sample_controller, gui: Gui):
         self.sample_controller = sample_controller
@@ -47,6 +51,14 @@ class Database_listener:
         name = filepath.stem
 
         self.sample_controller.save_project_as(filepath=filepath, name=name)
+
+    def export_results(self, *args, filepath: str):
+
+        filepath = pathlib.Path(filepath)
+        name = filepath.stem
+        folder = filepath.parents[0]
+
+        self.sample_controller.export_results(folder=folder, name=name)
 
     def load_project(self, *args, filepath: str):
 
@@ -94,6 +106,7 @@ class Database_listener:
 
         self.on_save_project_as.connect(self.save_project_as)
         self.on_load_project.connect(self.load_project)
+        self.on_export_results.connect(self.export_results)
 
 
 def get_names_from_files(files: List) -> List:
@@ -122,7 +135,7 @@ def remove_duplicate_names(names: List[str]) -> List[str]:
         occurences = new_names.count(new_names[i])
         if occurences < 2:
             continue
-        new_names[i] = f"{new_names[i]}_{occurences}"
+        new_names[i] = f"{new_names[i]}@{occurences - 1}"
 
     return new_names
 

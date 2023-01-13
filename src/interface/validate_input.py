@@ -1,5 +1,6 @@
+from typing import List, Union
+
 import numpy as np
-from typing import Union, List
 
 
 def validate_numerical_input(
@@ -19,12 +20,14 @@ def validate_numerical_input(
         variable.set(int(value_clipped))
         valid = True
 
+        return valid, value_clipped
+
     except ValueError:
         valid = False
 
         widget.after_idle(lambda: widget.config(validate="focus"))
 
-    return valid, value_clipped
+        return valid
 
 
 def invalid_input(old_value: Union[str, float], variable) -> None:

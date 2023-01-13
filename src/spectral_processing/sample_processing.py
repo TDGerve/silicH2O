@@ -1,10 +1,8 @@
-import pandas as pd
+from typing import Any, Dict, List, Protocol
+
 import numpy as np
-
-from typing import List, Protocol, Dict, Any
-
-from .water import H2O
-import ramCO2 as ram
+import pandas as pd
+import ramCOH as ram
 
 from .. import app_settings
 
@@ -37,7 +35,7 @@ class h2o_processor:
                 for data in ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
             }
         )
-        self.data = H2O(x, y, laser=app_settings.general["laser_wavelength"])
+        self.data = ram.H2O(x, y, laser=app_settings.general["laser_wavelength"])
 
     def get_birs(self) -> Dict[str, int]:
 

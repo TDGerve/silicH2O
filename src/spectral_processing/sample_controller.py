@@ -1,10 +1,11 @@
 import os
+import pathlib
+import tarfile
+import warnings as w
+from typing import Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
-
-from typing import List, Optional, Dict, Union
-import pathlib, tarfile
-import warnings as w
 
 from .. import app_settings
 from .sample_processing import h2o_processor
@@ -34,18 +35,6 @@ class Sample_controller:
     def current_sample(self) -> None:
         w.warn("attribute is read only")
 
-    # @property
-    # def current_sample_index(self):
-    #     return self._current_sample_index
-
-    # @current_sample_index.setter
-    # def current_sample_index(self, index: int) -> None:
-    #     idx_max = len(self.spectra)
-    #     if (index < 0) or (index > idx_max):
-    #         raise ValueError(f"Index outside range (0,{idx_max}): {index}")
-
-    #     self._current_sample_index = index
-
     @property
     def sample_saved(self):
         sample = self.current_sample
@@ -60,14 +49,6 @@ class Sample_controller:
         self, files: List, names: List[str], settings: Optional[Dict] = None
     ) -> None:
 
-        # names = get_names_from_files(files)
-
-        # for i, _ in enumerate(names):
-        #     occurences = names.count(names[i])
-        #     if occurences < 2:
-        #         continue
-        #     names[i] = f"{names[i]}_{occurences}"
-
         if settings is None:
             new_settings, new_birs, new_interpolation_regions = get_settings(names)
 
@@ -78,10 +59,14 @@ class Sample_controller:
 
         new_results = create_results_df(names)
 
+        old_files = len(self.files)
+
         self.files = np.append(self.files, files)
         self.names = np.append(self.names, names)
 
-        for file, name in zip(files, names):
+        new_files = len(self.files)
+
+        for idx, (file, name) in enumerate(zip(files, names)):
             x, y = np.genfromtxt(file, unpack=True)
             self.spectra = np.append(
                 self.spectra,
@@ -94,6 +79,7 @@ class Sample_controller:
                     new_interpolation_regions.loc[name].copy(),
                 ),
             )
+            self.calculate_sample(idx)
 
         if self.settings is None:
             self.settings = new_settings
@@ -114,11 +100,17 @@ class Sample_controller:
 
             self.results = pd.concat([self.results, new_results], axis=0)
 
+        for idx in np.arange(old_files, new_files):
+            self.save_sample(idx=idx)
+
     def get_sample(self, index: int) -> h2o_processor:
         return self.spectra[index]
 
-    def calculate_sample(self):
-        sample = self.current_sample
+    def calculate_sample(self, idx=None):
+        if idx is None:
+            sample = self.current_sample
+        else:
+            sample = self.get_sample(idx)
 
         sample.calculate_baseline()
         sample.calculate_noise()
@@ -178,9 +170,12 @@ class Sample_controller:
         sample = self.current_sample
         return sample.get_plot_data()
 
-    def save_sample(self) -> None:
+    def save_sample(self, idx=None) -> None:
 
-        sample = self.current_sample
+        if idx is None:
+            sample = self.current_sample
+        else:
+            sample = self.get_sample(idx)
         name = sample.name
 
         # save current settings
@@ -191,7 +186,9 @@ class Sample_controller:
         self.results.loc[name] = sample.results.copy()
 
     def save_all_samples(self) -> None:
-        pass
+
+        for sample_idx in range(self.results.shape[0]):
+            self.save_sample(sample_idx)
 
     def reset_sample(self) -> None:
 
@@ -204,6 +201,7 @@ class Sample_controller:
         sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
 
     def remove_samples(self, index: List[int]) -> None:
+
         current_sample = self.files[self.current_sample_index]
         remove_samples = self.names[index]
 
@@ -260,6 +258,29 @@ class Sample_controller:
                 index_col=[0],
                 header=[0, 1],
             )
+
+    def export_results(
+        self, folder: pathlib.Path, name: str, incl_settings: bool = True
+    ):
+        print(folder, "\n", name)
+        pd.concat([self.settings, self.results], axis=1).to_csv(folder / f"{name}.csv")
+
+        if not incl_settings:
+            return
+
+        baseline_settings = []
+
+        for setting, data in zip(
+            ("baseline_regions", "interpolation_regions"),
+            (self.baseline_regions, self.interpolation_regions),
+        ):
+            baseline_settings.append(
+                pd.concat({setting: data}, names=["setting"], axis=1)
+            )
+
+        baseline_settings = pd.concat(baseline_settings, axis=1)
+
+        baseline_settings.to_csv(folder / f"{name}_baselines.csv")
 
 
 def get_settings(names: List) -> pd.DataFrame:

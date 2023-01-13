@@ -1,14 +1,16 @@
+import glob
+import os
 import tkinter as tk
 from tkinter import filedialog
 from typing import List
 
 import blinker as bl
-import os, glob
 
 on_load_project = bl.signal("load project")
 on_samples_added = bl.signal("samples added")
 
 on_save_project_as = bl.signal("save project as")
+on_export_results = bl.signal("export results")
 
 
 class io_menu:
@@ -43,7 +45,7 @@ class io_menu:
 
     def load_files(self, files: List[str]):
 
-        on_samples_added.send("import files", files=files)
+        on_samples_added.send("io", files=files)
 
         if self.export_enabled:
             return
@@ -80,6 +82,9 @@ class io_menu:
             print("Opening files cancelled by user")
             return
 
+        if len(project) == 0:
+            return
+
         on_load_project.send("io", filepath=project)
 
         if self.export_enabled:
@@ -88,7 +93,16 @@ class io_menu:
         self.activate_menus()
 
     def export_results(self):
-        pass
+
+        try:
+            f = filedialog.asksaveasfilename(
+                defaultextension=".csv", title="Export results as ..."
+            )
+        except AttributeError:
+            print("Opening files cancelled by user")
+            return
+
+        on_export_results.send("io", filepath=f)
 
     def export_sample(self):
         pass

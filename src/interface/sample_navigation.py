@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
+from typing import Dict, Tuple
 
 import blinker as bl
-from typing import Tuple, Dict
 
 from .. import app_settings
 

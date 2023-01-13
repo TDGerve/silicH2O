@@ -1,20 +1,16 @@
 import tkinter as tk
+from functools import partial
 from tkinter import ttk
-
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from typing import List
 
 import blinker as bl
 import numpy as np
-
-from functools import partial
-from typing import List
-
-from ..vertical_toolbar import vertical_toolbar
-from ...plots import Baseline_correction_plot
-from ..validate_input import validate_numerical_input, invalid_input
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from ... import app_settings
+from ...plots import Baseline_correction_plot
+from ..validate_input import invalid_input, validate_numerical_input
+from ..vertical_toolbar import vertical_toolbar
 
 on_settings_change = bl.signal("settings change")
 on_save_sample = bl.signal("save sample")
@@ -60,7 +56,7 @@ class Baseline_correction_frame(ttk.Frame):
         self.make_dividers()
 
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(3, minsize="8cm")
+        self.columnconfigure(3, minsize="6cm")
 
         self.rowconfigure(6, weight=1)
 
@@ -110,7 +106,7 @@ class Baseline_correction_frame(ttk.Frame):
         ).grid(row=1, column=0, columnspan=3, sticky=("nsw"))
 
         self.make_bir_widgets(frame)
-        self.make_smoothing_widgets(frame, rowstart=8)
+        self.make_smoothing_widgets(frame, rowstart=9)
 
         for i in [1, 2]:
             frame.columnconfigure(i, weight=1)
@@ -155,6 +151,26 @@ class Baseline_correction_frame(ttk.Frame):
                 self.bir_widgets.append(entry)
                 self.bir_variables.append(var)
 
+        cp_frame = ttk.Frame(frame, name="copy_paste")
+        cp_frame.grid(row=i + 4, column=1, columnspan=2, sticky=("nesw"))
+
+        ttk.Button(
+            cp_frame,
+            text="copy BIRs",
+            state=tk.DISABLED,
+            name="copy_birs",
+        ).grid(row=0, column=0, sticky="nesw")
+
+        ttk.Button(
+            cp_frame,
+            text="paste BIRs",
+            state=tk.DISABLED,
+            name="paste_birs",
+        ).grid(row=0, column=1, sticky="nesw")
+
+        # for i in [1, 2]:
+        #     cp_frame.columnconfigure(i, weight=1)
+
     def make_smoothing_widgets(self, frame, rowstart):
 
         ttk.Label(frame).grid(row=rowstart, column=0)  # empty row
@@ -163,16 +179,16 @@ class Baseline_correction_frame(ttk.Frame):
             frame,
             text="smoothing",
             font=(_font, _fontsize_head),
-        ).grid(row=rowstart + 1, column=0, columnspan=3, sticky=("nsw"))
+        ).grid(row=rowstart + 1, column=0, columnspan=2, sticky=("nsw"))
 
         var = tk.StringVar(name="baseline_smoothing_var")
         entry = ttk.Spinbox(
             frame,
             from_=0.1,
-            to=10,
+            to=100,
             increment=0.1,
             textvariable=var,
-            validate="focus",
+            validate="focusout",
             validatecommand=(
                 self.register(self.validate_smoothing),
                 "%P",
@@ -326,28 +342,32 @@ class Baseline_correction_frame(ttk.Frame):
 
         on_settings_change.send("widget", baseline_smoothing=[new_value])
 
-    def validate_smoothing(self, value):
+    def validate_smoothing(self, new_value):
         """
         Return False if the value is not numeric and reset the validate command if not.
         Resetting validate is neccessary, because tkinter disables validation after changing
         the variable through the invalidate command in order to stop an infinte loop.
 
-        If the value is numerical clip it to 0, 10
+        If the value is numerical clip it to 0, 100
         """
 
-        var = self.baseline_smoothing_variables[-1]
+        new_value = new_value
+        widget = self.baseline_smoothing_widgets[-1]
+        variable = self.baseline_smoothing_variables[-1]
 
-        try:
-            value_clipped = np.clip(float(value), 0, 100)
-            var.set(value_clipped)
-            self.change_baseline_smoothing(value_clipped)
-            valid = True
-        except ValueError:
-            valid = False
+        accepted_range = [0, 100]
 
-        if not valid:
-            # widget.after_idle(widget.config(validate="focus"))
-            pass
+        valid, new_value = validate_numerical_input(
+            new_value,
+            accepted_range=accepted_range,
+            widget=widget,
+            variable=variable,
+        )
+
+        if valid:
+            variable.set(new_value)
+            self.change_baseline_smoothing(new_value)
+
         return valid
 
     def invalid_smoothing(self, old_value: str):
@@ -373,10 +393,9 @@ def make_label_widgets(
             textvariable=var,
             anchor="e",
             background="white",
-            width=8,
+            width=6,
             font=(_font, _fontsize),
-            style="TButton"
-            # relief="sunken",
+            style="TButton",
             # borderwidth=1,
         )
         widget.grid(

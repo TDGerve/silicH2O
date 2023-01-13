@@ -1,12 +1,12 @@
-import numpy as np
-
 from itertools import product
 from typing import Dict
-import blinker as bl
 
-from .plots import Double_plot
-from .plot_interaction import drag_polygons, construct_polygon_coordinates
+import blinker as bl
+import numpy as np
+
 from ..interface.screens import Screen
+from .plot_interaction import construct_polygon_coordinates, drag_polygons
+from .plots import Double_plot
 
 on_settings_change = bl.signal("settings change")
 
@@ -77,10 +77,12 @@ class Baseline_correction_plot(Double_plot):
 
     def connect_mouse_events(self):
         drag_ax1 = drag_polygons(
-            ax=self.axs[0], polygons=self.birs[:5], drag_polygons=[1, 2]
+            ax=self.axs[0],
+            polygons=self.birs[:5],  # drag_polygons=[1, 2]
         )
         drag_ax2 = drag_polygons(
-            ax=self.axs[1], polygons=self.birs[5:], drag_polygons=[1, 2]
+            ax=self.axs[1],
+            polygons=self.birs[5:],  # drag_polygons=[1, 2]
         )
         self.mouse_connections += [drag_ax1, drag_ax2]
 

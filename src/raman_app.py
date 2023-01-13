@@ -1,9 +1,12 @@
-import sys, shutil, os, pathlib, atexit
+import atexit
+import os
+import pathlib
+import shutil
+import sys
 
-from .spectral_processing import Sample_controller
 from .event_management import Calculation_listener, Database_listener, Plot_listener
-
 from .interface import App_interface
+from .spectral_processing import Sample_controller
 
 
 class Raman_app:

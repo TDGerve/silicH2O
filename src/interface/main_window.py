@@ -1,15 +1,13 @@
-from tkinter import ttk
-import tkinter as tk
-
 import pathlib
-from typing import Dict, Any
-
-from .sample_navigation import Sample_navigation
-from .menus import io_menu
-from .tabs import Baseline_correction_frame
-from .screens import Computer_screen
+import tkinter as tk
+from tkinter import ttk
+from typing import Any, Dict
 
 from .. import app_settings
+from .menus import io_menu
+from .sample_navigation import Sample_navigation
+from .screens import Computer_screen
+from .tabs import Baseline_correction_frame
 
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
@@ -63,7 +61,9 @@ class Main_window(tk.Tk):
         width, height = self.screen.resolution
 
         self.minsize(*app_settings.gui["geometry"]["size_min"])
-        resolution_str = f"{int(width * 0.85)}x{int(height * 0.85)}"
+        resolution_str = (
+            f"{int(width * 0.85)}x{int(height * 0.85)}+{int(width * 0.15 * 0.5)}+0"
+        )
 
         self.geometry(resolution_str)
 
