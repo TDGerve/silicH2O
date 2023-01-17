@@ -60,26 +60,13 @@ class Sample_controller:
             new_birs = settings["baseline_regions"]
             new_interpolation_regions = settings["interpolation_regions"]
 
-        new_results = Results_DF(index=names)  # create_results_df(names)
+        new_results = Results_DF(index=names)
 
         old_files = len(self.files)
 
         self.files = np.append(self.files, files)
         self.names = np.append(self.names, names)
 
-        # new_files = len(self.files)
-
-        # if self.settings is None:
-        #     self.settings = new_settings
-        #     self.baseline_regions = new_birs
-        #     self.interpolation_regions = new_interpolation_regions
-
-        #     self.results = new_results
-
-        #     self.current_sample_index = 0
-        #     # self.current_sample.calculate()
-
-        # else:
         self.settings = pd.concat([self.settings, new_settings], axis=0)
         self.baseline_regions = pd.concat([self.baseline_regions, new_birs], axis=0)
         self.interpolation_regions = pd.concat(
@@ -87,9 +74,6 @@ class Sample_controller:
         )
 
         self.results = pd.concat([self.results, new_results], axis=0)
-
-        # for idx in np.arange(old_files, new_files):
-        #     self.save_sample(idx=idx)
 
         for idx, (file, name) in enumerate(
             zip(self.files[old_files:], self.names[old_files:])
