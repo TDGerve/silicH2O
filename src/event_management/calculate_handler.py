@@ -1,7 +1,7 @@
 import blinker as bl
 
-from ..spectral_processing import Sample_controller
 from ..interface import Gui
+from ..spectral_processing import Sample_controller
 
 
 class Calculation_listener:
@@ -9,11 +9,17 @@ class Calculation_listener:
     on_sample_change = bl.signal("sample change")
     on_settings_change = bl.signal("settings change")
 
+    on_Ctrl_c = bl.signal("copy birs")
+    on_Ctrl_v = bl.signal("paste birs")
+    on_Ctrl_s = bl.signal("save samples")
+
     on_plot_change = bl.signal("refresh plot")
 
     on_save_sample = bl.signal("save sample")
     on_reset_sample = bl.signal("reset sample")
     on_save_all = bl.signal("save all")
+
+    copied_birs = None
 
     def __init__(self, sample_controller: Sample_controller, gui: Gui):
         self.sample_controller = sample_controller
@@ -31,6 +37,18 @@ class Calculation_listener:
         self.update_gui_results()
 
         self.refresh_plots(message)
+
+    def copy_birs(self, *args):
+        try:
+            self.copied_birs = self.sample_controller.get_sample_settings()
+        except AttributeError:
+            pass
+
+    def paste_birs(self, *args):
+        if self.copied_birs is None:
+            pass
+        self.update_from_plot(**self.copied_birs)
+        self.refresh_plots("settings change")
 
     def switch_sample(self, *args, index: int):
 
@@ -85,6 +103,10 @@ class Calculation_listener:
         self.on_sample_change.connect(self.switch_sample, sender="navigator")
         self.on_settings_change.connect(self.update_from_plot, sender="plot")
         self.on_settings_change.connect(self.update_from_widgets, sender="widget")
+
+        self.on_Ctrl_c.connect(self.copy_birs)
+        self.on_Ctrl_v.connect(self.paste_birs)
+        self.on_Ctrl_s.connect(self.save_all_samples)
 
         self.on_reset_sample.connect(self.reset_sample)
         self.on_save_sample.connect(self.save_sample)

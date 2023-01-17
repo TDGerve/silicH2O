@@ -1,15 +1,14 @@
 import tkinter as tk
 from functools import partial
 from tkinter import ttk
-from typing import List
+from typing import List, Optional
 
 import blinker as bl
-import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from ... import app_settings
 from ...plots import Baseline_correction_plot
-from ..validate_input import invalid_input, validate_numerical_input
+from ..validate_input import validate_numerical_input
 from ..vertical_toolbar import vertical_toolbar
 
 on_settings_change = bl.signal("settings change")
@@ -31,22 +30,22 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.canvas = None
 
-        self.bir_widgets = []
-        self.baseline_smoothing_widgets = []
-        self.save_widgets = []
+        self.baseline_widgets = {}
+        # self.baseline_smoothing_widgets = {}
+        self.save_widgets = {}
 
-        self.bir_variables = []
-        self.baseline_smoothing_variables = []
-        self.areas_variables = []
-        self.signal_variables = []
+        self.baseline_variables = {}
+        # self.baseline_smoothing_variables = {}
+        self.areas_variables = {}
+        self.signal_variables = {}
 
-        variables["birs"] = self.bir_variables
+        variables["baseline"] = self.baseline_variables
         variables["areas"] = self.areas_variables
         variables["signal"] = self.signal_variables
-        variables["baseline_smoothing"] = self.baseline_smoothing_variables
+        # variables["baseline_smoothing"] = self.baseline_smoothing_variables
 
-        widgets["birs"] = self.bir_widgets
-        widgets["baseline_smoothing"] = self.baseline_smoothing_widgets
+        widgets["baseline"] = self.baseline_widgets
+        # widgets["baseline_smoothing"] = self.baseline_smoothing_widgets
         widgets["baseline_save"] = self.save_widgets
 
         self.make_bir_frame(0, 3)
@@ -56,6 +55,7 @@ class Baseline_correction_frame(ttk.Frame):
         self.make_dividers()
 
         self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=0)
         self.columnconfigure(3, minsize="6cm")
 
         self.rowconfigure(6, weight=1)
@@ -123,71 +123,57 @@ class Baseline_correction_frame(ttk.Frame):
             label.grid(row=i + 3, column=0, sticky=("nsw"))
 
             for j in range(2):
-                var = tk.StringVar()
+                name = f"bir_{i * 2 + j}"
+                var = tk.StringVar(name=name)
+                # convert var to int any time it is written to.
+
+                # var.trace("w", lambda name, idx, mode: var.set(int(var.get())))
+
                 entry = ttk.Entry(
                     frame,
-                    textvariable=var,
                     validate="focusout",
                     validatecommand=(
                         self.register(
                             partial(self.validate_bir_input, index=i * 2 + j)
                         ),
-                        "%P %W",
+                        r"%P %s %W",
                     ),
                     invalidcommand=(
                         self.register(partial(self.invalid_bir_input, index=i * 2 + j)),
-                        r"%s",
+                        r"%s %P",
                     ),
                     width=5,
                     background="white",
                     font=(_font, _fontsize),
                     state=tk.DISABLED,
-                    name=f"bir_{i * 2 + j}",
+                    name=name,
                     # relief="sunken",
                     # borderwidth=1,
                 )
                 entry.grid(row=i + 3, column=j + 1, sticky=("nesw"))
 
-                self.bir_widgets.append(entry)
-                self.bir_variables.append(var)
-
-        cp_frame = ttk.Frame(frame, name="copy_paste")
-        cp_frame.grid(row=i + 4, column=1, columnspan=2, sticky=("nesw"))
-
-        ttk.Button(
-            cp_frame,
-            text="copy BIRs",
-            state=tk.DISABLED,
-            name="copy_birs",
-        ).grid(row=0, column=0, sticky="nesw")
-
-        ttk.Button(
-            cp_frame,
-            text="paste BIRs",
-            state=tk.DISABLED,
-            name="paste_birs",
-        ).grid(row=0, column=1, sticky="nesw")
-
-        # for i in [1, 2]:
-        #     cp_frame.columnconfigure(i, weight=1)
+                # self.baseline_widgets.append(entry)
+                # self.bir_variables.append(var)
+                self.baseline_widgets[name] = entry
+                self.baseline_variables[name] = var
 
     def make_smoothing_widgets(self, frame, rowstart):
 
         ttk.Label(frame).grid(row=rowstart, column=0)  # empty row
-
+        name = "smoothing"
         ttk.Label(
             frame,
             text="smoothing",
             font=(_font, _fontsize_head),
         ).grid(row=rowstart + 1, column=0, columnspan=2, sticky=("nsw"))
 
-        var = tk.StringVar(name="baseline_smoothing_var")
+        var = tk.StringVar(name=name)
         entry = ttk.Spinbox(
             frame,
             from_=0.1,
             to=100,
             increment=0.1,
-            textvariable=var,
+            # textvariable=var,
             validate="focusout",
             validatecommand=(
                 self.register(self.validate_smoothing),
@@ -201,7 +187,7 @@ class Baseline_correction_frame(ttk.Frame):
             background="white",
             font=(_font, _fontsize),
             state=tk.DISABLED,
-            name="baseline_smoothing",
+            name=name,
         )
         entry.grid(row=rowstart + 1, column=2, sticky=("nesw"))
 
@@ -209,12 +195,16 @@ class Baseline_correction_frame(ttk.Frame):
             frame,
             text="Optimise smoothing",
             state=tk.DISABLED,
-            name="optimise_baseline_smoothing",
+            name="optimise_smoothing",
         )  # command=func
         button.grid(row=rowstart + 2, column=0, columnspan=3, sticky="s")
 
-        self.baseline_smoothing_widgets.append([entry, button])
-        self.baseline_smoothing_variables.append(var)
+        # self.baseline_smoothing_widgets.extend((entry, button))
+        # self.baseline_smoothing_variables.append(var)
+        self.baseline_widgets[name] = entry
+        self.baseline_variables[name] = var
+
+        self.baseline_widgets["optimise_smoothing"] = button
 
     def make_areas_frame(self, row: int, col: int):
 
@@ -233,7 +223,7 @@ class Baseline_correction_frame(ttk.Frame):
         ).grid(row=0, column=0, columnspan=2, sticky=("nsw"))
 
         labels = ["Silicate", "H\u2082O", "H\u2082O:silicate"]
-        names = ["Silicate", "H2O", "H2OSi"]
+        names = ["silicate", "H2O", "H2OSi"]
 
         make_label_widgets(frame, labels, names, [1, 1], self.areas_variables)
 
@@ -283,7 +273,7 @@ class Baseline_correction_frame(ttk.Frame):
             frame,
             text="save all",
             state=tk.DISABLED,
-            name="save all",
+            name="save_all",
             command=lambda: on_save_all.send("baseline"),
         )
         save_all.grid(row=1, column=1, sticky="nesw")
@@ -291,13 +281,17 @@ class Baseline_correction_frame(ttk.Frame):
         for i in range(2):
             frame.columnconfigure(i, weight=1)
 
-        self.save_widgets += [reset, save, save_all]
+        names = ["reset_sample", "save_sample", "save_all"]
+        widgets = [reset, save, save_all]
+        for name, widget in zip(names, widgets):
+            self.save_widgets[name] = widget
+        # self.save_widgets += [reset, save, save_all]
 
-    def validate_bir_input(self, new_value: str, index: int):
+    def validate_bir_input(self, values: str, index: int):
 
-        new_value = new_value[: new_value.index(" ")]
-        widget = self.bir_widgets[index]
-        variable = self.bir_variables[index]
+        new_value = values[: values.index(" ")]
+        widget = self.baseline_widgets[f"bir_{index}"]
+        variable = self.baseline_variables[f"bir_{index}"]
 
         accepted_range = self.get_bir_range(index)
 
@@ -306,41 +300,51 @@ class Baseline_correction_frame(ttk.Frame):
             accepted_range=accepted_range,
             widget=widget,
             variable=variable,
+            dtype=int,
         )
 
         if valid:
             self.change_bir(index=index, value=new_value)
-            return True
-        else:
-            return False
 
-    def invalid_bir_input(self, old_value: str, index: int):
-        old_value = old_value[: old_value.index(" ")]
-        variable = self.bir_variables[index]
+        return valid
 
-        return partial(invalid_input, variable=variable)(old_value)
+    def invalid_bir_input(self, values: str, index: int):
+
+        # old_value = values[: values.index(" ")]
+        variable = self.baseline_variables[f"bir_{index}"]
+        old_value = variable.get()
+
+        widget = self.baseline_widgets[f"bir_{index}"]
+        widget.delete(0, tk.END)
+        widget.insert(0, f"{int(old_value)}")
+
+        # return partial(invalid_input, variable=variable)(old_value)
 
     def get_bir_range(self, index: int, buffer=5):
 
         if index == 0:
             lower_boundary = 0
         else:
-            lower_boundary = int(self.bir_variables[index - 1].get()) + buffer
+            lower_boundary = (
+                int(self.baseline_variables[f"bir_{index - 1}"].get()) + buffer
+            )
 
         try:
-            upper_boundary = int(self.bir_variables[index + 1].get()) - buffer
-        except (ValueError, IndexError):
+            upper_boundary = (
+                int(self.baseline_variables[f"bir_{index + 1}"].get()) - buffer
+            )
+        except (ValueError, KeyError):
             upper_boundary = 4000
 
         return [lower_boundary, upper_boundary]
 
     def change_bir(self, *args, index, value, **kwargs):
 
-        on_settings_change.send("widget", birs={str(index): value})
+        on_settings_change.send("widget", baseline={f"bir_{index}": value})
 
     def change_baseline_smoothing(self, new_value):
 
-        on_settings_change.send("widget", baseline_smoothing=[new_value])
+        on_settings_change.send("widget", baseline={"smoothing": new_value})
 
     def validate_smoothing(self, new_value):
         """
@@ -352,8 +356,8 @@ class Baseline_correction_frame(ttk.Frame):
         """
 
         new_value = new_value
-        widget = self.baseline_smoothing_widgets[-1]
-        variable = self.baseline_smoothing_variables[-1]
+        widget = self.baseline_widgets["smoothing"]
+        variable = self.baseline_variables["smoothing"]
 
         accepted_range = [0, 100]
 
@@ -365,20 +369,31 @@ class Baseline_correction_frame(ttk.Frame):
         )
 
         if valid:
-            variable.set(new_value)
             self.change_baseline_smoothing(new_value)
 
         return valid
 
     def invalid_smoothing(self, old_value: str):
-        old_value = old_value[: old_value.index(" ")]
+        # old_value = old_value[: old_value.index(" ")]
 
-        var = self.baseline_smoothing_variables[-1]
-        var.set(old_value)
+        # var = self.baseline_smoothing_variables[-1]
+        # var.set(old_value)
+
+        variable = self.baseline_variables["smoothing"]
+        old_value = variable.get()
+
+        widget = self.baseline_widgets["smoothing"]
+        widget.delete(0, tk.END)
+        widget.insert(0, f"{old_value}")
 
 
 def make_label_widgets(
-    frame, labels: List[str], names: List[str], start_indeces: List[int], variables
+    frame,
+    labels: List[str],
+    names: List[str],
+    start_indeces: List[int],
+    variables,
+    trace: Optional[callable] = None,
 ):
 
     row, column = start_indeces
@@ -388,12 +403,14 @@ def make_label_widgets(
         text_label.grid(row=i + 1, sticky="nesw")
 
         var = tk.StringVar(name=name)
+        if trace is not None:
+            var.trace("w", partial(trace, var=var))
         widget = ttk.Label(
             frame,
             textvariable=var,
             anchor="e",
             background="white",
-            width=6,
+            width=7,
             font=(_font, _fontsize),
             style="TButton",
             # borderwidth=1,
@@ -402,4 +419,4 @@ def make_label_widgets(
             row=i + row, column=column, sticky=("nse")  # , padx=padding, pady=padding
         )
 
-        variables.append(var)
+        variables[name] = var

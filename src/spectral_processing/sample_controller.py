@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from .. import app_settings
+from ..Dataframes import Baseline_DF, Interpolation_DF, Results_DF, Settings_DF
 from .sample_processing import h2o_processor
 
 
@@ -17,11 +18,11 @@ class Sample_controller:
         self.names: np.ndarray = np.array([], dtype=str)
         self.spectra: np.ndarray = np.array([], dtype=h2o_processor)
 
-        self.settings: Optional[pd.DataFrame] = None
-        self.baseline_regions: Optional[pd.DataFrame] = None
-        self.interpolation_regions: Optional[pd.DataFrame] = None
+        self.settings: pd.DataFrame = Settings_DF()
+        self.baseline_regions: pd.DataFrame = Baseline_DF()
+        self.interpolation_regions: pd.DataFrame = Interpolation_DF()
 
-        self.results: Optional[pd.DataFrame] = None
+        self.results: pd.DataFrame = Results_DF()
 
         self.current_sample_index: Optional[int] = None
 
@@ -50,23 +51,49 @@ class Sample_controller:
     ) -> None:
 
         if settings is None:
-            new_settings, new_birs, new_interpolation_regions = get_settings(names)
+            new_settings, new_birs, new_interpolation_regions = get_default_settings(
+                names
+            )
 
         else:
             new_settings = settings["general"]
             new_birs = settings["baseline_regions"]
             new_interpolation_regions = settings["interpolation_regions"]
 
-        new_results = create_results_df(names)
+        new_results = Results_DF(index=names)  # create_results_df(names)
 
         old_files = len(self.files)
 
         self.files = np.append(self.files, files)
         self.names = np.append(self.names, names)
 
-        new_files = len(self.files)
+        # new_files = len(self.files)
 
-        for idx, (file, name) in enumerate(zip(files, names)):
+        # if self.settings is None:
+        #     self.settings = new_settings
+        #     self.baseline_regions = new_birs
+        #     self.interpolation_regions = new_interpolation_regions
+
+        #     self.results = new_results
+
+        #     self.current_sample_index = 0
+        #     # self.current_sample.calculate()
+
+        # else:
+        self.settings = pd.concat([self.settings, new_settings], axis=0)
+        self.baseline_regions = pd.concat([self.baseline_regions, new_birs], axis=0)
+        self.interpolation_regions = pd.concat(
+            [self.interpolation_regions, new_interpolation_regions], axis=0
+        )
+
+        self.results = pd.concat([self.results, new_results], axis=0)
+
+        # for idx in np.arange(old_files, new_files):
+        #     self.save_sample(idx=idx)
+
+        for idx, (file, name) in enumerate(
+            zip(self.files[old_files:], self.names[old_files:])
+        ):
             x, y = np.genfromtxt(file, unpack=True)
             self.spectra = np.append(
                 self.spectra,
@@ -80,27 +107,6 @@ class Sample_controller:
                 ),
             )
             self.calculate_sample(idx)
-
-        if self.settings is None:
-            self.settings = new_settings
-            self.baseline_regions = new_birs
-            self.interpolation_regions = new_interpolation_regions
-
-            self.results = new_results
-
-            self.current_sample_index = 0
-            # self.current_sample.calculate()
-
-        else:
-            self.settings = pd.concat([self.settings, new_settings], axis=0)
-            self.baseline_regions = pd.concat([self.settings, new_birs], axis=0)
-            self.interpolation_regions = pd.concat(
-                [self.settings, new_interpolation_regions], axis=0
-            )
-
-            self.results = pd.concat([self.results, new_results], axis=0)
-
-        for idx in np.arange(old_files, new_files):
             self.save_sample(idx=idx)
 
     def get_sample(self, index: int) -> h2o_processor:
@@ -125,8 +131,7 @@ class Sample_controller:
         sample = self.current_sample
 
         func_dict = {
-            "birs": sample.set_birs,
-            "baseline_smoothing": sample.set_baseline_smoothing,
+            "baseline": sample.set_baseline,
             "interpolate": sample.set_interpolation,
         }
 
@@ -145,30 +150,38 @@ class Sample_controller:
 
     def get_sample_settings(self):
 
-        birs = self.current_sample.get_birs()
+        baseline = self.current_sample.get_birs()
 
-        baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
+        baseline["smoothing"] = self.current_sample.settings["baseline_smoothing"]
+
+        # baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
 
         return {
-            "birs": birs,
-            "baseline_smoothing": baseline_smoothing,
+            "baseline": baseline,
+            # "baseline_smoothing": baseline_smoothing,
         }
 
     def get_sample_results(self):
 
         all_results = list(self.current_sample.results.values)
-        areas = all_results[:3]
-        areas[:2] = [int(i) for i in all_results[:2]]
-        areas[2] = round(all_results[2], 2)
+        names = ["silicate", "H2O", "H2OSi"]
+        areas = {}
+        for name, value in zip(names, all_results[:3]):
+            if abs(value) < 20:
+                value = round(value, 2)
+            else:
+                value = int(value)
+            areas[name] = value
 
-        signal = all_results[3:]
+        names = ["noise", "Si_SNR", "H2O_SNR"]
+        signal = {name: round(value, 2) for name, value in zip(names, all_results[3:])}
 
         return {"areas": areas, "signal": signal}
 
     def get_sample_plotdata(self):
 
         sample = self.current_sample
-        return sample.get_plot_data()
+        return sample.get_plotdata()
 
     def save_sample(self, idx=None) -> None:
 
@@ -241,23 +254,23 @@ class Sample_controller:
 
         self.project = filepath
 
-    def load_project(self, filepath):
+    # def load_project(self, filepath):
 
-        with tarfile.open(filepath, "r") as tar:
-            names = [member.name for member in tar]
-            # csvs = [name for name in names if name.endswith(".csv")]
-            spectra = [name for name in names if name.endswith(".sp")]
-            spectrum_files = [tar.extractfile(spectrum) for spectrum in spectra]
+    #     with tarfile.open(filepath, "r") as tar:
+    #         names = [member.name for member in tar]
+    #         # csvs = [name for name in names if name.endswith(".csv")]
+    #         spectra = [name for name in names if name.endswith(".sp")]
+    #         spectrum_files = [tar.extractfile(spectrum) for spectrum in spectra]
 
-            self.settings = pd.read_csv(tar.extractfile("settings.csv"), index_col=[0])
-            self.baseline_regions = pd.read_csv(
-                tar.extractfile("baseline_regions.csv"), index_col=[0], header=[0, 1]
-            )
-            self.interpolation_regions = pd.read_csv(
-                tar.extractfile("interpolation_regions.csv"),
-                index_col=[0],
-                header=[0, 1],
-            )
+    #         self.settings = pd.read_csv(tar.extractfile("settings.csv"), index_col=[0])
+    #         self.baseline_regions = pd.read_csv(
+    #             tar.extractfile("baseline_regions.csv"), index_col=[0], header=[0, 1]
+    #         )
+    #         self.interpolation_regions = pd.read_csv(
+    #             tar.extractfile("interpolation_regions.csv"),
+    #             index_col=[0],
+    #             header=[0, 1],
+    # )
 
     def export_results(
         self, folder: pathlib.Path, name: str, incl_settings: bool = True
@@ -283,47 +296,46 @@ class Sample_controller:
         baseline_settings.to_csv(folder / f"{name}_baselines.csv")
 
 
-def get_settings(names: List) -> pd.DataFrame:
+def get_default_settings(names: List) -> pd.DataFrame:
 
     baseline_correction, interpolation = app_settings.process
 
-    birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
-    birs.index = names
+    # birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
+    # birs.index = names
 
-    interpolation_regions = pd.concat(
-        [interpolation["regions"].copy()] * len(names), axis=1
-    ).T
-    interpolation_regions.index = names
+    birs = Baseline_DF([baseline_correction["birs"].copy()] * len(names), index=names)
 
-    settings_df = pd.DataFrame(
-        {
-            "baseline_smoothing": baseline_correction["smoothing"],
-            "interpolation": interpolation["use"],
-            "interpolation_smoothing": interpolation["smoothing"],
-        },
-        index=names,
+    # interpolation_regions = pd.concat(
+    #     [interpolation["regions"].copy()] * len(names), axis=1
+    # ).T
+    # interpolation_regions.index = names
+
+    interpolation_regions = Interpolation_DF(
+        [interpolation["regions"].copy()] * len(names), index=names
     )
+
+    data = [
+        [
+            baseline_correction["smoothing"],
+            interpolation["use"],
+            interpolation["smoothing"],
+        ]
+    ] * len(names)
+
+    settings_df = Settings_DF(data, index=names)
+
+    # settings_df = pd.DataFrame(
+    #     {
+    #         "baseline_smoothing": baseline_correction["smoothing"],
+    #         "interpolation": interpolation["use"],
+    #         "interpolation_smoothing": interpolation["smoothing"],
+    #     },
+    #     index=names,
+    # )
 
     return settings_df, birs, interpolation_regions
 
 
-def create_results_df(names: List) -> pd.DataFrame:
-    colnames = ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
-    return pd.DataFrame(index=names, columns=colnames, dtype=float)
-
-
-def get_names_from_files(files: List) -> List:
-    separator = app_settings.general["name_separator"]
-    names = []
-
-    for file in files:
-        try:
-            name = os.path.basename(file)
-        except TypeError:
-            name = file.name
-        if separator not in name:
-            names.append(name)
-        else:
-            names.append(name[: name.index(separator)])
-
-    return names
+# def create_results_df(names: List) -> pd.DataFrame:
+#     colnames = ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
+#     return pd.DataFrame(index=names, columns=colnames, dtype=float)

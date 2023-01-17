@@ -23,15 +23,14 @@ class drag_polygons:
         self,
         ax,
         polygons: List[Polygon],
-        # drag_polygons: List[int],
     ):
 
         self.ax = ax
         self.polygons = polygons
-        # self.drag_polygons = drag_polygons  # Drag these entire polygons, for al others only the left and right borders will be dragged
 
         self.dragging = None
         self.width = None
+        self.mouse_location = None
         self.mouse_location = None
 
     def on_click(self, event):
@@ -50,8 +49,13 @@ class drag_polygons:
         callback method for mouse motion events
 
         """
+        object_not_found = (not self.dragging) or (not event.xdata)
 
-        if (not self.dragging) or (not event.xdata):
+        if object_not_found:
+            return
+
+        movement_too_small = abs(event.xdata - self.mouse_location) < 1
+        if movement_too_small:
             return
 
         buffer = 5
@@ -116,8 +120,9 @@ class drag_polygons:
         self.dragging = None
         self.width = None
         self.mouse_location = None
+        self.mouse_location = None
 
-    def find_neighbor_object(self, event, border_threshold=3):
+    def find_neighbor_object(self, event, border_threshold=5):
         """
         Find lines around mouse position
         """
@@ -130,17 +135,12 @@ class drag_polygons:
             xmax = max(x_coordinates)
 
             self.width = xmax - xmin
-            width_threshold = [self.width * 0.1, 7][self.width > 30]
+            width_threshold = [self.width * 0.1, 10][self.width > 30]
             border_threshold = min(border_threshold, width_threshold)
 
             if (xmin + width_threshold) < event.xdata < (xmax - width_threshold):
                 object_id = (i, drag.BOTH)
                 return object_id
-
-            # if i in self.drag_polygons:
-            #     if xmin < event.xdata < xmax:
-            #         object_id = (i, drag.BOTH)
-            #         self.width = xmax - xmin
 
             else:
                 for j, x in enumerate([xmin, xmax]):
@@ -157,6 +157,10 @@ class drag_polygons:
 
         new_from = min(x_coordinates)
         new_to = max(x_coordinates)
-        new_settings = {str(id[0] * 2): int(new_from), str(id[0] * 2 + 1): int(new_to)}
 
-        on_settings_change.send("plot", birs=new_settings)
+        new_settings = {
+            f"bir_{id[0] * 2}": int(new_from),
+            f"bir_{id[0] * 2 + 1}": int(new_to),
+        }
+
+        on_settings_change.send("plot", baseline=new_settings)

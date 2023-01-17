@@ -1,11 +1,11 @@
 import tkinter as tk
+from typing import Any, Dict
 
-from typing import Dict, Any
 import blinker as bl
 
-from .main_window import Main_window
+from ..plots import Baseline_correction_plot, Plot
 from .GUIS import GUI_state
-from ..plots import Plot, Baseline_correction_plot
+from .main_window import Main_window
 
 on_plots_initialised = bl.signal("plots initialised")
 
@@ -34,30 +34,56 @@ class App_interface:
         for name, values in kwargs.items():
             if name not in self.variables.keys():
                 return
-            if name == "birs":
 
-                repeat = []
-                for index, value in values.items():
-                    widget = self.widgets["birs"][int(index)]
-                    # Hack to make sure, validation is triggered for the bir widets
+            for var_name, value in values.items():
+                variable = self.variables[name][var_name]
+
+                try:
+                    widget = self.widgets[name][var_name]
                     widget.focus_set()
+                    widget.delete(0, tk.END)
+                    widget.insert(0, f"{value}")
+                except KeyError:
+                    pass
 
-                    variable = self.variables["birs"][int(index)]
-                    variable.set(int(value))
+                variable.set(value)
 
-            else:
-                for variable, value in zip(self.variables[name], values):
-                    variable.set(value)
+            # if name == "birs":
+
+            #     for index, value in values.items():
+
+            #         widget = self.widgets["birs"][int(index)]
+            #         # Hack to make sure, validation is triggered for the bir widets
+            #         widget.focus_set()
+            #         widget.delete(0, tk.END)
+            #         widget.insert(0, f"{int(value)}")
+
+            #         variable = self.variables["birs"][int(index)]
+            #         variable.set(int(value))
+
+            # else:
+            #     for variable, value in zip(self.variables[name], values):
+            #         variable.set(value)
+
+            #         widget_name = str(variable).split(".")[-1]
+            #         for widget in self.widgets[name]:
+            #             if not str(widget).split(".")[-1] == widget_name:
+            #                 continue
+            #             widget.focus_set()
+            #             widget.delete(0, tk.END)
+            #             widget.insert(0, f"{value}")
+            #             break
 
             self.window.focus()
 
     def activate_widgets(self) -> None:
-        for widgets in self.widgets.values():
-            for w in widgets:
+        for frame in self.widgets.values():
+            for widget in frame.values():
+                # for w in widgets:
                 try:
-                    w.configure(state=tk.NORMAL)
+                    widget.configure(state=tk.NORMAL)
                 except AttributeError:
-                    for i in w:
+                    for i in widget:
                         i.configure(state=tk.NORMAL)
 
     def create_plots(self):

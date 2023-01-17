@@ -35,6 +35,7 @@ class h2o_processor:
                 for data in ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
             }
         )
+
         self.data = ram.H2O(x, y, laser=app_settings.general["laser_wavelength"])
 
     def get_birs(self) -> Dict[str, int]:
@@ -42,12 +43,16 @@ class h2o_processor:
         birs = self.baseline_regions.copy()
 
         birs.index = range(len(birs))
-        return dict(birs)
+        return {f"bir_{idx}": value for idx, value in birs.items()}
+        # return dict(birs)
 
-    def set_birs(self, kwargs) -> None:
+    def set_baseline(self, kwargs) -> None:
 
         for bir, new_value in kwargs.items():
-            index = int(bir)
+            if bir == "smoothing":
+                self.settings["baseline_smoothing"] = new_value
+                continue
+            index = int(bir[-1])
             self.baseline_regions.iloc[index] = new_value
 
     def calculate_baseline(self):
@@ -75,7 +80,7 @@ class h2o_processor:
         self.data.calculate_noise()
         self.data.calculate_SNR()
         self.results[["noise", "Si_SNR", "H2O_SNR"]] = [
-            round(i, 1) for i in (self.data.noise, self.data.Si_SNR, self.data.H2O_SNR)
+            round(i, 2) for i in (self.data.noise, self.data.Si_SNR, self.data.H2O_SNR)
         ]
 
     def calculate_areas(self):
@@ -87,14 +92,14 @@ class h2o_processor:
     def set_interpolation(self, **kwargs) -> None:
 
         for region, new_value in kwargs.items():
-            index = int(region)
+            index = int(region[-1])
             self.baseline_regions.iloc[index] = new_value
 
     def set_baseline_smoothing(self, value: List[float]):
 
         self.settings["baseline_smoothing"] = value[-1]
 
-    def get_plot_data(self) -> Dict[str, Any]:
+    def get_plotdata(self) -> Dict[str, Any]:
         """
         Returns
         -------

@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Any, Dict
 
+import blinker as bl
+
 from .. import app_settings
 from .menus import io_menu
 from .sample_navigation import Sample_navigation
@@ -14,6 +16,10 @@ _theme_file = _main_folder / "theme/breeze.tcl"
 
 _font = app_settings.gui["font"]["family"]
 _fontsize = app_settings.gui["font"]["size"]
+
+on_Ctrl_c = bl.signal("copy birs")
+on_Ctrl_v = bl.signal("paste birs")
+on_Ctrl_s = bl.signal("save samples")
 
 
 class Main_window(tk.Tk):
@@ -35,11 +41,19 @@ class Main_window(tk.Tk):
 
         self.create_menus()
 
+        self.set_keybindings()
+
+    def set_keybindings(self):
         # # Give focus to the main window when pressing return
         self.bind(
             "<Return>",
-            lambda event: self.focus_set(),
+            lambda event: self.focus(),
         )
+        self.bind("<Up>", lambda event: self.sample_navigation.previous_sample())
+        self.bind("<Down>", lambda event: self.sample_navigation.next_sample())
+        self.bind("<Control-c>", lambda event: on_Ctrl_c.send(""))
+        self.bind("<Control-v>", lambda event: on_Ctrl_v.send(""))
+        self.bind("<Control-s>", lambda event: on_Ctrl_s.send(""))
 
     def set_theme(self):
         self.style = ttk.Style()
@@ -90,7 +104,8 @@ class Main_window(tk.Tk):
 
     def create_navigation_frame(self, variables: Dict, widgets: Dict):
         # Create the two main frames
-        Sample_navigation(self, variables, widgets).grid(
+        self.sample_navigation = Sample_navigation(self, variables, widgets)
+        self.sample_navigation.grid(
             row=0, column=0, rowspan=1, columnspan=1, sticky=("nesw")
         )
 

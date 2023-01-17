@@ -17,10 +17,10 @@ class Sample_navigation(ttk.Frame):
 
         super().__init__(parent, name="sample_navigation", *args, **kwargs)
 
-        self.variables = []
+        self.variables = {}
         variables["sample_navigation"] = self.variables
 
-        self.widgets = []
+        self.widgets = {}
         widgets["sample_navigation"] = self.widgets
 
         self.make_listbox()
@@ -31,9 +31,13 @@ class Sample_navigation(ttk.Frame):
         for c in [0, 1]:
             self.columnconfigure(c, weight=1)
 
+    # def focus_listbox(self):
+    #     listbox = self.nametowidget("sample_list")
+    #     listbox.focus()
+
     def make_listbox(self):
         var = tk.StringVar()
-        self.variables.append(var)
+
         listbox = tk.Listbox(
             self,
             listvariable=var,
@@ -47,7 +51,9 @@ class Sample_navigation(ttk.Frame):
             ),
         )
         listbox.grid(column=0, row=0, columnspan=2, rowspan=1, sticky=("nesw"))
-        self.widgets.append(listbox)
+
+        self.widgets["samplelist"] = listbox
+        self.variables["samplelist"] = var
 
         # Bind listobx selection to sample selection
         listbox.bind(
@@ -72,19 +78,26 @@ class Sample_navigation(ttk.Frame):
         # Buttons to move through samples
         button_previous = ttk.Button(
             self,
+            name="previous",
             text="Previous",
             state=tk.DISABLED,
-            name="previous",
             command=self.previous_sample,
         )
         button_previous.grid(row=1, column=0, padx=5, pady=5, sticky=("nes"))
 
         button_next = ttk.Button(
-            self, text="Next", state=tk.DISABLED, name="next", command=self.next_sample
+            self,
+            name="next",
+            text="Next",
+            state=tk.DISABLED,
+            command=self.next_sample,
         )
         button_next.grid(row=1, column=1, padx=5, pady=5, sticky=("nws"))
 
-        self.widgets += [button_previous, button_next]
+        widgets = [button_previous, button_next]
+        names = ["previous", "next"]
+        for name, widget in zip(names, widgets):
+            self.widgets[name] = widget
 
     def next_sample(self):
         listbox = self.nametowidget("sample_list")
