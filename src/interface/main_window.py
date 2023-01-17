@@ -134,7 +134,7 @@ class Main_window(tk.Tk):
         )
         baseline_correction.grid(column=0, row=0, sticky=("nesw"))
 
-        tabs.add(baseline_correction, text="Baseline correction")
+        tabs.add(baseline_correction, text="Baseline\ncorrection")
 
     def on_tab_change(self):
         """
