@@ -1,25 +1,34 @@
+import glob
 import os
 import pathlib
+import shutil
 import tarfile
 from typing import List, Optional
 
 import blinker as bl
+import numpy as np
 import pandas as pd
 
 from .. import app_settings
 from ..interface import Gui, GUI_state
 from ..spectral_processing import Sample_controller
 
+temp_folder = pathlib.Path(__file__).parents[1] / "temp"
+
 
 class Database_listener:
 
     on_samples_added = bl.signal("samples added")
     on_load_project = bl.signal("load project")
+    on_new_project = bl.signal("new project")
 
     on_samples_removed = bl.signal("samples removed")
 
-    on_save_project_as = bl.signal("save project as")
+    on_save_project = bl.signal("save project")
     on_export_results = bl.signal("export results")
+
+    on_clear_plot = bl.signal("clear plot")
+    on_display_message = bl.signal("display message")
 
     def __init__(self, sample_controller: Sample_controller, gui: Gui):
         self.sample_controller = sample_controller
@@ -47,12 +56,55 @@ class Database_listener:
             self.gui.activate_widgets()
             self.gui.set_state(GUI_state.ACTIVE)
 
-    def save_project_as(self, *args, filepath: str):
+    def new_project(self, *args):
 
-        filepath = pathlib.Path(filepath)
-        name = filepath.stem
+        self.sample_controller.__init__()
+        self.gui.clear_variables()
+        self.on_clear_plot.send("new project")
 
-        self.sample_controller.save_project_as(filepath=filepath, name=name)
+    def save_project(self, *args, filepath: Optional[str] = None):
+
+        self.on_display_message.send(message="saving project...", duration=None)
+
+        if filepath is not None:
+            filepath = pathlib.Path(filepath)
+            name = filepath.stem
+        else:
+            try:
+                filepath = self.sample_controller.project
+                name = filepath.stem
+            except AttributeError:
+                self.on_display_message(message="project not found", duration=10)
+                return
+
+        self.save_project_data(filepath=filepath, name=name)
+        self.on_display_message.send(message="saved project")
+
+    def save_project_data(self, filepath: pathlib.Path, name: str):
+
+        # project folder
+        temp_path = temp_folder / name
+        temp_datapath = temp_path / "data"
+        if not temp_datapath.is_dir():
+            temp_path.mkdir(parents=True, exist_ok=True)
+        # data folder
+
+        for sample in self.sample_controller.spectra:
+            data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
+            file = temp_datapath / f"{sample.name}.sp"
+            if not file.is_file():
+                np.savetxt(file, data)
+
+        fnames = ["settings", "baseline_regions", "interpolation_regions"]
+        data = self.sample_controller.get_all_settings()
+
+        for f, name in zip(data, fnames):
+            f.to_csv(temp_path / f"{name}.csv")
+
+        with tarfile.open(filepath, mode="w") as tar:
+            tar.add(temp_path, arcname="")
+
+        self.sample_controller.set_project(filepath=filepath)
 
     def export_results(self, *args, filepath: str):
 
@@ -62,42 +114,64 @@ class Database_listener:
 
         self.sample_controller.export_results(folder=folder, name=name)
 
+    def move_project_files(self, filepath, name):
+
+        temp_path = temp_folder / name
+        temp_datapath = temp_path / "data"
+
+        if not temp_datapath.is_dir():
+            temp_datapath.mkdir(parents=True, exist_ok=True)
+
+        with tarfile.open(str(filepath), "r") as tar:
+
+            for info in tar:
+                path = pathlib.Path(info.name)
+
+                suffix = path.suffix
+
+                if len(suffix) == 0:
+                    continue
+
+                name = path.stem
+
+                to_path = {
+                    ".csv": str(temp_path / path.name),
+                    ".sp": str(temp_datapath / path.name),
+                }[suffix]
+
+                tar.extract(info)
+                shutil.move(str(path), to_path)
+
     def load_project(self, *args, filepath: str):
 
+        self.on_clear_plot.send("new project")
+
         filepath = pathlib.Path(filepath)
+        name = filepath.stem
 
-        with tarfile.open(filepath, "r") as tar:
+        temp_path = temp_folder / name
+        temp_datapath = temp_path / "data"
 
-            general_settings = pd.read_csv(
-                tar.extractfile("settings.csv"), index_col=[0]
-            )
-            baseline_regions = pd.read_csv(
-                tar.extractfile("baseline_regions.csv"), index_col=[0], header=[0, 1]
-            )
-            interpolation_regions = pd.read_csv(
-                tar.extractfile("interpolation_regions.csv"),
-                index_col=[0],
-                header=[0, 1],
-            )
+        self.move_project_files(filepath=filepath, name=name)
 
-            settings_dict = {
-                "general": general_settings,
-                "baseline_regions": baseline_regions,
-                "interpolation_regions": interpolation_regions,
-            }
+        setting_files = glob.glob(f"{temp_path}\\*.csv")
+        spectrum_files = glob.glob(f"{temp_datapath}\\*.sp")
+        names = [pathlib.Path(spectrum).stem for spectrum in spectrum_files]
 
-            filenames = [member.name for member in tar]
-            spectra = [name for name in filenames if name.endswith(".sp")]
-            names = [os.path.basename(file)[:-3] for file in spectra]
-
-            spectrum_files = [tar.extractfile(spectrum) for spectrum in spectra]
-
-            self.sample_controller.__init__()
-            self.sample_controller.read_files(
-                spectrum_files, names=names, settings=settings_dict
+        settings_dict = {}
+        for setting in setting_files:
+            name = pathlib.Path(setting).stem
+            header = [[0, 1], "infer"][name == "settings"]
+            settings_dict[name] = pd.read_csv(
+                str(setting), index_col=[0], header=header
             )
 
-        self.sample_controller.project = filepath
+        self.sample_controller.__init__()
+        self.sample_controller.read_files(
+            spectrum_files, names=names, settings=settings_dict
+        )
+
+        self.sample_controller.set_project(filepath=filepath)
         self.gui.update_variables(sample_navigation={"samplelist": names})
 
         if self.gui.state == GUI_state.DISABLED:
@@ -108,7 +182,8 @@ class Database_listener:
         self.on_samples_added.connect(self.add_samples)
         self.on_samples_removed.connect(self.remove_samples)
 
-        self.on_save_project_as.connect(self.save_project_as)
+        self.on_new_project.connect(self.new_project)
+        self.on_save_project.connect(self.save_project)
         self.on_load_project.connect(self.load_project)
         self.on_export_results.connect(self.export_results)
 

@@ -6,6 +6,7 @@ from typing import Any, Dict
 import blinker as bl
 
 from .. import app_settings
+from .infobar import Infobar
 from .menus import io_menu
 from .sample_navigation import Sample_navigation
 from .screens import Computer_screen
@@ -19,7 +20,7 @@ _fontsize = app_settings.gui["font"]["size"]
 
 on_Ctrl_c = bl.signal("copy birs")
 on_Ctrl_v = bl.signal("paste birs")
-on_Ctrl_s = bl.signal("save samples")
+on_Ctrl_s = bl.signal("ctrl+s")
 
 
 class Main_window(tk.Tk):
@@ -36,6 +37,7 @@ class Main_window(tk.Tk):
         self.create_main_frame()
         self.create_navigation_frame(variables, widgets)
         self.create_tabs()
+        self.create_infobar(variables, widgets)
 
         self.populate_tabs(variables, widgets)
 
@@ -153,6 +155,11 @@ class Main_window(tk.Tk):
         #     # selected_sample = self.current_sample.index
         #     update[tab]()
         pass
+
+    def create_infobar(self, variables, widgets):
+        # main_frame = self.nametowidget("main_frame")
+        infobar = Infobar(self, variables, widgets)
+        infobar.grid(column=1, row=1, sticky=("nesw"))
 
     def on_return(self, *event):
 

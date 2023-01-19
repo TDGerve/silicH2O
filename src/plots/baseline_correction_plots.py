@@ -39,6 +39,15 @@ class Baseline_correction_plot(Double_plot):
 
         return super().plot_lines(x, spectra)
 
+    def clear_birs(self):
+        for bir in self.birs:
+            bir.remove()
+        self.birs = []
+
+    def clear_figure(self):
+        self.clear_birs()
+        super().clear_figure()
+
     def plot_birs(self, birs):
         if not self.birs:
             connect_mouse = True

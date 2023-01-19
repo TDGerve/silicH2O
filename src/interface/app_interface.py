@@ -30,6 +30,18 @@ class App_interface:
     def set_state(self, state: GUI_state) -> None:
         self.state = state
 
+    def clear_variables(self):
+        for group, variables in self.variables.items():
+            for name, var in variables.items():
+                var.set("")
+
+                try:
+                    widget = self.widgets[group][name]
+                    widget.delete(0, tk.END)
+                    widget.insert(0, "")
+                except KeyError:
+                    pass
+
     def update_variables(self, **kwargs) -> None:
         for name, values in kwargs.items():
             if name not in self.variables.keys():

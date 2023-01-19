@@ -4,12 +4,15 @@ import tarfile
 import warnings as w
 from typing import Dict, List, Optional, Union
 
+import blinker as bl
 import numpy as np
 import pandas as pd
 
 from .. import app_settings
 from ..Dataframes import Baseline_DF, Interpolation_DF, Results_DF, Settings_DF
 from .sample_processing import h2o_processor
+
+on_display_message = bl.signal("display message")
 
 
 class Sample_controller:
@@ -56,7 +59,7 @@ class Sample_controller:
             )
 
         else:
-            new_settings = settings["general"]
+            new_settings = settings["settings"]
             new_birs = settings["baseline_regions"]
             new_interpolation_regions = settings["interpolation_regions"]
 
@@ -145,6 +148,9 @@ class Sample_controller:
             # "baseline_smoothing": baseline_smoothing,
         }
 
+    def get_all_settings(self):
+        return self.settings, self.baseline_regions, self.interpolation_regions
+
     def get_sample_results(self):
 
         all_results = list(self.current_sample.results.values)
@@ -215,52 +221,44 @@ class Sample_controller:
         except TypeError:
             self.current_sample_index = 0
 
-    def save_project_as(self, filepath: pathlib.Path, name: str):
+    # def save_project_as(self, filepath: pathlib.Path, name: str):
 
-        # project folder
-        temp_path = pathlib.Path(__file__).parents[1] / "temp" / name
-        temp_path.mkdir(parents=True, exist_ok=True)
-        # data folder
-        temp_datapath = temp_path / "data"
-        temp_datapath.mkdir(exist_ok=True)
+    #     # project folder
+    #     temp_path = pathlib.Path(__file__).parents[1] / "temp" / name
+    #     temp_path.mkdir(parents=True, exist_ok=True)
+    #     # data folder
+    #     temp_datapath = temp_path / "data"
+    #     temp_datapath.mkdir(exist_ok=True)
 
-        for sample in self.spectra:
-            data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
-            np.savetxt(temp_datapath / f"{sample.name}.sp", data)
+    #     for sample in self.spectra:
+    #         data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
+    #         file = temp_datapath / f"{sample.name}.sp"
+    #         if not file.is_file():
+    #             np.savetxt(file, data)
 
-        fnames = ["settings", "baseline_regions", "interpolation_regions"]
-        data = [self.settings, self.baseline_regions, self.interpolation_regions]
-        for f, name in zip(data, fnames):
-            f.to_csv(temp_path / f"{name}.csv")
+    #     fnames = ["settings", "baseline_regions", "interpolation_regions"]
+    #     data = [self.settings, self.baseline_regions, self.interpolation_regions]
+    #     for f, name in zip(data, fnames):
+    #         f.to_csv(temp_path / f"{name}.csv")
 
-        with tarfile.open(filepath, mode="w") as tar:
-            tar.add(temp_path, arcname="")
+    #     with tarfile.open(filepath, mode="w") as tar:
+    #         tar.add(temp_path, arcname="")
 
+    #     self.project = filepath
+
+    def set_project(self, filepath: str):
         self.project = filepath
-
-    # def load_project(self, filepath):
-
-    #     with tarfile.open(filepath, "r") as tar:
-    #         names = [member.name for member in tar]
-    #         # csvs = [name for name in names if name.endswith(".csv")]
-    #         spectra = [name for name in names if name.endswith(".sp")]
-    #         spectrum_files = [tar.extractfile(spectrum) for spectrum in spectra]
-
-    #         self.settings = pd.read_csv(tar.extractfile("settings.csv"), index_col=[0])
-    #         self.baseline_regions = pd.read_csv(
-    #             tar.extractfile("baseline_regions.csv"), index_col=[0], header=[0, 1]
-    #         )
-    #         self.interpolation_regions = pd.read_csv(
-    #             tar.extractfile("interpolation_regions.csv"),
-    #             index_col=[0],
-    #             header=[0, 1],
-    # )
 
     def export_results(
         self, folder: pathlib.Path, name: str, incl_settings: bool = True
     ):
-        print(folder, "\n", name)
-        pd.concat([self.settings, self.results], axis=1).to_csv(folder / f"{name}.csv")
+        try:
+            pd.concat([self.settings, self.results], axis=1).to_csv(
+                folder / f"{name}.csv"
+            )
+        except PermissionError:
+            on_display_message.send(message=f"{name}.csv is open!", duration=10)
+            return
 
         if not incl_settings:
             return
@@ -277,7 +275,13 @@ class Sample_controller:
 
         baseline_settings = pd.concat(baseline_settings, axis=1)
 
-        baseline_settings.to_csv(folder / f"{name}_baselines.csv")
+        try:
+            baseline_settings.to_csv(folder / f"{name}_baselines.csv")
+        except PermissionError:
+            on_display_message.send(
+                message=f"{name}_baselines.csv is open!", duration=10
+            )
+            return
 
 
 def get_default_settings(names: List) -> pd.DataFrame:
@@ -287,7 +291,7 @@ def get_default_settings(names: List) -> pd.DataFrame:
     # birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
     # birs.index = names
 
-    birs = Baseline_DF([baseline_correction["birs"].copy()] * len(names), index=names)
+    birs = Baseline_DF([baseline_correction["birs"].values] * len(names), index=names)
 
     # interpolation_regions = pd.concat(
     #     [interpolation["regions"].copy()] * len(names), axis=1
@@ -295,7 +299,7 @@ def get_default_settings(names: List) -> pd.DataFrame:
     # interpolation_regions.index = names
 
     interpolation_regions = Interpolation_DF(
-        [interpolation["regions"].copy()] * len(names), index=names
+        [interpolation["regions"].values] * len(names), index=names
     )
 
     data = [
@@ -306,7 +310,7 @@ def get_default_settings(names: List) -> pd.DataFrame:
         ]
     ] * len(names)
 
-    settings_df = Settings_DF(data, index=names)
+    settings = Settings_DF(data, index=names)
 
     # settings_df = pd.DataFrame(
     #     {
@@ -317,7 +321,7 @@ def get_default_settings(names: List) -> pd.DataFrame:
     #     index=names,
     # )
 
-    return settings_df, birs, interpolation_regions
+    return settings, birs, interpolation_regions
 
 
 # def create_results_df(names: List) -> pd.DataFrame:

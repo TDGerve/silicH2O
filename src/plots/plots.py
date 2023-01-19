@@ -1,12 +1,11 @@
+from typing import Dict, Protocol, Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from typing import Tuple, Protocol, Dict
-
-from . import plot_layout as pl
-from ..interface.screens import Screen
-
 from .. import app_settings
+from ..interface.screens import Screen
+from . import plot_layout as pl
 
 
 class Plot(Protocol):
@@ -17,6 +16,9 @@ class Plot(Protocol):
         ...
 
     def plot_birs(self):
+        ...
+
+    def clear_plot(self):
         ...
 
 
@@ -55,6 +57,16 @@ class Double_plot:
         ax = self.axs[1]
         ax.set_title(title)
         ax.set_xlim(*limits)
+
+    def clear_figure(self):
+
+        for _, lines in zip(self.axs, self.lines.values()):
+
+            for line in lines.values():
+                line[0].set_xdata([])
+                line[0].set_ydata([])
+
+        self.fig.canvas.draw_idle()
 
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs

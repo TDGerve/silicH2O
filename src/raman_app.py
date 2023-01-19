@@ -17,7 +17,7 @@ class Raman_app:
 
         self.calulcation_listener = Calculation_listener(self.samples, self.gui)
         self.database_listener = Database_listener(self.samples, self.gui)
-        self.plot_listener = Plot_listener(self.gui.plots)
+        self.plot_listener = Plot_listener(self.gui.plots, self.gui)
 
     def run(self) -> None:
 

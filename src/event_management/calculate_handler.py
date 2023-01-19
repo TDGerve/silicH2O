@@ -11,13 +11,16 @@ class Calculation_listener:
 
     on_Ctrl_c = bl.signal("copy birs")
     on_Ctrl_v = bl.signal("paste birs")
-    on_Ctrl_s = bl.signal("save samples")
+    on_Ctrl_s = bl.signal("ctrl+s")
 
     on_plot_change = bl.signal("refresh plot")
 
     on_save_sample = bl.signal("save sample")
     on_reset_sample = bl.signal("reset sample")
     on_save_all = bl.signal("save all")
+    on_save_project = bl.signal("save project")
+
+    on_display_message = bl.signal("display message")
 
     copied_birs = None
 
@@ -41,6 +44,7 @@ class Calculation_listener:
     def copy_birs(self, *args):
         try:
             self.copied_birs = self.sample_controller.get_sample_settings()
+            self.on_display_message.send(message="copied birs")
         except AttributeError:
             pass
 
@@ -49,6 +53,7 @@ class Calculation_listener:
             pass
         self.update_from_plot(**self.copied_birs)
         self.refresh_plots("settings change")
+        self.on_display_message.send(message="pasted birs")
 
     def switch_sample(self, *args, index: int):
 
@@ -89,10 +94,12 @@ class Calculation_listener:
     def save_sample(self, *args):
 
         self.sample_controller.save_sample()
+        self.on_display_message.send(message="sample saved")
 
     def save_all_samples(self, *args):
 
         self.sample_controller.save_all_samples()
+        self.on_display_message.send(message="saved all")
 
     def reset_sample(self, *args):
 
