@@ -171,6 +171,7 @@ class Sample_controller:
     def get_sample_plotdata(self):
 
         sample = self.current_sample
+
         return sample.get_plotdata()
 
     def save_sample(self, idx=None) -> None:
@@ -208,12 +209,25 @@ class Sample_controller:
         current_sample = self.files[self.current_sample_index]
         remove_samples = self.names[index]
 
-        self.spectra = np.delete(self.spectra, index)
-        self.files = np.delete(self.files, index)
-        self.names = np.delete(self.names, index)
+        data = (self.spectra, self.files, self.names)
+        for idx in range(len(data)):
+            data[idx] = np.delete(data[idx], index)
 
-        self.results = self.results.drop(labels=remove_samples, axis=0)
-        self.settings = self.settings.drop(labels=remove_samples, axis=0)
+        # self.spectra = np.delete(self.spectra, index)
+        # self.files = np.delete(self.files, index)
+        # self.names = np.delete(self.names, index)
+
+        dataframes = (
+            self.results,
+            self.settings,
+            self.baseline_regions,
+            self.interpolation_regions,
+        )
+        for idx in range(len(dataframes)):
+            dataframes[idx] = dataframes[idx].drop(labels=remove_samples, axis=0)
+
+        # self.results = self.results.drop(labels=remove_samples, axis=0)
+        # self.settings = self.settings.drop(labels=remove_samples, axis=0)
 
         try:
             current_sample_index, _ = np.where(self.files == current_sample)
@@ -248,6 +262,10 @@ class Sample_controller:
 
     def set_project(self, filepath: str):
         self.project = filepath
+
+    @property
+    def has_project(self):
+        return self.project is not None
 
     def export_results(
         self, folder: pathlib.Path, name: str, incl_settings: bool = True

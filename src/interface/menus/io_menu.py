@@ -96,11 +96,12 @@ class io_menu:
 
         on_load_project.send("io", filepath=project)
 
+        on_display_message.send(message="project loaded")
+
         if self.export_enabled:
             return
 
         self.activate_menus()
-        on_display_message.send(message="project loaded")
 
     def export_results(self):
 

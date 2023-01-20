@@ -37,6 +37,7 @@ class Double_plot:
             2, 1, figsize=(width, height)  # , constrained_layout=True
         )
         self.lines = {"ax1": {}, "ax2": {}}
+        self.name = None
 
         # Needs matplotlib > 3.4 & Python > 3.7
         self.fig.supxlabel(xlabel)
@@ -60,6 +61,11 @@ class Double_plot:
 
     def clear_figure(self):
 
+        if self.name is None:
+            return
+
+        self.name.set_text("")
+
         for _, lines in zip(self.axs, self.lines.values()):
 
             for line in lines.values():
@@ -67,6 +73,14 @@ class Double_plot:
                 line[0].set_ydata([])
 
         self.fig.canvas.draw_idle()
+
+    def display_name(self, sample_name):
+        if self.name is None:
+            self.name = self.axs[0].text(
+                0.01, 0.95, sample_name, transform=self.axs[0].transAxes
+            )
+        else:
+            self.name.set_text(sample_name)
 
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs

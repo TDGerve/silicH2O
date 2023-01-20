@@ -11,14 +11,10 @@ class Calculation_listener:
 
     on_Ctrl_c = bl.signal("copy birs")
     on_Ctrl_v = bl.signal("paste birs")
-    on_Ctrl_s = bl.signal("ctrl+s")
 
     on_plot_change = bl.signal("refresh plot")
 
-    on_save_sample = bl.signal("save sample")
     on_reset_sample = bl.signal("reset sample")
-    on_save_all = bl.signal("save all")
-    on_save_project = bl.signal("save project")
 
     on_display_message = bl.signal("display message")
 
@@ -91,16 +87,6 @@ class Calculation_listener:
         plot_data = self.sample_controller.get_sample_plotdata()
         self.on_plot_change.send(message, **plot_data)
 
-    def save_sample(self, *args):
-
-        self.sample_controller.save_sample()
-        self.on_display_message.send(message="sample saved")
-
-    def save_all_samples(self, *args):
-
-        self.sample_controller.save_all_samples()
-        self.on_display_message.send(message="saved all")
-
     def reset_sample(self, *args):
 
         self.sample_controller.reset_sample()
@@ -113,8 +99,5 @@ class Calculation_listener:
 
         self.on_Ctrl_c.connect(self.copy_birs)
         self.on_Ctrl_v.connect(self.paste_birs)
-        self.on_Ctrl_s.connect(self.save_all_samples)
 
         self.on_reset_sample.connect(self.reset_sample)
-        self.on_save_sample.connect(self.save_sample)
-        self.on_save_all.connect(self.save_all_samples)

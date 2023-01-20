@@ -24,11 +24,16 @@ class Database_listener:
 
     on_samples_removed = bl.signal("samples removed")
 
+    on_save_all = bl.signal("save all")
+    on_save_sample = bl.signal("save sample")
+
     on_save_project = bl.signal("save project")
     on_export_results = bl.signal("export results")
 
     on_clear_plot = bl.signal("clear plot")
     on_display_message = bl.signal("display message")
+
+    on_Ctrl_s = bl.signal("ctrl+s")
 
     def __init__(self, sample_controller: Sample_controller, gui: Gui):
         self.sample_controller = sample_controller
@@ -37,10 +42,24 @@ class Database_listener:
         self.subscribe_to_signals()
 
     def remove_samples(self, *args, index: List[int]) -> None:
+
+        if self.sample_controller.has_project:
+            names = self.sample_controller.names[index]
+            self.remove_data(names=names)
+
         self.sample_controller.remove_samples(index)
 
         names = list(self.sample_controller.names)
         self.gui.update_variables(sample_navigation={"samplelist": names})
+
+    def remove_data(self, names: List[str]):
+
+        temp_path = temp_folder / name
+        temp_datapath = temp_path / "data"
+
+        for name in names:
+            filepath = temp_datapath / f"{name}.sp"
+            filepath.unlink()
 
     def add_samples(self, *args, files: List[str]) -> None:
 
@@ -178,6 +197,21 @@ class Database_listener:
             self.gui.activate_widgets()
             self.gui.set_state(GUI_state.ACTIVE)
 
+    def save_sample(self, *args):
+
+        self.sample_controller.save_sample()
+        self.on_display_message.send(message="sample saved")
+
+    def save_all_samples(self, *args):
+
+        self.sample_controller.save_all_samples()
+        self.on_display_message.send(message="saved all")
+
+    def save_samples_to_project(self, *args):
+        self.save_all_samples()
+        if self.sample_controller.has_project:
+            self.save_project()
+
     def subscribe_to_signals(self) -> None:
         self.on_samples_added.connect(self.add_samples)
         self.on_samples_removed.connect(self.remove_samples)
@@ -186,6 +220,10 @@ class Database_listener:
         self.on_save_project.connect(self.save_project)
         self.on_load_project.connect(self.load_project)
         self.on_export_results.connect(self.export_results)
+
+        self.on_save_sample.connect(self.save_sample)
+        self.on_save_all.connect(self.save_all_samples)
+        self.on_Ctrl_s.connect(self.save_samples_to_project)
 
 
 def get_names_from_files(files: List, previous_names: List[str] = []) -> List:

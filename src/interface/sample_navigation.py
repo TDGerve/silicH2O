@@ -41,7 +41,7 @@ class Sample_navigation(ttk.Frame):
         listbox = tk.Listbox(
             self,
             listvariable=var,
-            selectmode=tk.BROWSE,
+            selectmode=tk.EXTENDED,
             exportselection=False,
             name="sample_list",
             state=tk.DISABLED,
@@ -127,6 +127,6 @@ class Sample_navigation(ttk.Frame):
     def change_sample(self, selection: Tuple[int]):
         if not selection:
             return
-        index = selection[-1]
+        index = selection[0]
         # listbox = self.nametowidget("sample_list")
         on_sample_change.send("navigator", index=index)

@@ -34,6 +34,7 @@ class Plot_listener:
     ):
 
         for name, plot in self.plots.items():
+            plot.display_name(sample_name)
             plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
             if name == "baseline_correction":
 
