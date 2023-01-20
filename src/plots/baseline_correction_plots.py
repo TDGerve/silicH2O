@@ -39,8 +39,10 @@ class Baseline_correction_plot(Double_plot):
 
         return super().plot_lines(x, spectra)
 
-    def clear_birs(self):
-        for bir in self.birs:
+    def clear_birs(self, amount=None):
+        if amount is None:
+            amount = len(self.birs)
+        for bir in self.birs[:amount]:
             bir.remove()
         self.birs = []
 
@@ -54,7 +56,12 @@ class Baseline_correction_plot(Double_plot):
         else:
             connect_mouse = False
 
-        birs = np.reshape(list(birs.values()), (5, 2))
+        bir_values = list(birs.values())
+        birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
+
+        bir_surplus = (len(self.birs) / 2) - len(birs)
+        if bir_surplus > 0:
+            self.clear_birs(amount=bir_surplus)
 
         for i, (ax, (left_boundary, right_boundary)) in enumerate(
             product(self.axs, birs)

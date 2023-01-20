@@ -8,6 +8,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from ... import app_settings
 from ...plots import Baseline_correction_plot
+from ..scrollframes import ScrollFrame
 from ..validate_input import validate_numerical_input
 from ..vertical_toolbar import vertical_toolbar
 
@@ -91,7 +92,7 @@ class Baseline_correction_frame(ttk.Frame):
 
     def make_bir_frame(self, row: int, col: int):
 
-        frame = ttk.Frame(self, name="birs")
+        frame = ttk.Frame(self, name="baseline")
         frame.grid(row=row, column=col, sticky=("nesw"))
         # frame.grid_propagate(0)
 
@@ -111,16 +112,37 @@ class Baseline_correction_frame(ttk.Frame):
         for i in [1, 2]:
             frame.columnconfigure(i, weight=1)
 
-    def make_bir_widgets(self, frame):
+    def make_bir_widgets(self, frame, bir_amount=5):
 
-        for k, name in zip(range(3), ["No. ", "From", "to"]):
+        for k, name in zip(range(3), ["No.", "From", "to"]):
             tk.Label(frame, text=name, font=(_font, _fontsize, "italic")).grid(
                 row=2, column=k, sticky=("nsw")
             )
 
-        for i in range(5):
-            label = ttk.Label(frame, text=f"{i + 1}. ", font=(_font, _fontsize))
-            label.grid(row=i + 3, column=0, sticky=("nsw"))
+        background_color = app_settings.background_color
+
+        bir_frame = ScrollFrame(
+            frame,
+            name="birs",
+            width="5c",
+            height="4.1c",
+            background_color=background_color,
+        )
+        bir_frame.grid(row=3, column=0, columnspan=3, sticky="nesw")
+        # for i in [1, 2]:
+        #     bir_frame.columnconfigure(i, weight=1)
+        # for i in (1, 2):
+        #     bir_frame.viewPort.columnconfigure(i, weight=1)
+
+        # bir_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=bir_frame.yview)
+        # bir_scroll.grid(row=0, column=3, sticky=("ns"))
+        # bir_frame["yscrollcommand"] = bir_scroll.set
+
+        for i in range(bir_amount):
+            label = ttk.Label(
+                bir_frame.viewPort, text=f"{i + 1: <4} ", font=(_font, _fontsize)
+            )
+            label.grid(row=i, column=0, sticky=("nsw"))
 
             for j in range(2):
                 name = f"bir_{i * 2 + j}"
@@ -130,7 +152,7 @@ class Baseline_correction_frame(ttk.Frame):
                 # var.trace("w", lambda name, idx, mode: var.set(int(var.get())))
 
                 entry = ttk.Entry(
-                    frame,
+                    bir_frame.viewPort,
                     validate="focusout",
                     validatecommand=(
                         self.register(
@@ -150,7 +172,7 @@ class Baseline_correction_frame(ttk.Frame):
                     # relief="sunken",
                     # borderwidth=1,
                 )
-                entry.grid(row=i + 3, column=j + 1, sticky=("nesw"))
+                entry.grid(row=i, column=j + 1, sticky=("nesw"))
 
                 # self.baseline_widgets.append(entry)
                 # self.bir_variables.append(var)

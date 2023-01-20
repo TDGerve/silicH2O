@@ -72,6 +72,8 @@ class Main_window(tk.Tk):
         self.background_color = self.style.lookup(
             app_settings.gui["theme"], "background"
         )
+        app_settings.background_color = self.background_color
+
         self.background_color = self.winfo_rgb(self.background_color)
 
     def set_geometry(self):

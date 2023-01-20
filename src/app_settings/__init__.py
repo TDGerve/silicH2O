@@ -1,8 +1,8 @@
 import json
-import pandas as pd
-import numpy as np
-
 from itertools import product
+
+import numpy as np
+import pandas as pd
 
 
 def get_process_settings():
@@ -34,3 +34,4 @@ with open(f"{__path__[0]}/general_settings.json") as f:
 
 
 process = get_process_settings()
+background_color = None
