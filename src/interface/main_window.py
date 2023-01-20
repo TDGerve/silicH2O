@@ -21,6 +21,7 @@ _fontsize = app_settings.gui["font"]["size"]
 on_Ctrl_c = bl.signal("copy birs")
 on_Ctrl_v = bl.signal("paste birs")
 on_Ctrl_s = bl.signal("ctrl+s")
+on_Ctrl_z = bl.signal("ctrl+z")
 
 
 class Main_window(tk.Tk):
@@ -56,6 +57,7 @@ class Main_window(tk.Tk):
         self.bind("<Control-c>", lambda event: on_Ctrl_c.send(""))
         self.bind("<Control-v>", lambda event: on_Ctrl_v.send(""))
         self.bind("<Control-s>", lambda event: on_Ctrl_s.send(""))
+        self.bind("<Control-z>", lambda event: on_Ctrl_z.send(""))
 
     def set_theme(self):
         self.style = ttk.Style()
@@ -108,7 +110,7 @@ class Main_window(tk.Tk):
         # Create the two main frames
         self.sample_navigation = Sample_navigation(self, variables, widgets)
         self.sample_navigation.grid(
-            row=0, column=0, rowspan=1, columnspan=1, sticky=("nesw")
+            row=0, column=0, rowspan=2, columnspan=1, sticky=("nesw")
         )
 
     def create_main_frame(self):

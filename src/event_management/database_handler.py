@@ -31,6 +31,7 @@ class Database_listener:
     on_export_results = bl.signal("export results")
 
     on_clear_plot = bl.signal("clear plot")
+    on_plot_change = bl.signal("refresh plot")
     on_display_message = bl.signal("display message")
 
     on_Ctrl_s = bl.signal("ctrl+s")
@@ -45,16 +46,19 @@ class Database_listener:
 
         if self.sample_controller.has_project:
             names = self.sample_controller.names[index]
+            if isinstance(names, str):
+                names = [names]
             self.remove_data(names=names)
 
         self.sample_controller.remove_samples(index)
 
         names = list(self.sample_controller.names)
+        self.on_plot_change.send("deleted samples")
         self.gui.update_variables(sample_navigation={"samplelist": names})
 
     def remove_data(self, names: List[str]):
 
-        temp_path = temp_folder / name
+        temp_path = temp_folder / self.sample_controller.project.stem
         temp_datapath = temp_path / "data"
 
         for name in names:
@@ -99,13 +103,15 @@ class Database_listener:
         self.save_project_data(filepath=filepath, name=name)
         self.on_display_message.send(message="saved project")
 
+        self.sample_controller.set_project(filepath=filepath)
+
     def save_project_data(self, filepath: pathlib.Path, name: str):
 
         # project folder
         temp_path = temp_folder / name
         temp_datapath = temp_path / "data"
         if not temp_datapath.is_dir():
-            temp_path.mkdir(parents=True, exist_ok=True)
+            temp_datapath.mkdir(parents=True, exist_ok=True)
         # data folder
 
         for sample in self.sample_controller.spectra:
@@ -122,8 +128,6 @@ class Database_listener:
 
         with tarfile.open(filepath, mode="w") as tar:
             tar.add(temp_path, arcname="")
-
-        self.sample_controller.set_project(filepath=filepath)
 
     def export_results(self, *args, filepath: str):
 

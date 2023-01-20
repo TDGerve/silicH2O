@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from typing import Dict, Tuple
+from typing import Callable, Dict, List, Tuple
 
 import blinker as bl
 
@@ -73,31 +73,58 @@ class Sample_navigation(ttk.Frame):
         sample_scroll.grid(row=0, column=3, sticky=("ns"))
         listbox["yscrollcommand"] = sample_scroll.set
 
+    def make_button(
+        self, name: str, command: Callable, position: List[int], sticky="nws"
+    ):
+        button = ttk.Button(
+            self,
+            name=name,
+            text=name,
+            state=tk.DISABLED,
+            command=command,
+        )
+        button.grid(row=position[0], column=position[1], padx=5, pady=5, sticky=sticky)
+        self.widgets[name] = button
+
     def make_buttons(self):
 
+        self.make_button("previous", self.previous_sample, [1, 0], "nes")
         # Buttons to move through samples
-        button_previous = ttk.Button(
-            self,
-            name="previous",
-            text="Previous",
-            state=tk.DISABLED,
-            command=self.previous_sample,
-        )
-        button_previous.grid(row=1, column=0, padx=5, pady=5, sticky=("nes"))
+        # button_previous = ttk.Button(
+        #     self,
+        #     name="previous",
+        #     text="previous",
+        #     state=tk.DISABLED,
+        #     command=self.previous_sample,
+        # )
+        # button_previous.grid(row=1, column=0, padx=5, pady=5, sticky=("nes"))
 
-        button_next = ttk.Button(
-            self,
-            name="next",
-            text="Next",
-            state=tk.DISABLED,
-            command=self.next_sample,
-        )
-        button_next.grid(row=1, column=1, padx=5, pady=5, sticky=("nws"))
+        self.make_button("next", self.next_sample, [1, 1])
 
-        widgets = [button_previous, button_next]
-        names = ["previous", "next"]
-        for name, widget in zip(names, widgets):
-            self.widgets[name] = widget
+        # button_next = ttk.Button(
+        #     self,
+        #     name="next",
+        #     text="next",
+        #     state=tk.DISABLED,
+        #     command=self.next_sample,
+        # )
+        # button_next.grid(row=1, column=1, padx=5, pady=5, sticky=("nws"))
+
+        self.make_button("delete", self.remove_samples, [2, 0])
+
+        # button_delete = ttk.Button(
+        #     self,
+        #     name="delete",
+        #     text="delete",
+        #     state=tk.DISABLED,
+        #     command=self.remove_samples,
+        # )
+        # button_delete.grid(row=2, column=0, pady=5, sticky=("nws"))
+
+        # widgets = [button_previous, button_next, button_delete]
+        # names = ["previous", "next", "delete"]
+        # for name, widget in zip(names, widgets):
+        #     self.widgets[name] = widget
 
     def next_sample(self):
         listbox = self.nametowidget("sample_list")
@@ -105,7 +132,7 @@ class Sample_navigation(ttk.Frame):
         current = listbox.curselection()
         if not current:  # See if selection exists
             return
-        current = current[-1]  # Grab actucal number
+        current = current[0]  # Grab actucal number
         total = listbox.size()
         new = current + 1
         if current < (total - 1):
@@ -115,7 +142,7 @@ class Sample_navigation(ttk.Frame):
 
     def previous_sample(self):
         listbox = self.nametowidget("sample_list")
-        current = listbox.curselection()[-1]
+        current = listbox.curselection()[0]
         if not current:
             return
         new = current - 1
@@ -130,3 +157,12 @@ class Sample_navigation(ttk.Frame):
         index = selection[0]
         # listbox = self.nametowidget("sample_list")
         on_sample_change.send("navigator", index=index)
+
+    def remove_samples(self):
+        listbox = self.nametowidget("sample_list")
+        selection = listbox.curselection()
+        if not selection:
+            return
+        index = list(selection)
+
+        on_samples_removed.send("navigator", index=index)

@@ -1,8 +1,6 @@
-import os
 import pathlib
-import tarfile
 import warnings as w
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import blinker as bl
 import numpy as np
@@ -204,33 +202,32 @@ class Sample_controller:
         sample.baseline_regions = self.baseline_regions.loc[name].copy()
         sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
 
+        on_display_message.send(message="sample reset")
+
     def remove_samples(self, index: List[int]) -> None:
 
         current_sample = self.files[self.current_sample_index]
         remove_samples = self.names[index]
 
-        data = (self.spectra, self.files, self.names)
+        data = [self.spectra, self.files, self.names]
         for idx in range(len(data)):
             data[idx] = np.delete(data[idx], index)
+        self.spectra, self.files, self.names = data
 
-        # self.spectra = np.delete(self.spectra, index)
-        # self.files = np.delete(self.files, index)
-        # self.names = np.delete(self.names, index)
-
-        dataframes = (
+        dataframes = [
             self.results,
             self.settings,
             self.baseline_regions,
             self.interpolation_regions,
-        )
+        ]
         for idx in range(len(dataframes)):
-            dataframes[idx] = dataframes[idx].drop(labels=remove_samples, axis=0)
+            dataframes[idx].drop(labels=remove_samples, axis=0, inplace=True)
 
         # self.results = self.results.drop(labels=remove_samples, axis=0)
         # self.settings = self.settings.drop(labels=remove_samples, axis=0)
 
         try:
-            current_sample_index, _ = np.where(self.files == current_sample)
+            current_sample_index = np.where(self.files == current_sample)
             self.current_sample_index = int(current_sample_index)
         except TypeError:
             self.current_sample_index = 0

@@ -11,6 +11,7 @@ class Calculation_listener:
 
     on_Ctrl_c = bl.signal("copy birs")
     on_Ctrl_v = bl.signal("paste birs")
+    on_Ctrl_z = bl.signal("ctrl+z")
 
     on_plot_change = bl.signal("refresh plot")
 
@@ -43,6 +44,9 @@ class Calculation_listener:
             self.on_display_message.send(message="copied birs")
         except AttributeError:
             pass
+
+    def reset_sample(self, *args):
+        self.sample_controller.reset_sample()
 
     def paste_birs(self, *args):
         if self.copied_birs is None:
@@ -99,5 +103,6 @@ class Calculation_listener:
 
         self.on_Ctrl_c.connect(self.copy_birs)
         self.on_Ctrl_v.connect(self.paste_birs)
+        self.on_Ctrl_z.connect(self.reset_sample)
 
         self.on_reset_sample.connect(self.reset_sample)
