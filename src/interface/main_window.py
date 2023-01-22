@@ -69,6 +69,13 @@ class Main_window(tk.Tk):
             "TNotebook.Tab", font=(_font, _fontsize, "bold"), padding=[1, 2]
         )
 
+        self.style.configure(
+            "clean.TButton",
+            borderwidth=5,
+            highlightthickness=0,
+            relief=tk.FLAT,
+        )
+
         self.background_color = self.style.lookup(
             app_settings.gui["theme"], "background"
         )

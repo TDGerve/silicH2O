@@ -175,15 +175,16 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.make_delete_add_buttons(bir_frame, start_column=3)
 
-    def make_delete_add_buttons(self, frame, start_column: int, width=1):
+    def make_delete_add_buttons(self, frame, start_column: int, width=2):
 
         rows = frame.grid_size()[1]
-        for i in range(rows):
+        for i in range(rows - 1):
             button = ttk.Button(
                 frame,
                 text="\uff0b",
                 state=tk.DISABLED,
                 name=f"add_bir_{i}",
+                style="clean.TButton",
                 width=width,
                 # command=func,
             )
@@ -195,6 +196,7 @@ class Baseline_correction_frame(ttk.Frame):
                 text="\uff0d",
                 state=tk.DISABLED,
                 name=f"delete_bir_{i + 1}",
+                style="clean.TButton",
                 width=width,
                 # command=func,
             )
