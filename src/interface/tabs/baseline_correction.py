@@ -49,7 +49,7 @@ class Baseline_correction_frame(ttk.Frame):
         # widgets["baseline_smoothing"] = self.baseline_smoothing_widgets
         widgets["baseline_save"] = self.save_widgets
 
-        self.make_bir_frame(0, 3)
+        self.make_baseline_frame(0, 3)
         self.make_signal_frame(2, 3)
         self.make_areas_frame(4, 3)
         self.make_save_frame(7, 3)
@@ -57,7 +57,7 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
-        self.columnconfigure(3, minsize="6cm")
+        self.columnconfigure(3, minsize="6c")
 
         self.rowconfigure(6, weight=1)
 
@@ -90,69 +90,64 @@ class Baseline_correction_frame(ttk.Frame):
         toolbar.update()
         toolbar.grid(row=0, column=1, sticky="nw")
 
-    def make_bir_frame(self, row: int, col: int):
+    def make_baseline_frame(self, row: int, col: int):
 
         frame = ttk.Frame(self, name="baseline")
         frame.grid(row=row, column=col, sticky=("nesw"))
         # frame.grid_propagate(0)
 
         tk.Label(frame, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
-            row=0, column=0, columnspan=3, sticky=("nsw")
+            row=0, column=0, columnspan=2, sticky=("nsw")
         )
 
         tk.Label(
             frame,
             text="Interpolation regions",
             font=(_font, _fontsize_head),
-        ).grid(row=1, column=0, columnspan=3, sticky=("nsw"))
+        ).grid(row=1, column=0, columnspan=2, sticky=("nsw"))
 
-        self.make_bir_widgets(frame)
+        self.make_bir_scrollframe(frame)
+
         self.make_smoothing_widgets(frame, rowstart=9)
 
-        for i in [1, 2]:
+        for i in range(2):
             frame.columnconfigure(i, weight=1)
 
-    def make_bir_widgets(self, frame, bir_amount=5):
-
-        for k, name in zip(range(3), ["No.", "From", "to"]):
-            tk.Label(frame, text=name, font=(_font, _fontsize, "italic")).grid(
-                row=2, column=k, sticky=("nsw")
-            )
-
+    def make_bir_scrollframe(self, frame):
         background_color = app_settings.background_color
 
-        bir_frame = ScrollFrame(
+        scrollframe = ScrollFrame(
             frame,
-            name="birs",
-            width="5c",
-            height="4.1c",
+            name="bir_scrollframe",
+            width="7c",
             background_color=background_color,
         )
-        bir_frame.grid(row=3, column=0, columnspan=3, sticky="nesw")
-        # for i in [1, 2]:
-        #     bir_frame.columnconfigure(i, weight=1)
-        # for i in (1, 2):
-        #     bir_frame.viewPort.columnconfigure(i, weight=1)
+        scrollframe.grid(row=3, column=0, columnspan=2, sticky="nesw")
+        for k, name in zip(range(3), ["No.", "From", "to"]):
+            tk.Label(
+                scrollframe.headers, text=name, font=(_font, _fontsize, "italic")
+            ).grid(row=0, column=k, sticky=("nsw"))
+        self.make_bir_widgets(scrollframe.inner_frame, bir_amount=5)
 
-        # bir_scroll = ttk.Scrollbar(self, orient=tk.VERTICAL, command=bir_frame.yview)
-        # bir_scroll.grid(row=0, column=3, sticky=("ns"))
-        # bir_frame["yscrollcommand"] = bir_scroll.set
+    def make_bir_widgets(self, bir_frame, bir_amount: int):
+
+        for widget in bir_frame.winfo_children():
+            widget.destroy()
 
         for i in range(bir_amount):
             label = ttk.Label(
-                bir_frame.viewPort, text=f"{i + 1: <4} ", font=(_font, _fontsize)
+                bir_frame,
+                text=f"{i + 1: <4} ",
+                font=(_font, _fontsize),
             )
             label.grid(row=i, column=0, sticky=("nsw"))
 
             for j in range(2):
                 name = f"bir_{i * 2 + j}"
                 var = tk.StringVar(name=name)
-                # convert var to int any time it is written to.
-
-                # var.trace("w", lambda name, idx, mode: var.set(int(var.get())))
 
                 entry = ttk.Entry(
-                    bir_frame.viewPort,
+                    bir_frame,
                     validate="focusout",
                     validatecommand=(
                         self.register(
@@ -164,20 +159,46 @@ class Baseline_correction_frame(ttk.Frame):
                         self.register(partial(self.invalid_bir_input, index=i * 2 + j)),
                         r"%s %P",
                     ),
-                    width=5,
+                    width=4,
                     background="white",
                     font=(_font, _fontsize),
                     state=tk.DISABLED,
                     name=name,
-                    # relief="sunken",
-                    # borderwidth=1,
                 )
                 entry.grid(row=i, column=j + 1, sticky=("nesw"))
 
-                # self.baseline_widgets.append(entry)
-                # self.bir_variables.append(var)
                 self.baseline_widgets[name] = entry
                 self.baseline_variables[name] = var
+
+        for i in (1, 2):
+            bir_frame.columnconfigure(i, weight=1)
+
+        self.make_delete_add_buttons(bir_frame, start_column=3)
+
+    def make_delete_add_buttons(self, frame, start_column: int, width=1):
+
+        rows = frame.grid_size()[1]
+        for i in range(rows):
+            button = ttk.Button(
+                frame,
+                text="\uff0b",
+                state=tk.DISABLED,
+                name=f"add_bir_{i}",
+                width=width,
+                # command=func,
+            )
+            button.grid(row=i, column=start_column)
+
+        for i in range(rows - 2):
+            button = ttk.Button(
+                frame,
+                text="\uff0d",
+                state=tk.DISABLED,
+                name=f"delete_bir_{i + 1}",
+                width=width,
+                # command=func,
+            )
+            button.grid(row=i + 1, column=start_column + 1)
 
     def make_smoothing_widgets(self, frame, rowstart):
 
@@ -187,7 +208,7 @@ class Baseline_correction_frame(ttk.Frame):
             frame,
             text="smoothing",
             font=(_font, _fontsize_head),
-        ).grid(row=rowstart + 1, column=0, columnspan=2, sticky=("nsw"))
+        ).grid(row=rowstart + 1, column=0, sticky=("nsw"))
 
         var = tk.StringVar(name=name)
         entry = ttk.Spinbox(
@@ -211,7 +232,7 @@ class Baseline_correction_frame(ttk.Frame):
             state=tk.DISABLED,
             name=name,
         )
-        entry.grid(row=rowstart + 1, column=2, sticky=("nesw"))
+        entry.grid(row=rowstart + 1, column=1, sticky=("nesw"))
 
         button = ttk.Button(
             frame,
@@ -219,10 +240,8 @@ class Baseline_correction_frame(ttk.Frame):
             state=tk.DISABLED,
             name="optimise_smoothing",
         )  # command=func
-        button.grid(row=rowstart + 2, column=0, columnspan=3, sticky="s")
+        button.grid(row=rowstart + 2, column=0, columnspan=2, sticky="s")
 
-        # self.baseline_smoothing_widgets.extend((entry, button))
-        # self.baseline_smoothing_variables.append(var)
         self.baseline_widgets[name] = entry
         self.baseline_variables[name] = var
 

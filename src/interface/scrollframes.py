@@ -1,54 +1,57 @@
 import platform
 import tkinter as tk
+from tkinter import ttk
 
 # from https://gist.github.com/mp035/9f2027c3ef9172264532fcd6262f3b01
 
 
 class ScrollFrame(tk.Frame):
-    def __init__(self, parent, *args, width, height, background_color, **kwargs):
+    def __init__(self, parent, *args, width, background_color, **kwargs):
 
         super().__init__(parent, *args, **kwargs)  # create a frame (self)
 
+        self.headers = tk.Frame(self)
+
         self.canvas = tk.Canvas(
-            self, borderwidth=0, background=background_color, width=width, height=height
+            self,
+            background=background_color,
+            borderwidth=0,
+            width=width,
+            highlightthickness=0,
         )  # place canvas on self
-        self.viewPort = tk.Frame(
-            self.canvas  # , background=background_color
-        )  # place a frame on the canvas, this frame will hold the child widgets
 
-        for i in (1, 2):
-            self.viewPort.columnconfigure(i, weight=1)
-
-        self.vsb = tk.Scrollbar(
-            self, orient="vertical", command=self.canvas.yview
+        self.scrollbar = ttk.Scrollbar(
+            self, orient=tk.VERTICAL, command=self.canvas.yview
         )  # place a scrollbar on self
         self.canvas.configure(
-            yscrollcommand=self.vsb.set
+            yscrollcommand=self.scrollbar.set
         )  # attach scrollbar action to scroll of canvas
 
-        self.vsb.grid(row=0, column=1, sticky="ns")
-        self.canvas.grid(
-            row=0, column=0, sticky="nw"
-        )  # pack canvas to left of self and expand to fil
+        self.headers.grid(row=0, column=0, columnspan=2, sticky="nesw")
+        self.canvas.grid(row=1, column=0, sticky="nesw")
+        self.scrollbar.grid(row=1, column=1, sticky="nes")
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+
+        self.inner_frame = tk.Frame(self.canvas)
         self.canvas_window = self.canvas.create_window(
             (0, 0),
-            window=self.viewPort,
-            width=width,
+            window=self.inner_frame,
             anchor="nw",  # add view port frame to canvas
-            tags="self.viewPort",
+            tags="self.inner_frame",
         )
 
-        self.viewPort.bind(
-            "<Configure>", self.onFrameConfigure
-        )  # bind an event whenever the size of the viewPort frame changes.
-        # self.canvas.bind(
-        #     "<Configure>", self.onCanvasConfigure
-        # )  # bind an event whenever the size of the canvas frame changes.
+        self.inner_frame.bind("<Configure>", self.set_initial_dimensions)
 
-        self.viewPort.bind(
+        self.canvas.bind(
+            "<Configure>", self.onCanvasConfigure
+        )  # bind an event whenever the size of the canvas frame changes.
+
+        self.inner_frame.bind(
             "<Enter>", self.onEnter
         )  # bind wheel events when the cursor enters the control
-        self.viewPort.bind(
+        self.inner_frame.bind(
             "<Leave>", self.onLeave
         )  # unbind wheel events when the cursorl leaves the control
 
@@ -56,14 +59,23 @@ class ScrollFrame(tk.Frame):
             None
         )  # perform an initial stretch on render, otherwise the scroll region has a tiny border until the first resize
 
+    def set_initial_dimensions(self, event):
+        height = event.height
+        self.canvas.config(height=height)
+        self.inner_frame.unbind("<Configure>")
+        self.inner_frame.bind(
+            "<Configure>", self.onFrameConfigure
+        )  # bind an event whenever the size of the viewPort frame changes.
+
     def onFrameConfigure(self, event):
         """Reset the scroll region to encompass the inner frame"""
         self.canvas.configure(
             scrollregion=self.canvas.bbox("all")
         )  # whenever the size of the frame changes, alter the scroll region respectively.
+        self.after_idle(self.set_header_widths)
 
     def onCanvasConfigure(self, event):
-        """Reset the canvas window to encompass inner frame when required"""
+        """Reset the inner frame to fit the canvas when required"""
         canvas_width = event.width
         self.canvas.itemconfig(
             self.canvas_window, width=canvas_width
@@ -93,3 +105,14 @@ class ScrollFrame(tk.Frame):
             self.canvas.unbind_all("<Button-5>")
         else:
             self.canvas.unbind_all("<MouseWheel>")
+
+    def get_column_widths(self):
+        widths = []
+        for column in range(self.inner_frame.grid_size()[0]):
+            widths.append(self.inner_frame.grid_bbox(column, 0)[2])
+        return widths
+
+    def set_header_widths(self):
+        column_widths = self.get_column_widths()
+        for i, width in enumerate(column_widths):
+            self.headers.columnconfigure(i, minsize=width)
