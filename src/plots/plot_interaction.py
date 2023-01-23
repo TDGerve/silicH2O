@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.patches import Polygon
 
 on_settings_change = bl.signal("settings change")
+on_display_message = bl.signal("display message")
 
 
 class drag(Enum):
@@ -122,7 +123,7 @@ class drag_polygons:
         self.mouse_location = None
         self.mouse_location = None
 
-    def find_neighbor_object(self, event, border_threshold=5):
+    def find_neighbor_object(self, event, border_threshold: int = 5):
         """
         Find lines around mouse position
         """
@@ -135,8 +136,9 @@ class drag_polygons:
             xmax = max(x_coordinates)
 
             self.width = xmax - xmin
+
             width_threshold = [self.width * 0.1, 10][self.width > 30]
-            border_threshold = min(border_threshold, width_threshold)
+            border_threshold_new = min(border_threshold, width_threshold)
 
             if (xmin + width_threshold) < event.xdata < (xmax - width_threshold):
                 object_id = (i, drag.BOTH)
@@ -145,7 +147,7 @@ class drag_polygons:
             else:
                 for j, x in enumerate([xmin, xmax]):
                     distance = abs(event.xdata - x)
-                    if distance < border_threshold:
+                    if distance < border_threshold_new:
                         object_id = (i, drag_options[j])
                         return object_id
 
