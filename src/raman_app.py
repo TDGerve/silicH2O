@@ -1,8 +1,8 @@
-import atexit
 import os
 import pathlib
 import shutil
 import sys
+import time
 
 from .event_management import Calculation_listener, Database_listener, Plot_listener
 from .interface import App_interface
@@ -46,7 +46,11 @@ class Raman_app:
                 os.unlink(os.path.join(root, f))
 
             for d in dirs:
-                shutil.rmtree(os.path.join(root, d))
+                try:
+                    shutil.rmtree(os.path.join(root, d))
+                except PermissionError:
+                    time.sleep(0.5)
+                    shutil.rmtree(os.path.join(root, d))
 
 
 def run_raman_app():

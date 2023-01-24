@@ -223,40 +223,6 @@ class Sample_controller:
         for idx in range(len(dataframes)):
             dataframes[idx].drop(labels=remove_samples, axis=0, inplace=True)
 
-        # self.results = self.results.drop(labels=remove_samples, axis=0)
-        # self.settings = self.settings.drop(labels=remove_samples, axis=0)
-
-        try:
-            current_sample_index = np.where(self.files == current_sample)
-            self.current_sample_index = int(current_sample_index)
-        except TypeError:
-            self.current_sample_index = 0
-
-    # def save_project_as(self, filepath: pathlib.Path, name: str):
-
-    #     # project folder
-    #     temp_path = pathlib.Path(__file__).parents[1] / "temp" / name
-    #     temp_path.mkdir(parents=True, exist_ok=True)
-    #     # data folder
-    #     temp_datapath = temp_path / "data"
-    #     temp_datapath.mkdir(exist_ok=True)
-
-    #     for sample in self.spectra:
-    #         data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
-    #         file = temp_datapath / f"{sample.name}.sp"
-    #         if not file.is_file():
-    #             np.savetxt(file, data)
-
-    #     fnames = ["settings", "baseline_regions", "interpolation_regions"]
-    #     data = [self.settings, self.baseline_regions, self.interpolation_regions]
-    #     for f, name in zip(data, fnames):
-    #         f.to_csv(temp_path / f"{name}.csv")
-
-    #     with tarfile.open(filepath, mode="w") as tar:
-    #         tar.add(temp_path, arcname="")
-
-    #     self.project = filepath
-
     def set_project(self, filepath: str):
         self.project = filepath
 

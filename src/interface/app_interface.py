@@ -60,32 +60,6 @@ class App_interface:
 
                 variable.set(value)
 
-            # if name == "birs":
-
-            #     for index, value in values.items():
-
-            #         widget = self.widgets["birs"][int(index)]
-            #         # Hack to make sure, validation is triggered for the bir widets
-            #         widget.focus_set()
-            #         widget.delete(0, tk.END)
-            #         widget.insert(0, f"{int(value)}")
-
-            #         variable = self.variables["birs"][int(index)]
-            #         variable.set(int(value))
-
-            # else:
-            #     for variable, value in zip(self.variables[name], values):
-            #         variable.set(value)
-
-            #         widget_name = str(variable).split(".")[-1]
-            #         for widget in self.widgets[name]:
-            #             if not str(widget).split(".")[-1] == widget_name:
-            #                 continue
-            #             widget.focus_set()
-            #             widget.delete(0, tk.END)
-            #             widget.insert(0, f"{value}")
-            #             break
-
             self.window.focus()
 
     def activate_widgets(self) -> None:

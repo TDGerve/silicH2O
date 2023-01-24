@@ -60,6 +60,7 @@ class io_menu:
         self.activate_menus()
 
     def get_directory(self):
+        on_display_message.send(message="adding directory...", duration=None)
         try:
             dirname = tk.filedialog.askdirectory(initialdir=os.getcwd())
         except AttributeError:
@@ -69,6 +70,7 @@ class io_menu:
         if not files:
             return
         self.load_files(files)
+        on_display_message.send(message="directory added!")
 
     def get_files(self):
         try:
@@ -96,7 +98,7 @@ class io_menu:
 
         on_load_project.send("io", filepath=project)
 
-        on_display_message.send(message="project loaded")
+        on_display_message.send(message="project loaded!")
 
         if self.export_enabled:
             return

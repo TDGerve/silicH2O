@@ -53,7 +53,6 @@ class Database_listener:
         self.sample_controller.remove_samples(index)
 
         names = list(self.sample_controller.names)
-        self.on_plot_change.send("deleted samples")
         self.gui.update_variables(sample_navigation={"samplelist": names})
 
     def remove_data(self, names: List[str]):

@@ -50,7 +50,7 @@ class Plot_listener:
 
     def display_message(self, *args, message: str, duration: Optional[int] = 2):
 
-        message = f"{message:>50}"
+        message = f"{message:<50}"
         kwargs = {"infobar": {"info": message}}
         self.gui.update_variables(**kwargs)
         if duration is None:

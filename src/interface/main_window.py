@@ -22,6 +22,9 @@ on_Ctrl_c = bl.signal("copy birs")
 on_Ctrl_v = bl.signal("paste birs")
 on_Ctrl_s = bl.signal("ctrl+s")
 on_Ctrl_z = bl.signal("ctrl+z")
+on_delete = bl.signal("delete")
+
+on_display_message = bl.signal("display message")
 
 
 class Main_window(tk.Tk):
@@ -38,7 +41,7 @@ class Main_window(tk.Tk):
         self.create_main_frame()
         self.create_navigation_frame(variables, widgets)
         self.create_tabs()
-        self.create_infobar(variables, widgets)
+        self.create_infobar(self, 1, 1, variables, widgets)
 
         self.populate_tabs(variables, widgets)
 
@@ -54,10 +57,11 @@ class Main_window(tk.Tk):
         )
         self.bind("<Up>", lambda event: self.sample_navigation.previous_sample())
         self.bind("<Down>", lambda event: self.sample_navigation.next_sample())
-        self.bind("<Control-c>", lambda event: on_Ctrl_c.send(""))
-        self.bind("<Control-v>", lambda event: on_Ctrl_v.send(""))
-        self.bind("<Control-s>", lambda event: on_Ctrl_s.send(""))
-        self.bind("<Control-z>", lambda event: on_Ctrl_z.send(""))
+        self.bind("<Control-c>", lambda event: on_Ctrl_c.send())
+        self.bind("<Control-v>", lambda event: on_Ctrl_v.send())
+        self.bind("<Control-s>", lambda event: on_Ctrl_s.send())
+        self.bind("<Control-z>", lambda event: on_Ctrl_z.send())
+        self.bind("<Delete>", lambda event: on_delete.send())
 
     def set_theme(self):
         self.style = ttk.Style()
@@ -167,10 +171,10 @@ class Main_window(tk.Tk):
         #     update[tab]()
         pass
 
-    def create_infobar(self, variables, widgets):
+    def create_infobar(self, frame, row, col, variables, widgets):
         # main_frame = self.nametowidget("main_frame")
-        infobar = Infobar(self, variables, widgets)
-        infobar.grid(column=1, row=1, sticky=("nesw"))
+        infobar = Infobar(frame, variables, widgets)
+        infobar.grid(column=col, row=row, sticky=("nesw"))
 
     def on_return(self, *event):
 
