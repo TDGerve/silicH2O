@@ -1,3 +1,7 @@
+from typing import Dict
+
+import numpy as np
+
 from ..interface.screens import Screen
 from .plots import Single_plot
 

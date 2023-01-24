@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Protocol
+from typing import Any, Dict, List, Optional, Protocol
 
 import numpy as np
 import pandas as pd
@@ -20,7 +20,7 @@ class Sample_proccessor(Protocol):
         ...
 
 
-class h2o_processor:
+class Raman_processor:
     def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
 
         self.name = name
@@ -28,13 +28,6 @@ class h2o_processor:
         self.settings = sample_settings.copy()
         self.baseline_regions = birs.copy()
         self.interpolation_regions = interpolation_regions.copy()
-
-        self.results = pd.Series(
-            {
-                data: np.nan
-                for data in ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
-            }
-        )
 
         self.data = ram.H2O(x, y, laser=app_settings.general["laser_wavelength"])
 
@@ -44,7 +37,6 @@ class h2o_processor:
 
         birs.index = range(len(birs))
         return {f"bir_{idx}": value for idx, value in birs.items()}
-        # return dict(birs)
 
     def set_baseline(self, kwargs) -> None:
 
@@ -61,6 +53,62 @@ class h2o_processor:
         smooth_factor = self.settings["baseline_smoothing"]
 
         self.data.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)
+
+    def calculate_noise(self):
+
+        self.data.calculate_noise()
+
+    def set_baseline_smoothing(self, value: List[float]):
+
+        self.settings["baseline_smoothing"] = value[-1]
+
+    def get_plotdata(self) -> Dict[str, Any]:
+        """
+        Returns
+        -------
+        str
+            Sample name
+        np.ndarray
+            x axis
+        dict
+            Dictionary with all caclulated spectra
+        str
+            Name of the spectrum used for baseline correction
+        dict
+            Dictionary with baseline interpolation region boundaries
+        """
+
+        return {
+            "sample_name": self.name,
+            "x": self.data.x,
+            "spectra": self.data.signal.all,
+            "baseline_spectrum": self.data._spectrumSelect,
+            "birs": self.get_birs(),
+        }
+
+
+class h2o_processor(Raman_processor):
+    def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
+
+        super().__init__(name, x, y, sample_settings, birs, interpolation_regions)
+
+        self.results = pd.Series(
+            {
+                data: np.nan
+                for data in ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
+            }
+        )
+
+        self._interference: Optional[Raman_processor] = None
+
+    @property
+    def interference(self):
+        return self._interference
+
+    def set_interference(self, x, y, sample_settings, birs, interpolation_regions):
+        self._interfernce = Raman_processor(
+            self.name, x, y, sample_settings, birs, interpolation_regions
+        )
 
     def calculate_interpolation(self):
 
@@ -94,31 +142,3 @@ class h2o_processor:
         for region, new_value in kwargs.items():
             index = int(region[-1])
             self.baseline_regions.iloc[index] = new_value
-
-    def set_baseline_smoothing(self, value: List[float]):
-
-        self.settings["baseline_smoothing"] = value[-1]
-
-    def get_plotdata(self) -> Dict[str, Any]:
-        """
-        Returns
-        -------
-        str
-            Sample name
-        np.ndarray
-            x axis
-        dict
-            Dictionary with all caclulated spectra
-        str
-            Name of the spectrum used for baseline correction
-        dict
-            Dictionary with baseline interpolation region boundaries
-        """
-
-        return {
-            "sample_name": self.name,
-            "x": self.data.x,
-            "spectra": self.data.signal.all,
-            "baseline_spectrum": self.data._spectrumSelect,
-            "birs": self.get_birs(),
-        }

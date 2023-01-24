@@ -123,16 +123,6 @@ class Sample_controller:
         for key, value in kwargs.items():
             func_dict[key](value)
 
-        # if birs is not None:
-
-        #     sample.set_birs(**birs)
-        # if baseline_smoothing is not None:
-        #     sample.set_baseline_smoothing(baseline_smoothing)
-
-        # if interpolate is None:
-        #     return
-        # sample.set_interpolation(interpolate)
-
     def get_sample_settings(self):
 
         baseline = self.current_sample.get_birs()

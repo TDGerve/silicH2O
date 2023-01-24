@@ -121,9 +121,7 @@ class Single_plot:
 
         pl.Plot_layout(scaling=screen.scaling, colors=self.colors)
 
-        self.fig, self.ax = plt.subplots(
-            figsize=(width, height)  # , constrained_layout=True
-        )
+        self.fig, self.ax = plt.subplots(figsize=(width, height))
         self.lines = {}
         self.name = None
 
@@ -164,7 +162,7 @@ class Single_plot:
     ):
         colors = self.colors.by_key()["color"]
 
-        for (name, new_vals), color in zip(spectra.items(), colors):
+        for color, (name, new_vals), color in zip(colors, spectra.items()):
 
             xmin, xmax = self.ax.get_xlim()
             ymax = []

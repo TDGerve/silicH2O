@@ -1,0 +1,88 @@
+from typing import Dict, Optional
+
+import numpy as np
+
+from ..interface.screens import Screen
+from .plot_interaction import construct_polygon_coordinates, drag_polygons
+from .plots import Single_plot
+
+
+class Interpolation_plot(Single_plot):
+    def __init__(self, screen: Screen):
+
+        super().__init__(screen, xlabel="Raman shift cm$^{-1}$", ylabel="Counts")
+        self.setup_ax(limits=(0, 4000))
+
+        self.birs = []
+        self.mouse_connection: Optional[drag_polygons] = None
+
+    def plot_lines(
+        self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
+    ):
+        return super().plot_lines(x, spectra, *args, **kwargs)
+
+    def clear_birs(self, amount=None):
+        if amount is None:
+            amount = len(self.birs)
+        for bir in self.birs[:amount]:
+            bir.remove()
+        # self.birs = []
+
+    def plot_interference_peaks(self, peaks):
+        ...
+
+    def plot_interference_birs(self, birs: Dict[(int, float)]):
+        if not self.birs:
+            connect_mouse = True
+        else:
+            connect_mouse = False
+
+        bir_values = list(birs.values())
+        birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
+
+        bir_surplus = (len(self.birs) // 2) - len(birs)
+        if bir_surplus > 0:
+            self.clear_birs(amount=bir_surplus)
+
+        for i, (left_boundary, right_boundary) in enumerate(birs):
+            try:
+                current_bir = self.birs[i]
+                coordinates = construct_polygon_coordinates(
+                    left_boundary, right_boundary
+                )
+
+                if np.array_equal(coordinates, current_bir.get_xy()):
+                    continue
+
+                current_bir.set_xy(coordinates)  # Replace old bir
+
+            except IndexError:
+                self.birs.append(
+                    self.ax.axvspan(
+                        left_boundary,
+                        right_boundary,
+                        alpha=0.3,
+                        color="lightgray",
+                        edgecolor=None,
+                    )
+                )
+
+        if connect_mouse:
+            self.connect_mouse_events()
+
+    def connect_mouse_events(self):
+
+        self.mouse_connection = drag_polygons(
+            ax=self.ax,
+            polygons=self.birs,  # drag_polygons=[1, 2]
+        )
+
+        self.fig.canvas.mpl_connect(
+            "button_press_event", self.mouse_connection.on_click
+        )
+        self.fig.canvas.mpl_connect(
+            "button_release_event", self.mouse_connection.ax.on_release
+        )
+        self.fig.canvas.mpl_connect(
+            "motion_notify_event", self.mouse_connection.on_motion
+        )

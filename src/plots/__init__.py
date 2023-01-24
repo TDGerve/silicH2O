@@ -1,5 +1,5 @@
 from .plot_interaction import *
-from .baseline_correction_plots import *
+from .Baseline_correction_plots import *
 from .plots import *
 import sys
 

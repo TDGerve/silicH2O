@@ -44,13 +44,13 @@ class Baseline_correction_plot(Double_plot):
             amount = len(self.birs)
         for bir in self.birs[:amount]:
             bir.remove()
-        self.birs = []
+        # self.birs = []
 
     def clear_figure(self):
         self.clear_birs()
         super().clear_figure()
 
-    def plot_birs(self, birs):
+    def plot_birs(self, birs: Dict[(int, float)]):
         if not self.birs:
             connect_mouse = True
         else:
@@ -92,14 +92,18 @@ class Baseline_correction_plot(Double_plot):
             self.connect_mouse_events()
 
     def connect_mouse_events(self):
+
+        bir_amount = len(self.birs) // 2
+
         drag_ax1 = drag_polygons(
             ax=self.axs[0],
-            polygons=self.birs[:5],  # drag_polygons=[1, 2]
+            polygons=self.birs[:bir_amount],
         )
         drag_ax2 = drag_polygons(
             ax=self.axs[1],
-            polygons=self.birs[5:],  # drag_polygons=[1, 2]
+            polygons=self.birs[bir_amount:],
         )
+
         self.mouse_connections += [drag_ax1, drag_ax2]
 
         for ax in [drag_ax1, drag_ax2]:
