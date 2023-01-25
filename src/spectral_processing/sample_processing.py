@@ -38,7 +38,7 @@ class Raman_processor:
         birs = self.baseline_regions.copy()
 
         birs.index = range(len(birs))
-        return {f"bir_{idx}": value for idx, value in birs.items()}
+        return {f"bir_{idx}": int(value) for idx, value in birs.items()}
 
     def set_baseline(self, kwargs) -> None:
 
@@ -47,7 +47,7 @@ class Raman_processor:
                 self.settings["baseline_smoothing"] = new_value
                 continue
             index = int(bir[-1])
-            self.baseline_regions.iloc[index] = new_value
+            self.baseline_regions.iloc[index] = int(new_value)
 
     def calculate_baseline(self):
         bir_amount = self.baseline_regions.shape[0] // 2

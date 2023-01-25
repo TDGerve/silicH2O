@@ -4,7 +4,7 @@ from tkinter import ttk
 import blinker as bl
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 
-from .. import app_configuration
+from ... import app_configuration
 
 _font = app_configuration.gui["font"]["family"]
 

@@ -6,11 +6,13 @@ import blinker as bl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from ... import app_configuration
+from ..frames.Baseline_interpolation import Baseline_interpolation_frame
 from ..frames.scrollframes import ScrollFrame
 from ..frames.vertical_toolbar import vertical_toolbar
 from ..validate_input import validate_numerical_input
 
 on_settings_change = bl.signal("settings change")
+on_load_interference = bl.signal("load interference")
 
 _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
@@ -26,21 +28,21 @@ class Subtraction_frame(ttk.Frame):
 
         self.canvas = None
 
-        self.interference_baseline_widgets = {}
         self.interference_deconvolution_widgets = {}
-        widgets["interference_baseline"] = self.interference_baseline_widgets
+
         widgets["interference_deconvolution"] = self.interference_deconvolution_widgets
 
-        self.interference_baseline_variables = {}
         self.interference_deconvolution_variables = {}
-        variables["interference_baseline"] = self.interference_baseline_variables
+
         variables[
             "interference_deconvolution"
         ] = self.interference_deconvolution_variables
 
-        self.make_baseline_frame(self, 0, 3)
-        self.make_deconvolution_frame(self, 2, 3)
-        self.make_subtraction_frame(self, 4, 3)
+        self.make_interference_frame(
+            parent=self, widgets=widgets, variables=variables, row=0, col=3
+        )
+        # self.make_deconvolution_frame(self, 2, 3)
+        # self.make_subtraction_frame(self, 4, 3)
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
@@ -83,20 +85,33 @@ class Subtraction_frame(ttk.Frame):
                 row=row, column=col, sticky=("new")
             )
 
-    def make_interference_frame(self, parent, row: int, col: int):
+    def make_interference_frame(self, parent, widgets, variables, row: int, col: int):
 
-        frame = ttk.Frame(parent, name="baseline")
+        frame = ttk.Frame(parent, name="interference")
         frame.grid(row=row, column=col, sticky="nesw")
 
-        tk.Label(
-            frame, text="Interference baseline", font=(_font, _fontsize_head, "bold")
-        ).grid(row=0, column=0, columnspan=2, sticky=("nsw"))
+        tk.Label(frame, text="Interference", font=(_font, _fontsize_head, "bold")).grid(
+            row=0, column=0, sticky=("nsw")
+        )
 
-        tk.Label(
+        load_button = ttk.Button(
             frame,
-            text="Interpolation regions",
-            font=(_font, _fontsize_head),
-        ).grid(row=1, column=0, columnspan=2, sticky=("nsw"))
+            text="load spectrum",
+            state=tk.DISABLED,
+            name="load_interference",
+            command=on_load_interference.send,
+        )
+        load_button.grid(row=1, column=0, columnspan=2, sticky="ns")
+
+        baseline_interpolation = Baseline_interpolation_frame(
+            parent=frame,
+            name="interference",
+            widgets=widgets,
+            variables=variables,
+            bir_amount=5,
+            width="7c",
+        )
+        baseline_interpolation.grid(row=2, column=0, columnspan=2, sticky="nesw")
 
     def make_deconvolution_frame(self, parent, row: int, col: int):
 

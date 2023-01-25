@@ -46,6 +46,8 @@ class App_interface:
         for name, values in kwargs.items():
             if name not in self.variables.keys():
                 return
+            if values is None:
+                return
 
             for var_name, value in values.items():
                 variable = self.variables[name][var_name]
@@ -55,12 +57,13 @@ class App_interface:
                     widget.focus_set()
                     widget.delete(0, tk.END)
                     widget.insert(0, f"{value}")
+
                 except KeyError:
                     pass
 
                 variable.set(value)
 
-            self.window.focus()
+                self.window.focus_set()
 
     def activate_widgets(self) -> None:
         for frame in self.widgets.values():

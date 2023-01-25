@@ -29,14 +29,17 @@ class Calculation_listener:
         self.subscribe_to_signals()
 
     def display_sample(self, message: str):
-
-        self.sample_controller.calculate_sample()
+        try:
+            self.sample_controller.calculate_sample()
+        except AttributeError:
+            return
 
         settings = self.sample_controller.get_sample_settings()
 
         current_tab = app_configuration.gui["current_tab"]
+        settings = settings[current_tab]
 
-        self.gui.update_variables(**{current_tab: settings[current_tab]})
+        self.gui.update_variables(**{current_tab: settings})
         self.update_gui_results()
 
         self.refresh_plots(message)
@@ -101,6 +104,9 @@ class Calculation_listener:
         self.sample_controller.reset_sample()
         self.display_sample("sample reset")
 
+    def tab_change(self, *args):
+        self.display_sample(*args)
+
     def subscribe_to_signals(self):
         self.on_sample_change.connect(self.switch_sample, sender="navigator")
         self.on_settings_change.connect(self.update_from_plot, sender="plot")
@@ -111,4 +117,4 @@ class Calculation_listener:
         self.on_Ctrl_z.connect(self.reset_sample)
 
         self.on_reset_sample.connect(self.reset_sample)
-        self.on_switch_tab.connect(self.refresh_plots)
+        self.on_switch_tab.connect(self.tab_change)

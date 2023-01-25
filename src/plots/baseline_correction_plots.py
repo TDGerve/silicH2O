@@ -53,8 +53,8 @@ class Baseline_correction_plot(Double_plot):
     def clear_birs(self, amount=None):
         if amount is None:
             amount = len(self.birs)
-        for bir in self.birs[:amount]:
-            bir.remove()
+        for bir in range(amount):
+            self.birs.remove(self.birs[bir])
         # self.birs = []
 
     def clear_figure(self):

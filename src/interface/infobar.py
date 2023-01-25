@@ -58,7 +58,7 @@ class Infobar(ttk.Frame):
             text="reset sample",
             state=tk.DISABLED,
             name="reset_sample",
-            command=lambda: on_reset_sample.send(),
+            command=on_reset_sample.send,
         )
         reset.grid(row=row, column=col, sticky="nes")
 
@@ -67,7 +67,7 @@ class Infobar(ttk.Frame):
             text="save sample",
             state=tk.DISABLED,
             name="save_sample",
-            command=lambda: on_save_sample.send(),
+            command=on_save_sample.send,
         )
         save.grid(row=row, column=col + 1, sticky="nesw")
 
@@ -76,7 +76,7 @@ class Infobar(ttk.Frame):
             text="save all",
             state=tk.DISABLED,
             name="save_all",
-            command=lambda: on_save_all.send(),
+            command=on_save_all.send,
         )
         save_all.grid(row=row, column=col + 2, sticky="nesw")
 

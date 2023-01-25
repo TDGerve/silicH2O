@@ -99,7 +99,7 @@ class Subtraction_plot(Double_plot):
         self.mouse_connection = drag_polygons(
             ax=ax,
             polygons=self.birs,  # drag_polygons=[1, 2]
-            identifier="interference",
+            identifier="interference_baseline",
         )
 
         self.fig.canvas.mpl_connect(

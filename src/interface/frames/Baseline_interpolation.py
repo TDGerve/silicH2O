@@ -3,30 +3,35 @@ from functools import partial
 from tkinter import ttk
 from typing import Dict
 
-from .... import app_configuration
+import blinker as bl
+
+from ... import app_configuration
+from ..validate_input import validate_numerical_input
 from .scrollframes import ScrollFrame
 
 _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
+on_settings_change = bl.signal("settings change")
+
 
 class Baseline_interpolation_frame(ttk.Frame):
     def __init__(
         self,
         parent: tk.Frame,
+        name: str,
         widgets: Dict,
         variables: Dict,
-        row: int,
-        col: int,
-        width,
+        bir_amount=5,
+        width="7c",
     ):
 
-        self.widgets = widgets
-        self.variables = variables
+        self.birs = Baseline_interpolation_regions(
+            name=name, widgets=widgets, variables=variables
+        )
 
         super().__init__(parent, name="baseline")
-        self.grid(row=row, column=col, sticky=("nesw"))
         # frame.grid_propagate(0)
 
         tk.Label(self, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
@@ -39,13 +44,13 @@ class Baseline_interpolation_frame(ttk.Frame):
             font=(_font, _fontsize_head),
         ).grid(row=1, column=0, columnspan=2, sticky=("nsw"))
 
-        self.make_bir_scrollframe(self, width=width)
+        self.make_bir_scrollframe(self, width=width, bir_amount=bir_amount)
         self.make_smoothing_widgets(self, rowstart=9)
 
         for i in range(2):
             self.columnconfigure(i, weight=1)
 
-    def make_bir_scrollframe(self, parent, width):
+    def make_bir_scrollframe(self, parent, width, bir_amount):
         background_color = app_configuration.background_color
 
         scrollframe = ScrollFrame(
@@ -59,7 +64,7 @@ class Baseline_interpolation_frame(ttk.Frame):
             tk.Label(
                 scrollframe.headers, text=name, font=(_font, _fontsize, "italic")
             ).grid(row=0, column=k, sticky=("nsw"))
-        self.make_bir_widgets(scrollframe.inner_frame, bir_amount=5)
+        self.make_bir_widgets(scrollframe.inner_frame, bir_amount=bir_amount)
 
     def make_bir_widgets(self, parent, bir_amount: int):
 
@@ -75,32 +80,34 @@ class Baseline_interpolation_frame(ttk.Frame):
             label.grid(row=i, column=0, sticky=("nsw"))
 
             for j in range(2):
-                name = f"bir_{i * 2 + j}"
-                var = tk.StringVar(name=name)
+                index = i * 2 + j
+                var = tk.StringVar()
 
                 entry = ttk.Entry(
                     parent,
                     validate="focusout",
                     validatecommand=(
-                        self.register(
-                            partial(self.validate_bir_input, index=i * 2 + j)
+                        parent.register(
+                            partial(self.birs.validate_bir_input, index=index)
                         ),
                         r"%P %s %W",
                     ),
                     invalidcommand=(
-                        self.register(partial(self.invalid_bir_input, index=i * 2 + j)),
+                        parent.register(
+                            partial(self.birs.invalid_bir_input, index=index)
+                        ),
                         r"%s %P",
                     ),
                     width=4,
                     background="white",
                     font=(_font, _fontsize),
                     state=tk.DISABLED,
-                    name=name,
                 )
                 entry.grid(row=i, column=j + 1, sticky=("nesw"))
 
-                self.baseline_widgets[name] = entry
-                self.baseline_variables[name] = var
+                # self.widgets[name] = entry
+                # self.variables[name] = var
+                self.birs.add_bir(index=index, widget=entry, variable=var)
 
         for i in (1, 2):
             parent.columnconfigure(i, weight=1)
@@ -155,11 +162,11 @@ class Baseline_interpolation_frame(ttk.Frame):
             # textvariable=var,
             validate="focusout",
             validatecommand=(
-                self.register(self.validate_smoothing),
+                parent.register(self.birs.validate_smoothing),
                 "%P",
             ),
             invalidcommand=(
-                self.register(self.invalid_smoothing),
+                parent.register(self.birs.invalid_smoothing),
                 r"%s",
             ),
             width=5,
@@ -170,5 +177,113 @@ class Baseline_interpolation_frame(ttk.Frame):
         )
         entry.grid(row=rowstart + 1, column=1, sticky=("nesw"))
 
-        self.baseline_widgets[name] = entry
-        self.baseline_variables[name] = var
+        # self.widgets[name] = entry
+        # self.variables[name] = var
+        self.birs.add_smoothing(widget=entry, variable=var)
+
+
+class Baseline_interpolation_regions:
+    def __init__(self, widgets: Dict, variables: Dict, name: str):
+        self.widgets = {}
+        self.variables = {}
+
+        widgets[name] = self.widgets
+        variables[name] = self.variables
+
+        self.name = name
+
+    def add_bir(self, index: int, widget, variable):
+        self.widgets[f"bir_{index}"] = widget
+        self.variables[f"bir_{index}"] = variable
+
+    def add_smoothing(self, widget, variable):
+        self.widgets["smoothing"] = widget
+        self.variables["smoothing"] = variable
+
+    def validate_bir_input(self, values: str, index: int):
+
+        new_value = values[: values.index(" ")]
+        widget = self.widgets[f"bir_{index}"]
+        variable = self.variables[f"bir_{index}"]
+
+        accepted_range = self.get_bir_range(index)
+
+        valid, new_value = validate_numerical_input(
+            new_value,
+            accepted_range=accepted_range,
+            widget=widget,
+            variable=variable,
+            dtype=int,
+        )
+
+        if valid:
+            self.change_bir(index=index, value=int(new_value))
+
+        return valid
+
+    def invalid_bir_input(self, values: str, index: int):
+
+        variable = self.variables[f"bir_{index}"]
+        old_value = variable.get()
+
+        widget = self.widgets[f"bir_{index}"]
+        widget.delete(0, tk.END)
+        widget.insert(0, int(float(old_value)))
+
+    def get_bir_range(self, index: int, buffer=5):
+
+        if index == 0:
+            lower_boundary = 0
+        else:
+            lower_boundary = float(self.variables[f"bir_{index - 1}"].get()) + buffer
+
+        try:
+            upper_boundary = float(self.variables[f"bir_{index + 1}"].get()) - buffer
+        except (ValueError, KeyError):
+            upper_boundary = 4000
+
+        return [lower_boundary, upper_boundary]
+
+    def change_bir(self, *args, index, value, **kwargs):
+
+        on_settings_change.send("widget", **{self.name: {f"bir_{index}": value}})
+
+    def change_baseline_smoothing(self, new_value):
+
+        on_settings_change.send("widget", **{self.name: {"smoothing": new_value}})
+
+    def validate_smoothing(self, new_value):
+        """
+        Return False if the value is not numeric and reset the validate command if not.
+        Resetting validate is neccessary, because tkinter disables validation after changing
+        the variable through the invalidate command in order to stop an infinte loop.
+
+        If the value is numerical clip it to 0, 100
+        """
+
+        new_value = new_value
+        widget = self.widgets["smoothing"]
+        variable = self.variables["smoothing"]
+
+        accepted_range = [0, 100]
+
+        valid, new_value = validate_numerical_input(
+            new_value,
+            accepted_range=accepted_range,
+            widget=widget,
+            variable=variable,
+        )
+
+        if valid:
+            self.change_baseline_smoothing(new_value)
+
+        return valid
+
+    def invalid_smoothing(self, old_value: str):
+
+        variable = self.variables["smoothing"]
+        old_value = variable.get()
+
+        widget = self.widgets["smoothing"]
+        widget.delete(0, tk.END)
+        widget.insert(0, old_value)

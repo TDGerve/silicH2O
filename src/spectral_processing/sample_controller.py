@@ -119,6 +119,9 @@ class Sample_controller:
         func_dict = {
             "baseline": sample.set_baseline,
             "interpolate": sample.set_interpolation,
+            "interference": lambda value: print(
+                "interference settings not implemented"
+            ),
         }
 
         for key, value in kwargs.items():

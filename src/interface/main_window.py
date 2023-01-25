@@ -180,6 +180,8 @@ class Main_window(tk.Tk):
         tab = tab[: tab.index("\n")]
         app_configuration.gui["current_tab"] = tab
 
+        print(f"tab: {tab}")
+
         on_switch_tab.send()
 
         # update = {
