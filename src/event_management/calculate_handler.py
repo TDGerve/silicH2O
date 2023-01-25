@@ -1,5 +1,6 @@
 import blinker as bl
 
+from .. import app_configuration
 from ..interface import Gui
 from ..spectral_processing import Sample_controller
 
@@ -14,7 +15,7 @@ class Calculation_listener:
     on_Ctrl_z = bl.signal("ctrl+z")
 
     on_plot_change = bl.signal("refresh plot")
-
+    on_switch_tab = bl.signal("switch tab")
     on_reset_sample = bl.signal("reset sample")
 
     on_display_message = bl.signal("display message")
@@ -33,14 +34,16 @@ class Calculation_listener:
 
         settings = self.sample_controller.get_sample_settings()
 
-        self.gui.update_variables(**settings)
+        current_tab = app_configuration.gui["current_tab"]
+
+        self.gui.update_variables(**{current_tab: settings[current_tab]})
         self.update_gui_results()
 
         self.refresh_plots(message)
 
     def copy_birs(self, *args):
         try:
-            self.copied_birs = self.sample_controller.get_sample_settings()
+            self.copied_birs = self.sample_controller.get_sample_settings()["baseline"]
             self.on_display_message.send(message="copied birs")
         except AttributeError:
             pass
@@ -51,7 +54,7 @@ class Calculation_listener:
     def paste_birs(self, *args):
         if self.copied_birs is None:
             pass
-        self.update_from_plot(**self.copied_birs)
+        self.update_from_plot(baseline=self.copied_birs)
         self.refresh_plots("settings change")
         self.on_display_message.send(message="pasted birs")
 
@@ -87,8 +90,10 @@ class Calculation_listener:
         self.refresh_plots("settings change")
 
     def refresh_plots(self, message: str):
-
-        plot_data = self.sample_controller.get_sample_plotdata()
+        try:
+            plot_data = self.sample_controller.get_sample_plotdata()
+        except AttributeError:
+            return
         self.on_plot_change.send(message, **plot_data)
 
     def reset_sample(self, *args):
@@ -106,3 +111,4 @@ class Calculation_listener:
         self.on_Ctrl_z.connect(self.reset_sample)
 
         self.on_reset_sample.connect(self.reset_sample)
+        self.on_switch_tab.connect(self.refresh_plots)

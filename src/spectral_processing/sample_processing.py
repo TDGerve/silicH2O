@@ -3,8 +3,9 @@ from typing import Any, Dict, List, Optional, Protocol
 import numpy as np
 import pandas as pd
 import ramCOH as ram
+from scipy import interpolate as itp
 
-from .. import app_settings
+from .. import app_configuration
 
 
 class Sample_proccessor(Protocol):
@@ -21,15 +22,16 @@ class Sample_proccessor(Protocol):
 
 
 class Raman_processor:
-    def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
+    def __init__(self, name, x, y, sample_settings, birs):
 
         self.name = name
 
         self.settings = sample_settings.copy()
         self.baseline_regions = birs.copy()
-        self.interpolation_regions = interpolation_regions.copy()
 
-        self.data = ram.H2O(x, y, laser=app_settings.general["laser_wavelength"])
+        self.data = ram.RamanProcessing(
+            x, y, laser=app_configuration.data_processing["laser_wavelength"]
+        )
 
     def get_birs(self) -> Dict[str, int]:
 
@@ -48,8 +50,8 @@ class Raman_processor:
             self.baseline_regions.iloc[index] = new_value
 
     def calculate_baseline(self):
-
-        birs = np.reshape(self.baseline_regions.values, (5, 2))
+        bir_amount = self.baseline_regions.shape[0] // 2
+        birs = np.reshape(self.baseline_regions.values, (bir_amount, 2))
         smooth_factor = self.settings["baseline_smoothing"]
 
         self.data.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)
@@ -90,7 +92,11 @@ class Raman_processor:
 class h2o_processor(Raman_processor):
     def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
 
-        super().__init__(name, x, y, sample_settings, birs, interpolation_regions)
+        self.name = name
+
+        self.settings = sample_settings.copy()
+        self.baseline_regions = birs.copy()
+        self.interpolation_regions = interpolation_regions.copy()
 
         self.results = pd.Series(
             {
@@ -101,14 +107,27 @@ class h2o_processor(Raman_processor):
 
         self._interference: Optional[Raman_processor] = None
 
+        self.data = ram.H2O(
+            x, y, laser=app_configuration.data_processing["laser_wavelength"]
+        )
+
     @property
     def interference(self):
         return self._interference
 
-    def set_interference(self, x, y, sample_settings, birs, interpolation_regions):
+    def set_interference(self, x, y, sample_settings, birs):
+        # y_interpolated = self._intertpolate_spectrum(x, y)
         self._interfernce = Raman_processor(
-            self.name, x, y, sample_settings, birs, interpolation_regions
+            self.name,
+            x,
+            y,
+            sample_settings,
+            birs,
         )
+
+    def _intertpolate_spectrum(self, x, y):
+        interpolate = itp.interp1d(x, y, bounds_error=False, fill_value=np.nan)
+        return interpolate(self.data.x)
 
     def calculate_interpolation(self):
 
@@ -142,3 +161,12 @@ class h2o_processor(Raman_processor):
         for region, new_value in kwargs.items():
             index = int(region[-1])
             self.baseline_regions.iloc[index] = new_value
+
+    def get_plotdata(self) -> Dict[str, Any]:
+
+        plot_data = super().get_plotdata()
+
+        if self.interference:
+            plot_data["interference"] = self.interference.get_plotdata()
+
+        return plot_data

@@ -4,22 +4,44 @@ import numpy as np
 
 from ..interface.screens import Screen
 from .plot_interaction import construct_polygon_coordinates, drag_polygons
-from .plots import Single_plot
+from .plots import Double_plot
 
 
-class Interpolation_plot(Single_plot):
+class Subtraction_plot(Double_plot):
     def __init__(self, screen: Screen):
 
         super().__init__(screen, xlabel="Raman shift cm$^{-1}$", ylabel="Counts")
-        self.setup_ax(limits=(0, 4000))
+        self.setup_ax0("glass", limits=(0, 4000))
+        self.setup_ax1("interference", limits=(0, 4000))
 
         self.birs = []
         self.mouse_connection: Optional[drag_polygons] = None
 
-    def plot_lines(
-        self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
+    def draw_plot(self, **kwargs):
+
+        interference = kwargs.pop("interference", None)
+        if interference:
+            birs = interference.pop("birs")
+            self.plot_lines_axis(1, **interference)
+            self.plot_birs(birs)
+
+        self.plot_lines_axis(0, **kwargs)
+        self.fig.canvas.draw_idle()
+
+    def plot_lines_axis(
+        self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
     ):
-        return super().plot_lines(x, spectra, *args, **kwargs)
+        plot_items = [
+            ("raw", "interference_corrected"),
+            ("raw", "baseline", "baseline_corrected"),
+        ][ax_id]
+
+        keys = list(spectra.keys())
+        for key in keys:
+            if key not in plot_items:
+                _ = spectra.pop(key)
+
+        return super().plot_lines_axis(ax_id, x, spectra, *args, **kwargs)
 
     def clear_birs(self, amount=None):
         if amount is None:
@@ -31,11 +53,13 @@ class Interpolation_plot(Single_plot):
     def plot_interference_peaks(self, peaks):
         ...
 
-    def plot_interference_birs(self, birs: Dict[(int, float)]):
+    def plot_birs(self, birs: Dict[(int, float)]):
         if not self.birs:
             connect_mouse = True
         else:
             connect_mouse = False
+
+        ax = self.axs[1]
 
         bir_values = list(birs.values())
         birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
@@ -58,7 +82,7 @@ class Interpolation_plot(Single_plot):
 
             except IndexError:
                 self.birs.append(
-                    self.ax.axvspan(
+                    ax.axvspan(
                         left_boundary,
                         right_boundary,
                         alpha=0.3,
@@ -71,10 +95,11 @@ class Interpolation_plot(Single_plot):
             self.connect_mouse_events()
 
     def connect_mouse_events(self):
-
+        ax = self.axs[1]
         self.mouse_connection = drag_polygons(
-            ax=self.ax,
+            ax=ax,
             polygons=self.birs,  # drag_polygons=[1, 2]
+            identifier="interference",
         )
 
         self.fig.canvas.mpl_connect(

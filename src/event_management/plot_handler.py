@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 import blinker as bl
 import numpy as np
 
+from .. import app_configuration
 from ..interface import Gui
 from ..plots import Plot
 
@@ -26,19 +27,24 @@ class Plot_listener:
         self,
         *args,
         sample_name: str,
-        x: np.ndarray,
-        spectra: Dict[str, np.ndarray],
-        baseline_spectrum: str,
-        birs: List[int],
+        # x: np.ndarray,
+        # spectra: Dict[str, np.ndarray],
+        # baseline_spectrum: str,
+        # birs: List[int],
         **kwargs,
     ):
+        current_tab = app_configuration.gui["current_tab"]
+        # sample_name = kwargs.pop("sample_name")
 
-        for name, plot in self.plots.items():
-            plot.display_name(sample_name)
-            plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
-            if name == "baseline_correction":
+        plot = self.plots[current_tab]
 
-                plot.plot_birs(birs)
+        # for name, plot in self.plots.items():
+        plot.display_name(sample_name)
+        plot.draw_plot(**kwargs)
+        # plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
+        # if name in "baseline_correction":
+
+        #     plot.plot_birs(birs)
 
     def clear_plot(self, *args):
         for plot in self.plots.values():

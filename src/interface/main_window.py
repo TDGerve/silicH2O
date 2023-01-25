@@ -5,24 +5,25 @@ from typing import Any, Dict
 
 import blinker as bl
 
-from .. import app_settings
+from .. import app_configuration
 from .infobar import Infobar
 from .menus import io_menu
 from .sample_navigation import Sample_navigation
 from .screens import Computer_screen
-from .tabs import Baseline_correction_frame
+from .tabs import Baseline_correction_frame, Interpolation_frame, Subtraction_frame
 
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
 
-_font = app_settings.gui["font"]["family"]
-_fontsize = app_settings.gui["font"]["size"]
+_font = app_configuration.gui["font"]["family"]
+_fontsize = app_configuration.gui["font"]["size"]
 
 on_Ctrl_c = bl.signal("copy birs")
 on_Ctrl_v = bl.signal("paste birs")
 on_Ctrl_s = bl.signal("ctrl+s")
 on_Ctrl_z = bl.signal("ctrl+z")
 on_delete = bl.signal("delete")
+on_switch_tab = bl.signal("switch tab")
 
 on_display_message = bl.signal("display message")
 
@@ -66,24 +67,24 @@ class Main_window(tk.Tk):
     def set_theme(self):
         self.style = ttk.Style()
         self.tk.call("source", _theme_file)
-        self.style.theme_use(app_settings.gui["theme"])
+        self.style.theme_use(app_configuration.gui["theme"])
         self.style.configure(".", _font)
 
-        self.style.configure(
-            "TNotebook.Tab", font=(_font, _fontsize, "bold"), padding=[1, 2]
-        )
+        self.style.configure("TNotebook.Tab", font=(_font, _fontsize), padding=[1, 2])
 
         self.style.configure(
             "clean.TButton",
             borderwidth=5,
             highlightthickness=0,
             relief=tk.FLAT,
+            font=(_font, _fontsize + 2, "bold"),
+            padding=-2,
         )
 
         self.background_color = self.style.lookup(
-            app_settings.gui["theme"], "background"
+            app_configuration.gui["theme"], "background"
         )
-        app_settings.background_color = self.background_color
+        app_configuration.background_color = self.background_color
 
         self.background_color = self.winfo_rgb(self.background_color)
 
@@ -91,7 +92,7 @@ class Main_window(tk.Tk):
 
         width, height = self.screen.resolution
 
-        self.minsize(*app_settings.gui["geometry"]["size_min"])
+        self.minsize(*app_configuration.gui["geometry"]["size_min"])
         resolution_str = (
             f"{int(width * 0.85)}x{int(height * 0.85)}+{int(width * 0.15 * 0.5)}+0"
         )
@@ -140,25 +141,46 @@ class Main_window(tk.Tk):
         self.tabs.columnconfigure(0, weight=1)
 
         # trigger function on tab change
-        self.tabs.bind("<<NotebookTabChanged>>", lambda event: self.on_tab_change)
+        self.tabs.bind("<<NotebookTabChanged>>", self.on_tab_change)
 
     def populate_tabs(self, variables: Dict[str, Any], widgets: Dict[str, Any]):
         frame = self.nametowidget("main_frame")
         tabs = frame.nametowidget("tabs")
 
         baseline_correction = Baseline_correction_frame(
-            tabs, name="baseline_correction", variables=variables, widgets=widgets
+            tabs, name="baseline", variables=variables, widgets=widgets
         )
-        baseline_correction.grid(column=0, row=0, sticky=("nesw"))
 
-        tabs.add(baseline_correction, text="Baseline\ncorrection")
+        subtraction = Subtraction_frame(
+            tabs, name="interference", variables=variables, widgets=widgets
+        )
+        interpolation = Interpolation_frame(
+            tabs, name="interpolation", variables=variables, widgets=widgets
+        )
 
-    def on_tab_change(self):
+        frames = (baseline_correction, interpolation, subtraction)
+        names = (
+            "baseline\ncorrection",
+            "interpolation\n ",
+            "interference\nsubtraction",
+        )
+
+        for frame, name in zip(frames, names):
+            frame.grid(column=0, row=0, sticky=("nesw"))
+            tabs.add(frame, text=name)
+
+        app_configuration.gui["current_tab"] = "baseline"
+
+    def on_tab_change(self, event):
         """
         Refresh plot on the opened tab
         """
 
-        # tab = event.widget.tab("current")["text"]
+        tab = event.widget.tab("current")["text"]
+        tab = tab[: tab.index("\n")]
+        app_configuration.gui["current_tab"] = tab
+
+        on_switch_tab.send()
 
         # update = {
         #     "Baseline correction": self.water_calc.update_plot,
@@ -169,7 +191,6 @@ class Main_window(tk.Tk):
         # if self.current_sample:
         #     # selected_sample = self.current_sample.index
         #     update[tab]()
-        pass
 
     def create_infobar(self, frame, row, col, variables, widgets):
         # main_frame = self.nametowidget("main_frame")

@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import blinker as bl
 
-from ..plots import Baseline_correction_plot, Plot
+from ..plots import Baseline_correction_plot, Plot, Subtraction_plot
 from .GUIS import GUI_state
 from .main_window import Main_window
 
@@ -73,7 +73,8 @@ class App_interface:
                         i.configure(state=tk.NORMAL)
 
     def create_plots(self):
-        self.plots["baseline_correction"] = Baseline_correction_plot(self.window.screen)
+        self.plots["baseline"] = Baseline_correction_plot(self.window.screen)
+        self.plots["interference"] = Subtraction_plot(self.window.screen)
         self.add_plots()
 
     def add_plots(self):

@@ -3,7 +3,7 @@ from typing import Dict, Protocol, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .. import app_settings
+from .. import app_configuration
 from ..interface.screens import Screen
 from . import plot_layout as pl
 
@@ -15,7 +15,7 @@ class Plot(Protocol):
     def plot_lines(self):
         ...
 
-    def plot_birs(self):
+    def draw_plot(self):
         ...
 
     def clear_plot(self):
@@ -25,7 +25,7 @@ class Plot(Protocol):
 class Double_plot:
     def __init__(self, screen: Screen, xlabel: str, ylabel: str):
 
-        self.colors = getattr(pl.colors, app_settings.gui["plot_theme"])
+        self.colors = getattr(pl.colors, app_configuration.gui["plot_theme"])
 
         width, height = [
             size * screen.scaling / screen.dpi for size in screen.resolution
@@ -36,7 +36,7 @@ class Double_plot:
         self.fig, self.axs = plt.subplots(
             2, 1, figsize=(width, height)  # , constrained_layout=True
         )
-        self.lines = {"ax1": {}, "ax2": {}}
+        self.lines = {"ax0": {}, "ax1": {}}
         self.name = None
 
         # Needs matplotlib > 3.4 & Python > 3.7
@@ -47,13 +47,13 @@ class Double_plot:
             # ax.set_yticks([])
             ax.set_ylim(0, 1e-2)
 
-    def setup_ax1(self, title: str, limits: Tuple[int, int]):
+    def setup_ax0(self, title: str, limits: Tuple[int, int]):
 
         ax = self.axs[0]
         ax.set_title(title)
         ax.set_xlim(*limits)
 
-    def setup_ax2(self, title: str, limits: Tuple[int, int]):
+    def setup_ax1(self, title: str, limits: Tuple[int, int]):
 
         ax = self.axs[1]
         ax.set_title(title)
@@ -82,38 +82,69 @@ class Double_plot:
         else:
             self.name.set_text(sample_name)
 
+    def draw_plot(self):
+        self.fig.canvas.draw_idle()
+
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
     ):
         colors = self.colors.by_key()["color"]
 
-        for ax, lines in zip(self.axs, self.lines.values()):
+        for i in range(2):
+            self.plot_lines_axis(i, x, spectra)
 
-            xmin, xmax = ax.get_xlim()
-            ymax = []
-            for (name, spectrum), color in zip(spectra.items(), colors):
-                ymax.append(spectrum[(xmin < x) & (x < xmax)].max())
-                try:
-                    if np.array_equal(lines[name][0].get_ydata(), spectrum):
-                        continue
+        # for ax, lines in zip(self.axs, self.lines.values()):
 
-                    lines[name][0].set_xdata(x)
-                    lines[name][0].set_ydata(spectrum)
-                except KeyError:
-                    lines[name] = ax.plot(x, spectrum, label=name, color=color)
+        #     xmin, xmax = ax.get_xlim()
+        #     ymax = []
+        #     for (name, spectrum), color in zip(spectra.items(), colors):
+        #         ymax.append(spectrum[(xmin < x) & (x < xmax)].max())
+        #         try:
+        #             if np.array_equal(lines[name][0].get_ydata(), spectrum):
+        #                 continue
 
-            ymax = max(ymax) * 1.1
-            ax.set_ylim(0, ymax)
-            if ymax > 2e3:
-                ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
+        #             lines[name][0].set_xdata(x)
+        #             lines[name][0].set_ydata(spectrum)
+        #         except KeyError:
+        #             lines[name] = ax.plot(x, spectrum, label=name, color=color)
 
-        self.fig.canvas.draw_idle()
+        #     ymax = max(ymax) * 1.1
+        #     ax.set_ylim(0, ymax)
+        #     if ymax > 2e3:
+        #         ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
+
+    def plot_lines_axis(
+        self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
+    ):
+
+        ax = self.axs[ax_id]
+        colors = self.colors.by_key()["color"]
+        lines = self.lines[f"ax{ax_id}"]
+
+        xmin, xmax = ax.get_xlim()
+        ymax = []
+
+        for (name, y), color in zip(spectra.items(), colors):
+            ymax.append(y[(xmin < x) & (x < xmax)].max())
+            try:
+                if np.array_equal(lines[name][0].get_ydata(), y):
+                    continue
+
+                lines[name][0].set_xdata(x)
+                lines[name][0].set_ydata(y)
+            except KeyError:
+                lines[name] = ax.plot(x, y, label=name, color=color)
+
+        ymax = max(ymax) * 1.1
+        ax.set_ylim(0, ymax)
+        if ymax > 2e3:
+            ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
 
 
 class Single_plot:
     def __init__(self, screen: Screen, xlabel: str, ylabel: str):
 
-        self.colors = getattr(pl.colors, app_settings.gui["plot_theme"])
+        self.colors = getattr(pl.colors, app_configuration.gui["plot_theme"])
 
         width, height = [
             size * screen.scaling / screen.dpi for size in screen.resolution
@@ -152,17 +183,23 @@ class Single_plot:
     def display_name(self, sample_name):
         if self.name is None:
             self.name = self.ax.text(
-                0.01, 0.95, sample_name, transform=self.ax.transAxes
+                0.01, 0.98, sample_name, transform=self.ax.transAxes
             )
         else:
             self.name.set_text(sample_name)
+
+    def draw_plot(self):
+        self.fig.canvas.draw_idle()
 
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
     ):
         colors = self.colors.by_key()["color"]
 
-        for color, (name, new_vals), color in zip(colors, spectra.items()):
+        for color, (name, new_vals) in zip(colors, spectra.items()):
+
+            if name in ("baseline", "baseline_corrected"):
+                continue
 
             xmin, xmax = self.ax.get_xlim()
             ymax = []
@@ -181,5 +218,3 @@ class Single_plot:
             self.ax.set_ylim(0, ymax)
             if ymax > 2e3:
                 self.ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
-
-        self.fig.canvas.draw_idle()

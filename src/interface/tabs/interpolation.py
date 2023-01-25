@@ -3,15 +3,15 @@ from tkinter import ttk
 import blinker as bl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from ... import app_settings
-from ..scrollframes import ScrollFrame
+from ... import app_configuration
+from ..frames.scrollframes import ScrollFrame
+from ..frames.vertical_toolbar import vertical_toolbar
 from ..validate_input import validate_numerical_input
-from ..vertical_toolbar import vertical_toolbar
 
 on_settings_change = bl.signal("settings change")
 
-_font = app_settings.gui["font"]["family"]
-_fontsize = app_settings.gui["font"]["size"]
+_font = app_configuration.gui["font"]["family"]
+_fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
 padding = 2
@@ -20,25 +20,15 @@ padding = 2
 class Interpolation_frame(ttk.Frame):
     def __init__(self, parent: ttk.Frame, name: str, variables, widgets, **kwargs):
 
+        super().__init__(parent, name=name, **kwargs)
+
         self.canvas = None
 
-        self.baseline_widgets = {}
-        # self.baseline_smoothing_widgets = {}
-        self.save_widgets = {}
+        self.interpolation_widgets = {}
+        self.interpolation_variables = {}
 
-        self.baseline_variables = {}
-        # self.baseline_smoothing_variables = {}
-        self.areas_variables = {}
-        self.signal_variables = {}
-
-        variables["baseline"] = self.baseline_variables
-        variables["areas"] = self.areas_variables
-        variables["signal"] = self.signal_variables
-        # variables["baseline_smoothing"] = self.baseline_smoothing_variables
-
-        widgets["baseline"] = self.baseline_widgets
-        # widgets["baseline_smoothing"] = self.baseline_smoothing_widgets
-        widgets["baseline_save"] = self.save_widgets
+        variables["interpolation"] = self.interpolation_variables
+        widgets["interpolation"] = self.interpolation_widgets
 
     def draw_plot(self, plot):
         fig = plot.fig

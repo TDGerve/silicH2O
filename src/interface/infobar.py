@@ -4,10 +4,10 @@ from typing import Dict
 
 import blinker as bl
 
-from .. import app_settings
+from .. import app_configuration
 
-_font = app_settings.gui["font"]["family"]
-_fontsize = app_settings.gui["font"]["size"]
+_font = app_configuration.gui["font"]["family"]
+_fontsize = app_configuration.gui["font"]["size"]
 
 on_save_sample = bl.signal("save sample")
 on_reset_sample = bl.signal("reset sample")
@@ -87,7 +87,3 @@ class Infobar(ttk.Frame):
         widgets = [reset, save, save_all]
         for name, widget in zip(names, widgets):
             self.widgets[name] = widget
-
-    # def update_XY(self, XY_message: str):
-    #     var = self.variables["xy"]
-    #     var.set(XY_message)

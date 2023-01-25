@@ -9,7 +9,7 @@ import blinker as bl
 import numpy as np
 import pandas as pd
 
-from .. import app_settings
+from .. import app_configuration
 from ..interface import Gui, GUI_state
 from ..spectral_processing import Sample_controller
 
@@ -230,7 +230,7 @@ class Database_listener:
 
 
 def get_names_from_files(files: List, previous_names: List[str] = []) -> List:
-    separator = app_settings.general["name_separator"]
+    separator = app_configuration.data_processing["name_separator"]
     names = []
 
     for file in files:
@@ -267,7 +267,7 @@ def remove_duplicate_names(
 
 # def get_settings(names: List) -> pd.DataFrame:
 
-#     baseline_correction, interpolation = app_settings.process
+#     baseline_correction, interpolation = app_configuration.process
 
 #     birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
 #     birs.index = names

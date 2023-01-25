@@ -6,7 +6,7 @@ import blinker as bl
 import numpy as np
 import pandas as pd
 
-from .. import app_settings
+from .. import app_configuration
 from ..Dataframes import Baseline_DF, Interpolation_DF, Results_DF, Settings_DF
 from .sample_processing import h2o_processor
 
@@ -95,6 +95,7 @@ class Sample_controller:
             self.save_sample(idx=idx)
 
     def get_sample(self, index: int) -> h2o_processor:
+
         return self.spectra[index]
 
     def calculate_sample(self, idx=None):
@@ -126,13 +127,14 @@ class Sample_controller:
     def get_sample_settings(self):
 
         baseline = self.current_sample.get_birs()
-
         baseline["smoothing"] = self.current_sample.settings["baseline_smoothing"]
 
         # baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
 
         return {
             "baseline": baseline,
+            "interpolation": None,
+            "interference": None,
             # "baseline_smoothing": baseline_smoothing,
         }
 
@@ -257,7 +259,7 @@ class Sample_controller:
 
 def get_default_settings(names: List) -> pd.DataFrame:
 
-    baseline_correction, interpolation = app_settings.process
+    baseline_correction, interpolation = app_configuration.data_processing["glass"]
 
     # birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
     # birs.index = names

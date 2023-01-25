@@ -38,8 +38,3 @@ def validate_numerical_input(
         widget.after_idle(lambda: widget.config(validate="focus"))
 
     return valid, new_value
-
-
-# def invalid_input(old_value: Union[str, float], variable) -> None:
-
-#     variable.set(old_value)

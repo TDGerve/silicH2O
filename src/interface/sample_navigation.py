@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Tuple
 
 import blinker as bl
 
-from .. import app_settings
+from .. import app_configuration
 
 on_sample_change = bl.signal("sample change")
 on_samples_removed = bl.signal("samples removed")
@@ -46,8 +46,8 @@ class Sample_navigation(ttk.Frame):
             name="sample_list",
             state=tk.DISABLED,
             font=(
-                app_settings.gui["font"]["family"],
-                app_settings.gui["font"]["size"],
+                app_configuration.gui["font"]["family"],
+                app_configuration.gui["font"]["size"],
             ),
         )
         listbox.grid(column=0, row=0, columnspan=2, rowspan=1, sticky=("nesw"))

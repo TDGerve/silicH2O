@@ -20,11 +20,7 @@ def construct_polygon_coordinates(xmin, xmax):
 
 
 class drag_polygons:
-    def __init__(
-        self,
-        ax,
-        polygons: List[Polygon],
-    ):
+    def __init__(self, ax, polygons: List[Polygon], identifier: str):
 
         self.ax = ax
         self.polygons = polygons
@@ -33,6 +29,8 @@ class drag_polygons:
         self.width = None
         self.mouse_location = None
         self.mouse_location = None
+
+        self.identifier = identifier
 
     def on_click(self, event):
         """
@@ -165,4 +163,4 @@ class drag_polygons:
             f"bir_{id[0] * 2 + 1}": int(new_to),
         }
 
-        on_settings_change.send("plot", baseline=new_settings)
+        on_settings_change.send("plot", **{self.identifier: new_settings})

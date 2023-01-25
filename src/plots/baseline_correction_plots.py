@@ -16,25 +16,36 @@ class Baseline_correction_plot(Double_plot):
 
         super().__init__(screen, xlabel="Raman shift cm$^{-1}$", ylabel="Counts")
 
-        self.setup_ax1(
+        self.setup_ax0(
             title="Silicate region",
             limits=(100, 1400),
         )
-        self.setup_ax2(title="H$_2$O region", limits=(2000, 4000))
+        self.setup_ax1(title="H$_2$O region", limits=(2000, 4000))
 
         self.birs = []
         self.mouse_connections = []
 
+    def draw_plot(self, **kwargs):
+        birs = kwargs.pop("birs")
+
+        self.plot_lines(**kwargs)
+        self.plot_birs(birs)
+
+        self.fig.canvas.draw_idle()
+
     def plot_lines(
-        self, x: np.ndarray, spectra: Dict[str, np.ndarray], baseline_spectrum: str
+        self,
+        x: np.ndarray,
+        spectra: Dict[str, np.ndarray],
+        baseline_spectrum: str,
+        **kwargs
     ):
 
-        for key in spectra.keys():
-            if key not in [
-                baseline_spectrum,
-                "baseline",
-                "baseline_corrected",
-            ]:
+        plot_items = (baseline_spectrum, "baseline", "baseline_corrected")
+
+        keys = list(spectra.keys())
+        for key in keys:
+            if key not in plot_items:
                 _ = spectra.pop(key)
 
         return super().plot_lines(x, spectra)
@@ -95,18 +106,16 @@ class Baseline_correction_plot(Double_plot):
 
         bir_amount = len(self.birs) // 2
 
+        drag_ax0 = drag_polygons(
+            ax=self.axs[0], polygons=self.birs[:bir_amount], identifier="baseline"
+        )
         drag_ax1 = drag_polygons(
-            ax=self.axs[0],
-            polygons=self.birs[:bir_amount],
-        )
-        drag_ax2 = drag_polygons(
-            ax=self.axs[1],
-            polygons=self.birs[bir_amount:],
+            ax=self.axs[1], polygons=self.birs[bir_amount:], identifier="baseline"
         )
 
-        self.mouse_connections += [drag_ax1, drag_ax2]
+        self.mouse_connections += [drag_ax0, drag_ax1]
 
-        for ax in [drag_ax1, drag_ax2]:
+        for ax in [drag_ax0, drag_ax1]:
             self.fig.canvas.mpl_connect("button_press_event", ax.on_click)
             self.fig.canvas.mpl_connect("button_release_event", ax.on_release)
             self.fig.canvas.mpl_connect("motion_notify_event", ax.on_motion)

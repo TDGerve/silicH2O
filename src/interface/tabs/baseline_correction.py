@@ -6,16 +6,16 @@ from typing import List, Optional
 import blinker as bl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from ... import app_settings
+from ... import app_configuration
 from ...plots import Baseline_correction_plot
-from ..scrollframes import ScrollFrame
+from ..frames.scrollframes import ScrollFrame
+from ..frames.vertical_toolbar import vertical_toolbar
 from ..validate_input import validate_numerical_input
-from ..vertical_toolbar import vertical_toolbar
 
 on_settings_change = bl.signal("settings change")
 
-_font = app_settings.gui["font"]["family"]
-_fontsize = app_settings.gui["font"]["size"]
+_font = app_configuration.gui["font"]["family"]
+_fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
 padding = 2
@@ -38,14 +38,14 @@ class Baseline_correction_frame(ttk.Frame):
         variables["areas"] = self.areas_variables
         variables["signal"] = self.signal_variables
 
-        self.make_baseline_frame(0, 3, width="7c")
-        self.make_signal_frame(2, 3)
-        self.make_areas_frame(4, 3)
+        self.make_baseline_frame(self, 0, 3, width="7c")
+        self.make_signal_frame(self, 2, 3)
+        self.make_areas_frame(self, 4, 3)
         # self.make_save_frame(7, 3)
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
-        self.columnconfigure(3, minsize="6c")
+        self.columnconfigure(3, minsize="7c")
 
         self.rowconfigure(6, weight=1)
 
@@ -57,15 +57,15 @@ class Baseline_correction_frame(ttk.Frame):
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=padding, pady=padding)
 
-    def make_vertical_divider(self, frame, col):
-        rows = frame.grid_size()[1]
+    def make_vertical_divider(self, parent, col):
+        rows = parent.grid_size()[1]
         ttk.Separator(self, orient=tk.VERTICAL).grid(
             row=0, column=col, rowspan=rows, sticky=("ns")
         )
 
-    def make_horizontal_dividers(self, frame, rows: List[int], col: int):
+    def make_horizontal_dividers(self, parent, rows: List[int], col: int):
         for row in rows:
-            ttk.Separator(frame, orient=tk.HORIZONTAL).grid(
+            ttk.Separator(parent, orient=tk.HORIZONTAL).grid(
                 row=row, column=col, sticky=("new")
             )
 
@@ -83,9 +83,9 @@ class Baseline_correction_frame(ttk.Frame):
         toolbar.update()
         toolbar.grid(row=0, column=1, sticky="nw")
 
-    def make_baseline_frame(self, row: int, col: int, width):
+    def make_baseline_frame(self, parent, row: int, col: int, width):
 
-        frame = ttk.Frame(self, name="baseline")
+        frame = ttk.Frame(parent, name="baseline")
         frame.grid(row=row, column=col, sticky=("nesw"))
         # frame.grid_propagate(0)
 
@@ -105,11 +105,11 @@ class Baseline_correction_frame(ttk.Frame):
         for i in range(2):
             frame.columnconfigure(i, weight=1)
 
-    def make_bir_scrollframe(self, frame, width):
-        background_color = app_settings.background_color
+    def make_bir_scrollframe(self, parent, width):
+        background_color = app_configuration.background_color
 
         scrollframe = ScrollFrame(
-            frame,
+            parent,
             name="bir_scrollframe",
             width=width,
             background_color=background_color,
@@ -121,14 +121,14 @@ class Baseline_correction_frame(ttk.Frame):
             ).grid(row=0, column=k, sticky=("nsw"))
         self.make_bir_widgets(scrollframe.inner_frame, bir_amount=5)
 
-    def make_bir_widgets(self, bir_frame, bir_amount: int):
+    def make_bir_widgets(self, parent, bir_amount: int):
 
-        for widget in bir_frame.winfo_children():
+        for widget in parent.winfo_children():
             widget.destroy()
 
         for i in range(bir_amount):
             label = ttk.Label(
-                bir_frame,
+                parent,
                 text=f"{i + 1: <4} ",
                 font=(_font, _fontsize),
             )
@@ -139,7 +139,7 @@ class Baseline_correction_frame(ttk.Frame):
                 var = tk.StringVar(name=name)
 
                 entry = ttk.Entry(
-                    bir_frame,
+                    parent,
                     validate="focusout",
                     validatecommand=(
                         self.register(
@@ -163,16 +163,16 @@ class Baseline_correction_frame(ttk.Frame):
                 self.baseline_variables[name] = var
 
         for i in (1, 2):
-            bir_frame.columnconfigure(i, weight=1)
+            parent.columnconfigure(i, weight=1)
 
-        self.make_delete_add_buttons(bir_frame, start_column=3)
+        self.make_delete_add_buttons(parent, start_column=3)
 
-    def make_delete_add_buttons(self, frame, start_column: int, width=2):
+    def make_delete_add_buttons(self, parent, start_column: int, width=2):
 
-        rows = frame.grid_size()[1]
+        rows = parent.grid_size()[1]
         for i in range(rows - 1):
             button = ttk.Button(
-                frame,
+                parent,
                 text="\uff0b",
                 state=tk.DISABLED,
                 name=f"add_bir_{i}",
@@ -184,7 +184,7 @@ class Baseline_correction_frame(ttk.Frame):
 
         for i in range(rows - 2):
             button = ttk.Button(
-                frame,
+                parent,
                 text="\uff0d",
                 state=tk.DISABLED,
                 name=f"delete_bir_{i + 1}",
@@ -194,21 +194,21 @@ class Baseline_correction_frame(ttk.Frame):
             )
             button.grid(row=i + 1, column=start_column + 1)
 
-    def make_smoothing_widgets(self, frame, rowstart):
+    def make_smoothing_widgets(self, parent, rowstart):
 
         name = "smoothing"
 
-        ttk.Label(frame).grid(row=rowstart, column=0)  # empty row
+        ttk.Label(parent).grid(row=rowstart, column=0)  # empty row
 
         ttk.Label(
-            frame,
+            parent,
             text="smoothing",
             font=(_font, _fontsize_head),
         ).grid(row=rowstart + 1, column=0, sticky=("nsw"))
 
         var = tk.StringVar(name=name)
         entry = ttk.Spinbox(
-            frame,
+            parent,
             from_=0.1,
             to=100,
             increment=0.1,
@@ -233,9 +233,9 @@ class Baseline_correction_frame(ttk.Frame):
         self.baseline_widgets[name] = entry
         self.baseline_variables[name] = var
 
-    def make_areas_frame(self, row: int, col: int):
+    def make_areas_frame(self, parent, row: int, col: int):
 
-        frame = ttk.Frame(self, name="areas")
+        frame = ttk.Frame(parent, name="areas")
         frame.grid(row=row, column=col, sticky=("nesw"))
 
         # for i in range(4):
@@ -254,9 +254,9 @@ class Baseline_correction_frame(ttk.Frame):
 
         make_label_widgets(frame, labels, names, [1, 1], self.areas_variables)
 
-    def make_signal_frame(self, row, col):
+    def make_signal_frame(self, parent, row, col):
 
-        frame = ttk.Frame(self, name="signal")
+        frame = ttk.Frame(parent, name="signal")
         frame.grid(row=row, column=col, sticky=("nesw"))
 
         for i in range(2):
