@@ -134,6 +134,9 @@ class Baseline_interpolation_frame(ttk.Frame):
             )
             button.grid(row=index, column=start_column)
 
+        if rows < 4:
+            return
+
         for index in range(1, rows - 1):
             button = ttk.Button(
                 parent,
