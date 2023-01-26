@@ -4,20 +4,26 @@ import shutil
 import sys
 import time
 
-from .event_management import Calculation_listener, Database_listener, Plot_listener
+from .event_management import (
+    Calculation_listener,
+    Database_listener,
+    Gui_listener,
+    Plot_listener,
+)
 from .interface import App_interface
-from .spectral_processing import Sample_controller
+from .spectral_processing import Database_controller
 
 
 class Raman_app:
     def __init__(self, title):
 
-        self.samples = Sample_controller()
+        self.samples = Database_controller()
         self.gui = App_interface(title=title)
 
         self.calulcation_listener = Calculation_listener(self.samples, self.gui)
         self.database_listener = Database_listener(self.samples, self.gui)
-        self.plot_listener = Plot_listener(self.gui.plots, self.gui)
+        self.plot_listener = Plot_listener(self.gui.plots)
+        self.gui_listener = Gui_listener(self.gui)
 
     def run(self) -> None:
 

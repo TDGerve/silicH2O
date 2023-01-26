@@ -7,9 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from ... import app_configuration
 from ..frames.Baseline_interpolation import Baseline_interpolation_frame
-from ..frames.scrollframes import ScrollFrame
 from ..frames.vertical_toolbar import vertical_toolbar
-from ..validate_input import validate_numerical_input
 
 on_settings_change = bl.signal("settings change")
 on_load_interference = bl.signal("load interference")
@@ -57,6 +55,10 @@ class Subtraction_frame(ttk.Frame):
             child.grid_configure(padx=5, pady=3)
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=padding, pady=padding)
+
+    def reset_baseline_widgets(self, bir_amount):
+        widget = self.nametowidget("interference").nametowidget("baseline")
+        widget.make_bir_widgets(bir_amount)
 
     def draw_plot(self, plot):
         fig = plot.fig

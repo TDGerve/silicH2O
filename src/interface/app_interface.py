@@ -54,6 +54,7 @@ class App_interface:
 
                 try:
                     widget = self.widgets[name][var_name]
+
                     widget.focus_set()
                     widget.delete(0, tk.END)
                     widget.insert(0, f"{value}")

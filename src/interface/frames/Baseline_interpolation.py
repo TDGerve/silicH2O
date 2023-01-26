@@ -14,6 +14,8 @@ _fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
 on_settings_change = bl.signal("settings change")
+on_add_bir = bl.signal("add bir")
+on_delete_bir = bl.signal("delete bir")
 
 
 class Baseline_interpolation_frame(ttk.Frame):
@@ -53,21 +55,24 @@ class Baseline_interpolation_frame(ttk.Frame):
     def make_bir_scrollframe(self, parent, width, bir_amount):
         background_color = app_configuration.background_color
 
-        scrollframe = ScrollFrame(
+        self.scrollframe = ScrollFrame(
             parent,
             name="bir_scrollframe",
             width=width,
             background_color=background_color,
         )
-        scrollframe.grid(row=3, column=0, columnspan=2, sticky="nesw")
+        self.scrollframe.grid(row=3, column=0, columnspan=2, sticky="nesw")
         for k, name in zip(range(3), ["No.", "From", "to"]):
             tk.Label(
-                scrollframe.headers, text=name, font=(_font, _fontsize, "italic")
+                self.scrollframe.headers, text=name, font=(_font, _fontsize, "italic")
             ).grid(row=0, column=k, sticky=("nsw"))
-        self.make_bir_widgets(scrollframe.inner_frame, bir_amount=bir_amount)
+        self.make_bir_widgets(bir_amount=bir_amount, state=tk.DISABLED)
 
-    def make_bir_widgets(self, parent, bir_amount: int):
+    def make_bir_widgets(self, bir_amount: int, state=tk.NORMAL):
 
+        parent = self.scrollframe.inner_frame
+
+        self.birs.clear_birs()
         for widget in parent.winfo_children():
             widget.destroy()
 
@@ -101,12 +106,10 @@ class Baseline_interpolation_frame(ttk.Frame):
                     width=4,
                     background="white",
                     font=(_font, _fontsize),
-                    state=tk.DISABLED,
+                    state=state,
                 )
                 entry.grid(row=i, column=j + 1, sticky=("nesw"))
 
-                # self.widgets[name] = entry
-                # self.variables[name] = var
                 self.birs.add_bir(index=index, widget=entry, variable=var)
 
         for i in (1, 2):
@@ -114,32 +117,34 @@ class Baseline_interpolation_frame(ttk.Frame):
 
         self.make_delete_add_buttons(parent, start_column=3)
 
-    def make_delete_add_buttons(self, parent, start_column: int, width=2):
+    def make_delete_add_buttons(
+        self, parent, start_column: int, width=2, state=tk.NORMAL
+    ):
 
         rows = parent.grid_size()[1]
-        for i in range(rows - 1):
+        for index in range(rows - 1):
             button = ttk.Button(
                 parent,
                 text="\uff0b",
-                state=tk.DISABLED,
-                name=f"add_bir_{i}",
+                state=state,
+                name=f"add_bir_{index}",
                 style="clean.TButton",
                 width=width,
-                # command=func,
+                command=partial(on_add_bir.send, index=index),
             )
-            button.grid(row=i, column=start_column)
+            button.grid(row=index, column=start_column)
 
-        for i in range(rows - 2):
+        for index in range(1, rows - 1):
             button = ttk.Button(
                 parent,
                 text="\uff0d",
-                state=tk.DISABLED,
-                name=f"delete_bir_{i + 1}",
+                state=state,
+                name=f"delete_bir_{index + 1}",
                 style="clean.TButton",
                 width=width,
-                # command=func,
+                command=partial(on_delete_bir.send, index=index),
             )
-            button.grid(row=i + 1, column=start_column + 1)
+            button.grid(row=index, column=start_column + 1)
 
     def make_smoothing_widgets(self, parent, rowstart):
 
@@ -191,6 +196,11 @@ class Baseline_interpolation_regions:
         variables[name] = self.variables
 
         self.name = name
+
+    def clear_birs(self):
+        for i in range(len(self.widgets.keys()) - 1):
+            _ = self.widgets.pop(f"bir_{i}")
+            _ = self.variables.pop(f"bir_{i}")
 
     def add_bir(self, index: int, widget, variable):
         self.widgets[f"bir_{index}"] = widget

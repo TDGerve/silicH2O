@@ -62,6 +62,10 @@ class Baseline_correction_frame(ttk.Frame):
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=padding, pady=padding)
 
+    def reset_baseline_widgets(self, bir_amount):
+        widget = self.nametowidget("baseline")
+        widget.make_bir_widgets(bir_amount)
+
     def make_vertical_divider(self, parent, col):
         rows = parent.grid_size()[1]
         ttk.Separator(self, orient=tk.VERTICAL).grid(

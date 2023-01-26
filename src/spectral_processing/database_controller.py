@@ -13,7 +13,7 @@ from .sample_processing import h2o_processor
 on_display_message = bl.signal("display message")
 
 
-class Sample_controller:
+class Database_controller:
     def __init__(self):
         self.files: np.ndarray = np.array([], dtype=str)
         self.names: np.ndarray = np.array([], dtype=str)
@@ -53,7 +53,7 @@ class Sample_controller:
 
         if settings is None:
             new_settings, new_birs, new_interpolation_regions = get_default_settings(
-                names
+                names, type="glass"
             )
 
         else:
@@ -94,6 +94,22 @@ class Sample_controller:
             self.calculate_sample(idx)
             self.save_sample(idx=idx)
 
+    def add_interference(self, file: str, settings: Optional[Dict]):
+        current_sample = self.current_sample
+        name = current_sample.name
+
+        if settings is None:
+            new_settings, new_birs, _ = get_default_settings(name, type="interference")
+
+        else:
+            new_settings = settings["settings"]
+            new_birs = settings["baseline_regions"]
+
+        x, y = np.genfromtxt(file, unpack=True)
+        current_sample.set_interference(name, x, y, new_settings, new_birs)
+
+        current_sample.interference.calculate_baseline()
+
     def get_sample(self, index: int) -> h2o_processor:
 
         return self.spectra[index]
@@ -107,6 +123,18 @@ class Sample_controller:
         sample.calculate_baseline()
         sample.calculate_noise()
         sample.calculate_areas()
+
+    def change_birs(self, action: str, index: int):
+
+        current_tab = app_configuration.gui["current_tab"]
+
+        sample = {
+            "baseline": self.current_sample,
+            "interference": self.current_sample.interference,
+        }[current_tab]
+        func = {"remove": sample.remove_bir, "add": sample.add_bir}[action]
+
+        func(index=index)
 
     def calculate_interpolation(self):
         sample = self.current_sample
@@ -129,15 +157,26 @@ class Sample_controller:
 
     def get_sample_settings(self):
 
-        baseline = self.current_sample.get_birs()
-        baseline["smoothing"] = self.current_sample.settings["baseline_smoothing"]
+        sample = self.current_sample
 
+        baseline = sample.get_birs()
+        baseline["smoothing"] = sample.settings["baseline_smoothing"]
+
+        interpolation = {}
+
+        if sample.interference:
+            interference = sample.interference.get_birs()
+            interference["smoothing"] = sample.interference.settings[
+                "baseline_smoothing"
+            ]
+        else:
+            interference = {}
         # baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
 
         return {
             "baseline": baseline,
-            "interpolation": None,
-            "interference": None,
+            "interpolation": interpolation,
+            "interference": interference,
             # "baseline_smoothing": baseline_smoothing,
         }
 
@@ -260,23 +299,17 @@ class Sample_controller:
             return
 
 
-def get_default_settings(names: List) -> pd.DataFrame:
+def get_default_settings(names: List, type: str) -> pd.DataFrame:
 
-    baseline_correction, interpolation = app_configuration.data_processing["glass"]
+    baseline_correction, interpolation = app_configuration.data_processing[type]
 
-    # birs = pd.concat([baseline_correction["birs"].copy()] * len(names), axis=1).T
-    # birs.index = names
-
-    birs = Baseline_DF([baseline_correction["birs"].values] * len(names), index=names)
-
-    # interpolation_regions = pd.concat(
-    #     [interpolation["regions"].copy()] * len(names), axis=1
-    # ).T
-    # interpolation_regions.index = names
+    birs = Baseline_DF(
+        [baseline_correction["birs"].values] * len(names), index=names
+    ).squeeze()
 
     interpolation_regions = Interpolation_DF(
         [interpolation["regions"].values] * len(names), index=names
-    )
+    ).squeeze()
 
     data = [
         [
@@ -286,20 +319,6 @@ def get_default_settings(names: List) -> pd.DataFrame:
         ]
     ] * len(names)
 
-    settings = Settings_DF(data, index=names)
-
-    # settings_df = pd.DataFrame(
-    #     {
-    #         "baseline_smoothing": baseline_correction["smoothing"],
-    #         "interpolation": interpolation["use"],
-    #         "interpolation_smoothing": interpolation["smoothing"],
-    #     },
-    #     index=names,
-    # )
+    settings = Settings_DF(data, index=names).squeeze()
 
     return settings, birs, interpolation_regions
-
-
-# def create_results_df(names: List) -> pd.DataFrame:
-#     colnames = ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
-#     return pd.DataFrame(index=names, columns=colnames, dtype=float)

@@ -1,1 +1,1 @@
-from .sample_controller import *
+from .database_controller import *

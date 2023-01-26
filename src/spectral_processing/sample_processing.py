@@ -1,11 +1,14 @@
 from typing import Any, Dict, List, Optional, Protocol
 
+import blinker as bl
 import numpy as np
 import pandas as pd
 import ramCOH as ram
 from scipy import interpolate as itp
 
 from .. import app_configuration
+
+on_display_message = bl.signal("display message")
 
 
 class Sample_proccessor(Protocol):
@@ -39,6 +42,49 @@ class Raman_processor:
 
         birs.index = range(len(birs))
         return {f"bir_{idx}": int(value) for idx, value in birs.items()}
+
+    def add_bir(self, index: int, max_width: int = 30):
+
+        min_value = self.baseline_regions[f"bir_{index * 2 + 1}"]
+        max_value = self.baseline_regions[f"bir_{(index + 1) * 2}"]
+
+        max_allowed_width = (max_value - 5) - (min_value + 5)
+        if max_allowed_width < 0:
+            self.on_display_message(message="new bir does not fit!")
+            return
+        set_width = min(max_width, max_allowed_width)
+        center = np.mean([max_value, min_value])
+
+        left_boundary = center - (set_width / 2)
+        right_boundary = center + (set_width / 2)
+
+        boundary_index = index * 2
+        current_boundary_amount = len(len(self.baseline_regions))
+
+        for i in range(
+            current_boundary_amount,
+            boundary_index + 2,
+        ):
+            self.baseline_regions[f"bir_{i + 2}"] = self.baseline_regions.pop(
+                f"bir_{i}"
+            )
+
+        self.baseline_regions[f"bir_{boundary_index}"] = int(left_boundary)
+        self.baseline_regions[f"bir_{boundary_index + 1}"] = int(right_boundary)
+
+    def remove_bir(self, index: int):
+
+        current_boundary_amount = len(self.baseline_regions) // 2
+
+        # delete region
+        # self.baseline_regions.drop(str(index), inplace=True)
+
+        for i in range(index, current_boundary_amount - 1):
+            values = self.baseline_regions.loc[str(i + 1)].values
+            self.baseline_regions.loc[(str(i), ["from", "to"])] = values
+
+        # drop unused region
+        self.baseline_regions.drop(self.baseline_regions.index[-2:], inplace=True)
 
     def set_baseline(self, kwargs) -> None:
 
