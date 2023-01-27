@@ -3,6 +3,7 @@ import os
 import pathlib
 import shutil
 import tarfile
+from tkinter import filedialog
 from typing import List, Optional
 
 import blinker as bl
@@ -22,6 +23,8 @@ class Database_listener:
     on_samples_added = bl.signal("samples added")
     on_load_project = bl.signal("load project")
     on_new_project = bl.signal("new project")
+    on_load_interference = bl.signal("load interference")
+    on_interference_added = bl.signal("show interference")
 
     on_samples_removed = bl.signal("samples removed")
 
@@ -79,9 +82,17 @@ class Database_listener:
             self.gui.activate_widgets()
             self.gui.set_state(GUI_state.ACTIVE)
 
-    def add_interference(self, *args, file: str):
+    def load_interference(self, *args):
+        try:
+            file = filedialog.askopenfilename(
+                initialdir=os.getcwd(), filetypes=[("txt files", "*.txt")]
+            )
+        except AttributeError:
+            print("Opening files cancelled by user")
+            return
 
         self.database_controller.add_interference(file)
+        self.on_interference_added.send()
 
     def new_project(self, *args):
 
@@ -230,6 +241,7 @@ class Database_listener:
     def subscribe_to_signals(self) -> None:
         self.on_samples_added.connect(self.add_samples)
         self.on_samples_removed.connect(self.remove_samples)
+        self.on_load_interference.connect(self.load_interference)
 
         self.on_new_project.connect(self.new_project)
         self.on_save_project.connect(self.save_project)

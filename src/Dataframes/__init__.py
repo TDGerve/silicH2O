@@ -1,3 +1,5 @@
+from itertools import product
+
 import pandas as pd
 
 settings_columns = (
@@ -6,24 +8,13 @@ settings_columns = (
     "interpolation_smoothing",
 )
 
-baseline_columns = pd.MultiIndex.from_tuples(
-    [
-        ("0", "from"),
-        ("0", "to"),
-        ("1", "from"),
-        ("1", "to"),
-        ("2", "from"),
-        ("2", "to"),
-        ("3", "from"),
-        ("3", "to"),
-        ("4", "from"),
-        ("4", "to"),
-    ],
-)
 
-interpolation_columns = pd.MultiIndex.from_tuples(
-    [("0", "from"), ("0", "to")],
-)
+def baseline_multiindex(bir_amount: int):
+    index = []
+    for i, j in product(range(bir_amount), ("from", "to")):
+        index.append((str(i), j))
+    return pd.MultiIndex.from_tuples(index)
+
 
 results_columns = ("SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR")
 
@@ -38,14 +29,16 @@ class Settings_DF(pd.DataFrame):
 
 
 class Baseline_DF(pd.DataFrame):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, columns=baseline_columns, dtype="float32", **kwargs)
+    def __init__(self, bir_amount, *args, **kwargs):
+        super().__init__(
+            *args, columns=baseline_multiindex(bir_amount), dtype="float32", **kwargs
+        )
 
 
 class Interpolation_DF(pd.DataFrame):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, bir_amount, *args, **kwargs):
         super().__init__(
-            *args, columns=interpolation_columns, dtype="float32", **kwargs
+            *args, columns=baseline_multiindex(bir_amount), dtype="float32", **kwargs
         )
 
 

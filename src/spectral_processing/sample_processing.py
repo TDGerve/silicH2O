@@ -29,8 +29,8 @@ class Raman_processor:
 
         self.name = name
 
-        self.settings = sample_settings.copy()
-        self.baseline_regions = birs.copy()
+        self.settings = sample_settings.dropna().copy()
+        self.baseline_regions = birs.dropna().copy()
 
         self.data = ram.RamanProcessing(
             x, y, laser=app_configuration.data_processing["laser_wavelength"]
@@ -135,9 +135,9 @@ class h2o_processor(Raman_processor):
 
         self.name = name
 
-        self.settings = sample_settings.copy()
-        self.baseline_regions = birs.copy()
-        self.interpolation_regions = interpolation_regions.copy()
+        self.settings = sample_settings.dropna().copy()
+        self.baseline_regions = birs.dropna().copy()
+        self.interpolation_regions = interpolation_regions.dropna().copy()
 
         self.results = pd.Series(
             {
@@ -158,7 +158,7 @@ class h2o_processor(Raman_processor):
 
     def set_interference(self, x, y, sample_settings, birs):
         # y_interpolated = self._intertpolate_spectrum(x, y)
-        self._interfernce = Raman_processor(
+        self._interference = Raman_processor(
             self.name,
             x,
             y,

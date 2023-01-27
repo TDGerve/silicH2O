@@ -15,6 +15,7 @@ class Calculation_listener:
     on_Ctrl_z = bl.signal("ctrl+z")
 
     on_plot_change = bl.signal("refresh plot")
+    on_interference_added = bl.signal("show interference")
     on_switch_tab = bl.signal("switch tab")
     on_reset_sample = bl.signal("reset sample")
 
@@ -153,6 +154,7 @@ class Calculation_listener:
         self.on_sample_change.connect(self.switch_sample, sender="navigator")
         self.on_settings_change.connect(self.update_from_plot, sender="plot")
         self.on_settings_change.connect(self.update_from_widgets, sender="widget")
+        self.on_interference_added.connect(self.display_sample)
 
         self.on_add_bir.connect(self.add_bir)
         self.on_delete_bir.connect(self.delete_bir)

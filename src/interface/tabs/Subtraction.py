@@ -105,6 +105,8 @@ class Subtraction_frame(ttk.Frame):
         )
         load_button.grid(row=1, column=0, columnspan=2, sticky="ns")
 
+        self.interference_deconvolution_widgets["load_spectrum"] = load_button
+
         baseline_interpolation = Baseline_interpolation_frame(
             parent=frame,
             name="interference",

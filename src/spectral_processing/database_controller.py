@@ -20,8 +20,8 @@ class Database_controller:
         self.spectra: np.ndarray = np.array([], dtype=h2o_processor)
 
         self.settings: pd.DataFrame = Settings_DF()
-        self.baseline_regions: pd.DataFrame = Baseline_DF()
-        self.interpolation_regions: pd.DataFrame = Interpolation_DF()
+        self.baseline_regions: pd.DataFrame = Baseline_DF(bir_amount=5)
+        self.interpolation_regions: pd.DataFrame = Interpolation_DF(bir_amount=1)
 
         self.results: pd.DataFrame = Results_DF()
 
@@ -99,21 +99,28 @@ class Database_controller:
             self.calculate_sample(idx)
             self.save_sample(idx=idx)
 
-    def add_interference(self, file: str, settings: Optional[Dict]):
+    def add_interference(self, file: str, settings: Optional[Dict] = None):
         current_sample = self.current_sample
         name = current_sample.name
 
         if settings is None:
-            new_settings, new_birs, _ = get_default_settings(name, type="interference")
+            new_settings, new_birs, _ = get_default_settings(
+                [name], type="interference"
+            )
 
         else:
             new_settings = settings["settings"]
             new_birs = settings["baseline_regions"]
 
-        x, y = np.genfromtxt(file, unpack=True)
-        current_sample.set_interference(name, x, y, new_settings, new_birs)
+        try:
+            with np.load(file) as f:
+                x = f["x"]
+                y = f["y"]
+        except ValueError:
+            x, y = np.genfromtxt(file, unpack=True)
 
-        current_sample.interference.calculate_baseline()
+        current_sample.set_interference(x, y, new_settings, new_birs)
+        # current_sample.interference.calculate_baseline()
 
     def get_sample(self, index: int) -> h2o_processor:
 
@@ -124,6 +131,14 @@ class Database_controller:
             sample = self.current_sample
         else:
             sample = self.get_sample(idx)
+
+        current_tab = app_configuration.gui["current_tab"]
+
+        if (current_tab == "interference") & (sample.interference is not None):
+            sample.interference.calculate_baseline()
+            return
+        elif current_tab == "interpolation":
+            return
 
         sample.calculate_baseline()
         sample.calculate_noise()
@@ -152,10 +167,9 @@ class Database_controller:
         func_dict = {
             "baseline": sample.set_baseline,
             "interpolate": sample.set_interpolation,
-            "interference": lambda value: print(
-                "interference settings not implemented"
-            ),
         }
+        if sample.interference:
+            func_dict["interference"] = sample.interference.set_baseline
 
         for key, value in kwargs.items():
             func_dict[key](value)
@@ -176,12 +190,15 @@ class Database_controller:
             ]
         else:
             interference = {}
+
+        interference_deconvolution = {}
         # baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
 
         return {
             "baseline": baseline,
             "interpolation": interpolation,
             "interference": interference,
+            "interference_deconvolution": interference_deconvolution
             # "baseline_smoothing": baseline_smoothing,
         }
 
@@ -320,13 +337,15 @@ class Database_controller:
 def get_default_settings(names: List, type: str) -> pd.DataFrame:
 
     baseline_correction, interpolation = app_configuration.data_processing[type]
+    bir_amount = len(baseline_correction["birs"].keys()) // 2
 
     birs = Baseline_DF(
-        [baseline_correction["birs"].values] * len(names), index=names
+        bir_amount, [baseline_correction["birs"].values] * len(names), index=names
     ).squeeze()
 
+    interp_amount = len(interpolation["regions"].keys()) // 2
     interpolation_regions = Interpolation_DF(
-        [interpolation["regions"].values] * len(names), index=names
+        interp_amount, [interpolation["regions"].values] * len(names), index=names
     ).squeeze()
 
     data = [

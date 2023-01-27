@@ -24,6 +24,8 @@ class Subtraction_plot(Double_plot):
             birs = interference.pop("birs")
             self.plot_lines_axis(1, **interference)
             self.plot_birs(birs)
+        else:
+            self.clear_interference()
 
         self.plot_lines_axis(0, **kwargs)
         self.fig.canvas.draw_idle()
@@ -46,9 +48,19 @@ class Subtraction_plot(Double_plot):
     def clear_birs(self, amount=None):
         if amount is None:
             amount = len(self.birs)
-        for bir in self.birs[:amount]:
-            bir.remove()
-        # self.birs = []
+        for _ in range(amount):
+            self.birs[0].remove()
+            self.birs.remove(self.birs[0])
+        self.fig.canvas.draw_idle()
+
+    def clear_interference(self):
+        if self.birs:
+            self.clear_birs()
+
+        for line in self.lines["ax1"].values():
+            line[0].set_xdata([])
+            line[0].set_ydata([])
+        self.fig.canvas.draw_idle()
 
     def plot_interference_peaks(self, peaks):
         ...
@@ -64,7 +76,7 @@ class Subtraction_plot(Double_plot):
         bir_values = list(birs.values())
         birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
 
-        bir_surplus = (len(self.birs) // 2) - len(birs)
+        bir_surplus = len(self.birs) - len(birs)
         if bir_surplus > 0:
             self.clear_birs(amount=bir_surplus)
 
@@ -99,14 +111,14 @@ class Subtraction_plot(Double_plot):
         self.mouse_connection = drag_polygons(
             ax=ax,
             polygons=self.birs,  # drag_polygons=[1, 2]
-            identifier="interference_baseline",
+            identifier="interference",
         )
 
         self.fig.canvas.mpl_connect(
             "button_press_event", self.mouse_connection.on_click
         )
         self.fig.canvas.mpl_connect(
-            "button_release_event", self.mouse_connection.ax.on_release
+            "button_release_event", self.mouse_connection.on_release
         )
         self.fig.canvas.mpl_connect(
             "motion_notify_event", self.mouse_connection.on_motion

@@ -51,7 +51,7 @@ def get_settings_from_json(file: str):
 with open(f"{__path__[0]}/gui_settings.json") as f:
     gui = json.load(f)
 gui["background_color"] = None
-gui["current_tab"] = None
+gui["current_tab"] = "baseline"
 
 # DATA PROCESSING SETTINGS
 with open(f"{__path__[0]}/general_settings.json") as f:
