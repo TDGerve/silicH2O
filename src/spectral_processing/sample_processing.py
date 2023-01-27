@@ -41,12 +41,12 @@ class Raman_processor:
         birs = self.baseline_regions.copy()
 
         birs.index = range(len(birs))
-        return {f"bir_{idx}": int(value) for idx, value in birs.items()}
+        return {f"bir_{idx:02d}": int(value) for idx, value in birs.items()}
 
     def add_bir(self, index: int, max_width: int = 30):
 
-        min_value = self.baseline_regions[f"bir_{index * 2 + 1}"]
-        max_value = self.baseline_regions[f"bir_{(index + 1) * 2}"]
+        min_value = self.baseline_regions.loc[str(index)].values[1]
+        max_value = self.baseline_regions.loc[str(index + 1)].values[0]
 
         max_allowed_width = (max_value - 5) - (min_value + 5)
         if max_allowed_width < 0:
@@ -58,26 +58,21 @@ class Raman_processor:
         left_boundary = center - (set_width / 2)
         right_boundary = center + (set_width / 2)
 
-        boundary_index = index * 2
-        current_boundary_amount = len(len(self.baseline_regions))
+        current_boundary_amount = len(self.baseline_regions) // 2
 
-        for i in range(
-            current_boundary_amount,
-            boundary_index + 2,
-        ):
-            self.baseline_regions[f"bir_{i + 2}"] = self.baseline_regions.pop(
-                f"bir_{i}"
-            )
+        for i in reversed(range(index + 1, current_boundary_amount)):
+            values = self.baseline_regions.loc[str(i)].values
+            self.baseline_regions.loc[(str(i + 1), "from")] = values[0]
+            self.baseline_regions.loc[(str(i + 1), "to")] = values[1]
 
-        self.baseline_regions[f"bir_{boundary_index}"] = int(left_boundary)
-        self.baseline_regions[f"bir_{boundary_index + 1}"] = int(right_boundary)
+        self.baseline_regions.loc[str(index + 1)] = (
+            int(left_boundary),
+            int(right_boundary),
+        )
 
     def remove_bir(self, index: int):
 
         current_boundary_amount = len(self.baseline_regions) // 2
-
-        # delete region
-        # self.baseline_regions.drop(str(index), inplace=True)
 
         for i in range(index, current_boundary_amount - 1):
             values = self.baseline_regions.loc[str(i + 1)].values
@@ -92,7 +87,7 @@ class Raman_processor:
             if bir == "smoothing":
                 self.settings["baseline_smoothing"] = new_value
                 continue
-            index = int(bir[-1])
+            index = int(bir[-2:])
             self.baseline_regions.iloc[index] = int(new_value)
 
     def calculate_baseline(self):
@@ -205,7 +200,7 @@ class h2o_processor(Raman_processor):
     def set_interpolation(self, **kwargs) -> None:
 
         for region, new_value in kwargs.items():
-            index = int(region[-1])
+            index = int(region[-2:])
             self.baseline_regions.iloc[index] = new_value
 
     def get_plotdata(self) -> Dict[str, Any]:

@@ -79,7 +79,12 @@ class Database_controller:
         for idx, (file, name) in enumerate(
             zip(self.files[old_files:], self.names[old_files:])
         ):
-            x, y = np.genfromtxt(file, unpack=True)
+            try:
+                with np.load(file) as f:
+                    x = f["x"]
+                    y = f["y"]
+            except ValueError:
+                x, y = np.genfromtxt(file, unpack=True)
             self.spectra = np.append(
                 self.spectra,
                 h2o_processor(
@@ -216,7 +221,20 @@ class Database_controller:
 
         # save current settings
         self.settings.loc[name] = sample.settings.copy()
+
+        missing_baseline_cols = sample.baseline_regions.index.difference(
+            self.baseline_regions.columns
+        )
+        if len(missing_baseline_cols) > 0:
+            self.baseline_regions[missing_baseline_cols] = np.nan
         self.baseline_regions.loc[name] = sample.baseline_regions.copy()
+
+        missing_interpolation_cols = sample.interpolation_regions.index.difference(
+            self.interpolation_regions.columns
+        )
+        if len(missing_interpolation_cols) > 0:
+            self.interpolation_regions[missing_interpolation_cols] = np.nan
+
         self.interpolation_regions.loc[name] = sample.interpolation_regions.copy()
 
         self.results.loc[name] = sample.results.copy()

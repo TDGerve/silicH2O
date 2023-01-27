@@ -159,8 +159,8 @@ class drag_polygons:
         new_to = max(x_coordinates)
 
         new_settings = {
-            f"bir_{id[0] * 2}": int(new_from),
-            f"bir_{id[0] * 2 + 1}": int(new_to),
+            f"bir_{id[0] * 2:02d}": int(new_from),
+            f"bir_{id[0] * 2 + 1:02d}": int(new_to),
         }
 
         on_settings_change.send("plot", **{self.identifier: new_settings})

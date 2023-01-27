@@ -202,12 +202,12 @@ class Baseline_interpolation_regions:
 
     def clear_birs(self):
         for i in range(len(self.widgets.keys()) - 1):
-            _ = self.widgets.pop(f"bir_{i}")
-            _ = self.variables.pop(f"bir_{i}")
+            _ = self.widgets.pop(f"bir_{i:02d}")
+            _ = self.variables.pop(f"bir_{i:02d}")
 
     def add_bir(self, index: int, widget, variable):
-        self.widgets[f"bir_{index}"] = widget
-        self.variables[f"bir_{index}"] = variable
+        self.widgets[f"bir_{index:02d}"] = widget
+        self.variables[f"bir_{index:02d}"] = variable
 
     def add_smoothing(self, widget, variable):
         self.widgets["smoothing"] = widget
@@ -216,8 +216,8 @@ class Baseline_interpolation_regions:
     def validate_bir_input(self, values: str, index: int):
 
         new_value = values[: values.index(" ")]
-        widget = self.widgets[f"bir_{index}"]
-        variable = self.variables[f"bir_{index}"]
+        widget = self.widgets[f"bir_{index:02d}"]
+        variable = self.variables[f"bir_{index:02d}"]
 
         accepted_range = self.get_bir_range(index)
 
@@ -236,10 +236,10 @@ class Baseline_interpolation_regions:
 
     def invalid_bir_input(self, values: str, index: int):
 
-        variable = self.variables[f"bir_{index}"]
+        variable = self.variables[f"bir_{index:02d}"]
         old_value = variable.get()
 
-        widget = self.widgets[f"bir_{index}"]
+        widget = self.widgets[f"bir_{index:02d}"]
         widget.delete(0, tk.END)
         widget.insert(0, int(float(old_value)))
 
@@ -248,10 +248,14 @@ class Baseline_interpolation_regions:
         if index == 0:
             lower_boundary = 0
         else:
-            lower_boundary = float(self.variables[f"bir_{index - 1}"].get()) + buffer
+            lower_boundary = (
+                float(self.variables[f"bir_{index - 1:02d}"].get()) + buffer
+            )
 
         try:
-            upper_boundary = float(self.variables[f"bir_{index + 1}"].get()) - buffer
+            upper_boundary = (
+                float(self.variables[f"bir_{index + 1:02d}"].get()) - buffer
+            )
         except (ValueError, KeyError):
             upper_boundary = 4000
 
@@ -259,7 +263,7 @@ class Baseline_interpolation_regions:
 
     def change_bir(self, *args, index, value, **kwargs):
 
-        on_settings_change.send("widget", **{self.name: {f"bir_{index}": value}})
+        on_settings_change.send("widget", **{self.name: {f"bir_{index:02d}": value}})
 
     def change_baseline_smoothing(self, new_value):
 

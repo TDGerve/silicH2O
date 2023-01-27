@@ -8,6 +8,7 @@ from typing import List, Optional
 import blinker as bl
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 
 from .. import app_configuration
 from ..interface import Gui, GUI_state
@@ -118,16 +119,16 @@ class Database_listener:
         # data folder
 
         for sample in self.database_controller.spectra:
-            data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
-            file = temp_datapath / f"{sample.name}.sp"
+            # data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
+            file = temp_datapath / f"{sample.name}"
             if not file.is_file():
-                np.savetxt(file, data)
+                np.savez(file, x=sample.data.signal.x, y=sample.data.signal.raw)
 
         fnames = ["settings", "baseline_regions", "interpolation_regions"]
         data = self.database_controller.get_all_settings()
 
         for f, name in zip(data, fnames):
-            f.to_csv(temp_path / f"{name}.csv")
+            f.to_parquet(temp_path / f"{name}.parquet")
 
         with tarfile.open(filepath, mode="w") as tar:
             tar.add(temp_path, arcname="")
@@ -161,8 +162,10 @@ class Database_listener:
                 name = path.stem
 
                 to_path = {
+                    ".parquet": str(temp_path / path.name),
                     ".csv": str(temp_path / path.name),
                     ".sp": str(temp_datapath / path.name),
+                    ".npz": str(temp_datapath / path.name),
                 }[suffix]
 
                 tar.extract(info)
@@ -180,17 +183,22 @@ class Database_listener:
 
         self.move_project_files(filepath=filepath, name=name)
 
-        setting_files = glob.glob(f"{temp_path}\\*.csv")
+        setting_files = glob.glob(f"{temp_path}\\*.parquet")
+        setting_files.extend(glob.glob(f"{temp_path}\\*.csv"))
         spectrum_files = glob.glob(f"{temp_datapath}\\*.sp")
+        spectrum_files.extend(glob.glob(f"{temp_datapath}\\*.npz"))
         names = [pathlib.Path(spectrum).stem for spectrum in spectrum_files]
 
         settings_dict = {}
         for setting in setting_files:
             name = pathlib.Path(setting).stem
-            header = [[0, 1], "infer"][name == "settings"]
-            settings_dict[name] = pd.read_csv(
-                str(setting), index_col=[0], header=header
-            )
+            try:
+                settings_dict[name] = pd.read_parquet(str(setting))
+            except pa.ArrowInvalid:
+                header = [[0, 1], "infer"][name == "settings"]
+                settings_dict[name] = pd.read_csv(
+                    str(setting), index_col=[0], header=header
+                )
 
         self.database_controller.__init__()
         self.database_controller.read_files(

@@ -39,14 +39,16 @@ class Settings_DF(pd.DataFrame):
 
 class Baseline_DF(pd.DataFrame):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, columns=baseline_columns, dtype=float, **kwargs)
+        super().__init__(*args, columns=baseline_columns, dtype="float32", **kwargs)
 
 
 class Interpolation_DF(pd.DataFrame):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, columns=interpolation_columns, dtype=float, **kwargs)
+        super().__init__(
+            *args, columns=interpolation_columns, dtype="float32", **kwargs
+        )
 
 
 class Results_DF(pd.DataFrame):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, columns=results_columns, dtype=float, **kwargs)
+        super().__init__(*args, columns=results_columns, dtype="float32", **kwargs)
