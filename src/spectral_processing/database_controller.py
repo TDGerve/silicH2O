@@ -257,6 +257,9 @@ class Database_controller:
         return sample.get_plotdata()
 
     def save_sample(self, idx=None) -> None:
+        """
+        ADD INTERFERENCE
+        """
 
         if idx is None:
             sample = self.current_sample
@@ -273,13 +276,11 @@ class Database_controller:
         if len(missing_baseline_cols) > 0:
             self.baseline_regions[missing_baseline_cols] = np.nan
         self.baseline_regions.loc[name] = sample.baseline_regions.copy()
-
         missing_interpolation_cols = sample.interpolation_regions.index.difference(
             self.interpolation_regions.columns
         )
         if len(missing_interpolation_cols) > 0:
             self.interpolation_regions[missing_interpolation_cols] = np.nan
-
         self.interpolation_regions.loc[name] = sample.interpolation_regions.copy()
 
         self.results.loc[name] = sample.results.copy()

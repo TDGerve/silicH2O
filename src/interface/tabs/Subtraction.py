@@ -39,17 +39,17 @@ class Subtraction_frame(ttk.Frame):
         self.make_interference_frame(
             parent=self, widgets=widgets, variables=variables, row=0, col=3
         )
+
+        self.make_horizontal_dividers(self, rows=[1, 3, 5], col=3)
+        self.make_vertical_divider(self, col=2)
         # self.make_deconvolution_frame(self, 2, 3)
         # self.make_subtraction_frame(self, 4, 3)
 
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=0)
+        # self.columnconfigure(1, weight=0)
         self.columnconfigure(3, minsize="7c")
 
         self.rowconfigure(6, weight=1)
-
-        self.make_vertical_divider(self, col=2)
-        self.make_horizontal_dividers(self, rows=[1, 3, 5], col=3)
 
         for child in self.winfo_children():
             child.grid_configure(padx=5, pady=3)
@@ -91,6 +91,7 @@ class Subtraction_frame(ttk.Frame):
 
         frame = ttk.Frame(parent, name="interference")
         frame.grid(row=row, column=col, sticky="nesw")
+        frame.columnconfigure(0, minsize="7c")
 
         tk.Label(frame, text="Interference", font=(_font, _fontsize_head, "bold")).grid(
             row=0, column=0, sticky=("nsw")
@@ -103,7 +104,7 @@ class Subtraction_frame(ttk.Frame):
             name="load_interference",
             command=on_load_interference.send,
         )
-        load_button.grid(row=1, column=0, columnspan=2, sticky="ns")
+        load_button.grid(row=1, column=0, sticky="ns")
 
         self.interference_deconvolution_widgets["load_spectrum"] = load_button
 
@@ -115,7 +116,7 @@ class Subtraction_frame(ttk.Frame):
             bir_amount=5,
             width="7c",
         )
-        baseline_interpolation.grid(row=2, column=0, columnspan=2, sticky="nesw")
+        baseline_interpolation.grid(row=2, column=0, sticky="nesw")
 
     def make_deconvolution_frame(self, parent, row: int, col: int):
 

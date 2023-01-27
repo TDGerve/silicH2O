@@ -116,6 +116,8 @@ class Baseline_interpolation_frame(ttk.Frame):
             parent.columnconfigure(i, weight=1)
 
         self.make_delete_add_buttons(parent, start_column=3)
+        for i in (3, 4):
+            parent.columnconfigure(i, minsize="0.7c")
 
     def make_delete_add_buttons(
         self, parent, start_column: int, width=2, state=tk.NORMAL

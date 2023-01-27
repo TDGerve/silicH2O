@@ -78,8 +78,9 @@ class ScrollFrame(tk.Frame):
     def onCanvasConfigure(self, event):
         """Reset the inner frame to fit the canvas when required"""
         canvas_width = event.width
-        self.canvas.itemconfig(
-            self.canvas_window, width=canvas_width
+        self.canvas.itemconfig(self.canvas_window, width=canvas_width)
+        self.canvas.unbind(
+            "<Configure>"
         )  # whenever the size of the canvas changes alter the window region respectively.
 
     def onMouseWheel(self, event):  # cross platform scroll wheel event
