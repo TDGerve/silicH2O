@@ -125,8 +125,9 @@ class Database_listener:
         # project folder
         temp_path = temp_folder / name
         temp_datapath = temp_path / "data"
-        if not temp_datapath.is_dir():
-            temp_datapath.mkdir(parents=True, exist_ok=True)
+        temp_interferencepath = temp_datapath / "interference"
+        if not temp_interferencepath.is_dir():
+            temp_interferencepath.mkdir(parents=True, exist_ok=True)
         # data folder
 
         for sample in self.database_controller.spectra:
@@ -134,8 +135,17 @@ class Database_listener:
             file = temp_datapath / f"{sample.name}"
             if not file.is_file():
                 np.savez(file, x=sample.data.signal.x, y=sample.data.signal.raw)
+            if sample.interference:
+                file = temp_interferencepath / f"{sample.name}"
+                np.savez(
+                    file,
+                    x=sample.interference.data.signal.x,
+                    y=sample.interference.data.signal.raw,
+                )
 
         fnames = ["settings", "baseline_regions", "interpolation_regions"]
+        if self.database_controller.interference_settings:
+            fnames.extend(["interference_settings", "interference_baseline_regions"])
         data = self.database_controller.get_all_settings()
 
         for f, name in zip(data, fnames):
@@ -156,9 +166,10 @@ class Database_listener:
 
         temp_path = temp_folder / name
         temp_datapath = temp_path / "data"
+        temp_interferencepath = temp_datapath / "interference"
 
-        if not temp_datapath.is_dir():
-            temp_datapath.mkdir(parents=True, exist_ok=True)
+        if not temp_interferencepath.is_dir():
+            temp_interferencepath.mkdir(parents=True, exist_ok=True)
 
         with tarfile.open(str(filepath), "r") as tar:
 
@@ -172,12 +183,7 @@ class Database_listener:
 
                 name = path.stem
 
-                to_path = {
-                    ".parquet": str(temp_path / path.name),
-                    ".csv": str(temp_path / path.name),
-                    ".sp": str(temp_datapath / path.name),
-                    ".npz": str(temp_datapath / path.name),
-                }[suffix]
+                to_path = temp_path / path
 
                 tar.extract(info)
                 shutil.move(str(path), to_path)
@@ -191,14 +197,22 @@ class Database_listener:
 
         temp_path = temp_folder / name
         temp_datapath = temp_path / "data"
+        temp_interferencepath = temp_datapath / "interference"
 
         self.move_project_files(filepath=filepath, name=name)
 
         setting_files = glob.glob(f"{temp_path}\\*.parquet")
         setting_files.extend(glob.glob(f"{temp_path}\\*.csv"))
+
         spectrum_files = glob.glob(f"{temp_datapath}\\*.sp")
         spectrum_files.extend(glob.glob(f"{temp_datapath}\\*.npz"))
+
+        interference_files = glob.glob(f"{temp_interferencepath}\\*.npz")
+
         names = [pathlib.Path(spectrum).stem for spectrum in spectrum_files]
+        interference_names = [
+            pathlib.Path(spectrum).stem for spectrum in interference_files
+        ]
 
         settings_dict = {}
         for setting in setting_files:
@@ -215,6 +229,16 @@ class Database_listener:
         self.database_controller.read_files(
             spectrum_files, names=names, settings=settings_dict
         )
+
+        for file, name in zip(interference_files, interference_names):
+            self.database_controller.add_interference(
+                file=file,
+                name=name,
+                settings={
+                    "settings": settings_dict["interference_settings"],
+                    "baseline_regions": settings_dict["interference_baseline_regions"],
+                },
+            )
 
         self.database_controller.set_project(filepath=filepath)
         self.gui.update_variables(sample_navigation={"samplelist": names})

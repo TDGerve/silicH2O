@@ -61,7 +61,8 @@ class ScrollFrame(tk.Frame):
 
     def set_initial_dimensions(self, event):
         height = event.height
-        self.canvas.config(height=height)
+        width = event.width
+        self.canvas.config(height=height, width=width)
         self.inner_frame.unbind("<Configure>")
         self.inner_frame.bind(
             "<Configure>", self.onFrameConfigure

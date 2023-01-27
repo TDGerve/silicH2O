@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from .. import app_configuration
-from ..Dataframes import Baseline_DF, Interpolation_DF, Results_DF, Settings_DF
+from ..Dataframes import Baseline_DF, Results_DF, Settings_DF
 from .sample_processing import h2o_processor
 
 on_display_message = bl.signal("display message")
@@ -21,7 +21,9 @@ class Database_controller:
 
         self.settings: pd.DataFrame = Settings_DF()
         self.baseline_regions: pd.DataFrame = Baseline_DF(bir_amount=5)
-        self.interpolation_regions: pd.DataFrame = Interpolation_DF(bir_amount=1)
+        self.interpolation_regions: pd.DataFrame = Baseline_DF(bir_amount=1)
+
+        self.interference_settings: Optional[Dict] = None
 
         self.results: pd.DataFrame = Results_DF()
 
@@ -99,18 +101,35 @@ class Database_controller:
             self.calculate_sample(idx)
             self.save_sample(idx=idx)
 
-    def add_interference(self, file: str, settings: Optional[Dict] = None):
-        current_sample = self.current_sample
-        name = current_sample.name
-
-        if settings is None:
-            new_settings, new_birs, _ = get_default_settings(
-                [name], type="interference"
-            )
-
+    def add_interference(
+        self, file: str, name: Optional[str] = None, settings: Optional[Dict] = None
+    ):
+        if name is None:
+            current_sample = self.current_sample
+            name = current_sample.name
         else:
+            idx = np.where(self.names == name)[0][0]
+            current_sample = self.get_sample(idx)
+
+        if settings is not None:
             new_settings = settings["settings"]
             new_birs = settings["baseline_regions"]
+        else:
+            if not self.interference_settings:
+                new_settings, new_birs, _ = get_default_settings(
+                    self.names, type="interference"
+                )
+                self.interference_settings = {
+                    "settings": new_settings,
+                    "baseline_regions": new_birs,
+                }
+            else:
+                new_settings, new_birs = self.interference_settings.values()
+
+        settings, birs, = (
+            new_settings.loc[name],
+            new_birs.loc[name],
+        )
 
         try:
             with np.load(file) as f:
@@ -119,7 +138,7 @@ class Database_controller:
         except ValueError:
             x, y = np.genfromtxt(file, unpack=True)
 
-        current_sample.set_interference(x, y, new_settings, new_birs)
+        current_sample.set_interference(x, y, settings, birs)
         # current_sample.interference.calculate_baseline()
 
     def get_sample(self, index: int) -> h2o_processor:
@@ -203,7 +222,16 @@ class Database_controller:
         }
 
     def get_all_settings(self):
-        return self.settings, self.baseline_regions, self.interpolation_regions
+        settings = [
+            self.settings,
+            self.baseline_regions.dropna(axis="columns", how="all"),
+            self.interpolation_regions.dropna(axis="columns", how="all"),
+        ]
+        if self.interference_settings:
+            settings.extend(self.interference_settings.values())
+        return settings
+
+    # def get_all_interference_settings(self):
 
     def get_sample_results(self):
 
@@ -344,7 +372,7 @@ def get_default_settings(names: List, type: str) -> pd.DataFrame:
     ).squeeze()
 
     interp_amount = len(interpolation["regions"].keys()) // 2
-    interpolation_regions = Interpolation_DF(
+    interpolation_regions = Baseline_DF(
         interp_amount, [interpolation["regions"].values] * len(names), index=names
     ).squeeze()
 

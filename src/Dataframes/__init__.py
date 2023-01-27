@@ -35,11 +35,11 @@ class Baseline_DF(pd.DataFrame):
         )
 
 
-class Interpolation_DF(pd.DataFrame):
-    def __init__(self, bir_amount, *args, **kwargs):
-        super().__init__(
-            *args, columns=baseline_multiindex(bir_amount), dtype="float32", **kwargs
-        )
+# class Interpolation_DF(pd.DataFrame):
+#     def __init__(self, bir_amount, *args, **kwargs):
+#         super().__init__(
+#             *args, columns=baseline_multiindex(bir_amount), dtype="float32", **kwargs
+#         )
 
 
 class Results_DF(pd.DataFrame):

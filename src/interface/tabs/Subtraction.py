@@ -48,7 +48,7 @@ class Subtraction_frame(ttk.Frame):
 
         self.rowconfigure(6, weight=1)
 
-        # self.make_vertical_divider(self, col=2)
+        self.make_vertical_divider(self, col=2)
         self.make_horizontal_dividers(self, rows=[1, 3, 5], col=3)
 
         for child in self.winfo_children():
