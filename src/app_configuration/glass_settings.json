@@ -1,6 +1,6 @@
 {
-    "baseline_correction": {
-        "birs": {
+    "baseline": {
+        "baseline_interpolation_regions": {
             "0": [
                 200,
                 300
@@ -27,11 +27,20 @@
     "interpolation": {
         "use": false,
         "smoothing": 1,
-        "regions": {
+        "baseline_interpolation_regions": {
             "0": [
                 780,
                 900
             ]
         }
+    },
+    "interference": {
+        "use": false,
+        "boundary_left": 700,
+        "boundary_right": 1020,
+        "smoothing": 1,
+        "peak_prominence": 4,
+        "noise_threshold": 1.6,
+        "fit_window": 6
     }
 }

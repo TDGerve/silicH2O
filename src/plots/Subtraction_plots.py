@@ -53,6 +53,10 @@ class Subtraction_plot(Double_plot):
             self.birs.remove(self.birs[0])
         self.fig.canvas.draw_idle()
 
+    def clear_figure(self):
+        self.clear_birs()
+        return super().clear_figure()
+
     def clear_interference(self):
         if self.birs:
             self.clear_birs()

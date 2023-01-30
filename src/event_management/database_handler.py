@@ -143,8 +143,8 @@ class Database_listener:
                     y=sample.interference.data.signal.raw,
                 )
 
-        fnames = ["settings", "baseline_regions", "interpolation_regions"]
-        if self.database_controller.interference_settings:
+        fnames = ["settings", "baseline_interpolation_regions", "interpolation_regions"]
+        if self.database_controller.interference_settings["settings"] is not None:
             fnames.extend(["interference_settings", "interference_baseline_regions"])
         data = self.database_controller.get_all_settings()
 
@@ -236,7 +236,9 @@ class Database_listener:
                 name=name,
                 settings={
                     "settings": settings_dict["interference_settings"],
-                    "baseline_regions": settings_dict["interference_baseline_regions"],
+                    "baseline_interpolation_regions": settings_dict[
+                        "interference_baseline_regions"
+                    ],
                 },
             )
 

@@ -43,6 +43,16 @@ class Raman_processor:
         birs.index = range(len(birs))
         return {f"bir_{idx:02d}": int(value) for idx, value in birs.items()}
 
+    def set_baseline(self, kwargs) -> None:
+
+        smoothing = kwargs.pop("smoothing", None)
+        if smoothing:
+            self.settings[("baseline", "smoothing")] = smoothing
+
+        for bir, new_value in kwargs.items():
+            index = int(bir[-2:])
+            self.baseline_regions.iloc[index] = int(new_value)
+
     def add_bir(self, index: int, max_width: int = 30):
 
         min_value = self.baseline_regions.loc[str(index)].values[1]
@@ -81,29 +91,33 @@ class Raman_processor:
         # drop unused region
         self.baseline_regions.drop(self.baseline_regions.index[-2:], inplace=True)
 
-    def set_baseline(self, kwargs) -> None:
-
-        for bir, new_value in kwargs.items():
-            if bir == "smoothing":
-                self.settings["baseline_smoothing"] = new_value
-                continue
-            index = int(bir[-2:])
-            self.baseline_regions.iloc[index] = int(new_value)
-
     def calculate_baseline(self):
         bir_amount = self.baseline_regions.shape[0] // 2
         birs = np.reshape(self.baseline_regions.values, (bir_amount, 2))
-        smooth_factor = self.settings["baseline_smoothing"]
+        smooth_factor = self.settings[("baseline", "smoothing")]
 
         self.data.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)
+
+    def calculate_interpolation(self):
+
+        amount = self.interpolation_regions.shape[0] // 2
+        regions = np.reshape(self.interpolation_regions.values, (amount, 2))
+        smoothing = self.settings[("interpolation", "smoothing")]
+        self.data.interpolate(
+            interpolate=regions,
+            smooth_factor=smoothing,
+            use=self.settings[("interpolate", "use")],
+        )
+
+    def deconvolve(self, **kwargs):
+        if self.data.noise is None:
+            self.data.calculate_noise()
+        y = self.data.signal.get("baseline_corrected")
+        self.data.deconvolve(y=y, noise=self.data.noise, **kwargs)
 
     def calculate_noise(self):
 
         self.data.calculate_noise()
-
-    def set_baseline_smoothing(self, value: List[float]):
-
-        self.settings["baseline_smoothing"] = value[-1]
 
     def get_plotdata(self) -> Dict[str, Any]:
         """
@@ -164,23 +178,6 @@ class h2o_processor(Raman_processor):
             y,
             sample_settings,
             birs,
-        )
-
-    def _intertpolate_spectrum(self, x, y):
-        interpolate = itp.interp1d(x, y, bounds_error=False, fill_value=np.nan)
-        return interpolate(self.data.x)
-
-    def calculate_interpolation(self):
-
-        if not self.settings["interpolate"]:
-            return
-        amount = self.interpolation_regions.shape[0] / 2
-        regions = np.reshape(self.interpolation_regions.values, (amount, 2))
-        smoothing = self.settings["interpolation_smoothing"]
-        self.data.interpolate(
-            interpolate=regions,
-            smooth_factor=smoothing,
-            use=self.settings["interpolate"],
         )
 
     def calculate_noise(self):

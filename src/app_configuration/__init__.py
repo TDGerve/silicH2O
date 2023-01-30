@@ -1,50 +1,29 @@
 import json
 from itertools import product
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 
+from ..Dataframes import Baseline_DF
 
-def get_glass_settings():
-    with open(f"{__path__[0]}/process_settings.json") as f:
+
+def make_bir_series(birs: Dict[str, Tuple[int, int]]):
+    index = pd.MultiIndex.from_tuples(
+        (int(i), j) for i, j in product(birs, ("from", "to"))
+    )
+    values = np.concatenate(list(birs.values()))
+
+    return pd.Series(values, index=index)
+
+
+def get_settings_from_json(type: str):
+    with open(f"{__path__[0]}/{type}_settings.json") as f:
         process = json.load(f)
 
-    baseline_correction = process["baseline_correction"]
-    index = pd.MultiIndex.from_tuples(
-        (int(i), j) for i, j in product(baseline_correction["birs"], ("from", "to"))
-    )
-    values = np.concatenate(list(baseline_correction["birs"].values()))
+    names = process.keys()
 
-    birs = pd.Series(values, index=index)
-    baseline_correction["birs"] = birs
-
-    interpolation = process["interpolation"]
-    interpolation["regions"] = pd.Series(
-        interpolation["regions"]["0"], index=((0, "from"), (0, "to"))
-    )
-
-    return baseline_correction, interpolation
-
-
-def get_settings_from_json(file: str):
-    with open(f"{__path__[0]}/{file}.json") as f:
-        process = json.load(f)
-
-    baseline_correction = process["baseline_correction"]
-    index = pd.MultiIndex.from_tuples(
-        (int(i), j) for i, j in product(baseline_correction["birs"], ("from", "to"))
-    )
-    values = np.concatenate(list(baseline_correction["birs"].values()))
-
-    birs = pd.Series(values, index=index)
-    baseline_correction["birs"] = birs
-
-    interpolation = process["interpolation"]
-    interpolation["regions"] = pd.Series(
-        interpolation["regions"]["0"], index=((0, "from"), (0, "to"))
-    )
-
-    return baseline_correction, interpolation
+    return names, process.values()
 
 
 # GUI SETTINGS
@@ -53,8 +32,40 @@ with open(f"{__path__[0]}/gui_settings.json") as f:
 gui["background_color"] = None
 gui["current_tab"] = "baseline"
 
-# DATA PROCESSING SETTINGS
+# GENERAL SETTINGS
 with open(f"{__path__[0]}/general_settings.json") as f:
     data_processing = json.load(f)
-data_processing["glass"] = get_settings_from_json("glass_settings")
-data_processing["interference"] = get_settings_from_json("interference_settings")
+# data_processing["processing_settings"] = get_settings_from_json("processing_settings")
+
+
+def get_default_settings(
+    names: List[str], type: str
+) -> Tuple[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]]:
+
+    setting_names, dicts = get_settings_from_json(type)
+
+    baseline_interpolation_regions = []
+    for dic in dicts:
+        birs = dic.pop("baseline_interpolation_regions", None)
+        if birs is None:
+            continue
+        bir_amount = len(birs.keys())
+        values = np.array(list(birs.values())).flatten()
+
+        baseline_interpolation_regions.append(
+            Baseline_DF(bir_amount, [values] * len(names), index=names).squeeze()
+        )
+
+    settings = []
+    for name, dic in zip(
+        setting_names,
+        dicts,
+    ):
+
+        df = pd.DataFrame(dic, index=names)
+        df.columns = pd.MultiIndex.from_product([[name], df.columns])
+        settings.append(df)
+
+    settings = pd.concat(settings, axis=1)
+
+    return settings, baseline_interpolation_regions
