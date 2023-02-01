@@ -31,9 +31,9 @@ class Database_controller:
         self.interpolation_regions: pd.DataFrame = Baseline_DF(bir_amount=1)
 
         self.interference_settings = {
-            "settings": None,
-            "baseline_interpolation_regions": None,
-            "deconvolution": None,
+            "settings": Settings_DF(),
+            "baseline_interpolation_regions": Baseline_DF(bir_amount=3),
+            # "deconvolution": None,
         }
 
         self.results: pd.DataFrame = Results_DF()
@@ -60,112 +60,6 @@ class Database_controller:
     def sample_saved(self):
         print("attribute is read only")
 
-    def read_files(
-        self, files: List, names: List[str], settings: Optional[Dict] = None
-    ) -> None:
-
-        if settings is None:
-            new_settings, (
-                new_birs,
-                new_interpolation_regions,
-            ) = app_configuration.get_default_settings(names, type="glass")
-
-        else:
-            new_settings = settings["settings"]
-            new_birs = settings["baseline_interpolation_regions"]
-            new_interpolation_regions = settings["interpolation_regions"]
-
-        new_results = Results_DF(index=names)
-
-        old_files = len(self.files)
-
-        self.files = np.append(self.files, files)
-        self.names = np.append(self.names, names)
-
-        self.settings = pd.concat(_match_columns(self.settings, new_settings), axis=0)
-
-        self.baseline_regions = pd.concat(
-            _match_columns(self.baseline_regions, new_birs), axis=0
-        )
-        self.interpolation_regions = pd.concat(
-            _match_columns(self.interpolation_regions, new_interpolation_regions),
-            axis=0,
-        )
-
-        self.results = pd.concat([self.results, new_results], axis=0)
-
-        for idx, (file, name) in enumerate(
-            zip(self.files[old_files:], self.names[old_files:])
-        ):
-            try:
-                with np.load(file) as f:
-                    x = f["x"]
-                    y = f["y"]
-            except ValueError:
-                x, y = np.genfromtxt(file, unpack=True)
-            self.spectra = np.append(
-                self.spectra,
-                h2o_processor(
-                    name,
-                    x,
-                    y,
-                    new_settings.loc[name].copy(),
-                    new_birs.loc[name].copy(),
-                    new_interpolation_regions.loc[name].copy(),
-                ),
-            )
-            self.calculate_sample(idx)
-            self.save_sample(idx=idx)
-
-    def add_interference(
-        self, file: str, name: Optional[str] = None, settings: Optional[Dict] = None
-    ):
-        if name is None:
-            current_sample = self.current_sample
-            name = current_sample.name
-        else:
-            idx = np.where(self.names == name)[0][0]
-            current_sample = self.get_sample(idx)
-
-        if settings is not None:
-            for key in settings.keys():
-                self.interference_settings[key] = settings[key]
-
-        else:
-            if self.interference_settings["settings"] is None:
-                (
-                    self.interference_settings["settings"],
-                    (self.interference_settings["baseline_interpolation_regions"], *_),
-                ) = app_configuration.get_default_settings(
-                    self.names, type="interference"
-                )
-            elif name not in self.interference_settings["settings"].index:
-                (
-                    new_settings,
-                    (new_birs, *_),
-                ) = app_configuration.get_default_settings([name], type="interference")
-                self.interference_settings[name] = new_settings
-                self.interference_settings[
-                    "baseline_interpolation_regions"
-                ] = _insert_row(
-                    self.interference_settings["baseline_interpolation_regions"],
-                    new_birs,
-                )
-
-        settings, birs = (
-            self.interference_settings["settings"].loc[name],
-            self.interference_settings["baseline_interpolation_regions"].loc[name],
-        )
-
-        try:
-            with np.load(file) as f:
-                x = f["x"]
-                y = f["y"]
-        except ValueError:
-            x, y = np.genfromtxt(file, unpack=True)
-
-        current_sample.set_interference(x, y, settings, birs)
-
     def get_sample(self, index: int) -> h2o_processor:
 
         return self.spectra[index]
@@ -187,6 +81,13 @@ class Database_controller:
         sample.calculate_baseline()
         sample.calculate_noise()
         sample.calculate_areas()
+
+    def deconvolve_interference(self):
+        sample = self.current_sample
+        if sample.interference is None:
+            return
+
+        sample.interference.deconvolve()
 
     def change_birs(self, action: str, index: int):
 
@@ -212,38 +113,39 @@ class Database_controller:
             "baseline": sample.set_baseline,
             "interpolate": sample.set_interpolation,
         }
-        if sample.interference:
+        if sample.interference is not None:
             func_dict["interference"] = sample.interference.set_baseline
+            func_dict["deconvolution"] = sample.interference.set_deconvolution_settings
 
         for key, value in kwargs.items():
             func_dict[key](value)
+
+    def get_sample_birs(self, type: str):
+        sample = self.current_sample
+        get_birs = {
+            "baseline": sample.get_baseline_settings,
+            "interpolation": dict,
+            "interference": dict,
+        }
+        if sample.interference is not None:
+            get_birs["interference"] = sample.interference.get_baseline_settings
+
+        get_birs = get_birs[type]
+
+        return get_birs()
 
     def get_sample_settings(self):
 
         sample = self.current_sample
 
-        baseline = sample.get_birs()
-        baseline["smoothing"] = sample.settings[("baseline", "smoothing")]
-
-        interpolation = {}
-
-        if sample.interference:
-            interference = sample.interference.get_birs()
-            interference["smoothing"] = sample.interference.settings[
-                ("baseline", "smoothing")
-            ]
-        else:
-            interference = {}
-
-        # interference_deconvolution = {}
-        # baseline_smoothing = [self.current_sample.settings["baseline_smoothing"]]
+        baseline_settings = sample.get_baseline_settings()
+        interpolation_settings = {}
+        interference_settings = sample.get_interference_settings()
 
         return {
-            "baseline": baseline,
-            "interpolation": interpolation,
-            "interference": interference,
-            # "interference_deconvolution": interference_deconvolution
-            # "baseline_smoothing": baseline_smoothing,
+            "baseline": {"baseline": baseline_settings},
+            "interpolation": {"interpolation": interpolation_settings},
+            "interference": interference_settings,
         }
 
     def get_all_settings(self):
@@ -260,7 +162,10 @@ class Database_controller:
         return settings
 
     def get_all_interference_settings(self):
-        return self.interference_settings
+        return {
+            name: df.dropna(axis="columns", how="all")
+            for name, df in self.interference_settings.items()
+        }
 
     def get_sample_results(self):
 
@@ -284,6 +189,119 @@ class Database_controller:
         sample = self.current_sample
 
         return sample.get_plotdata()
+
+    def read_files(
+        self, files: List, names: List[str], settings: Optional[Dict] = None
+    ) -> None:
+
+        old_files = len(self.files)
+
+        self.files = np.append(self.files, files)
+        self.names = np.append(self.names, names)
+
+        self.add_settings_results(names=names, settings=settings)
+
+        for idx, (file, name) in enumerate(
+            zip(self.files[old_files:], self.names[old_files:])
+        ):
+            try:
+                with np.load(file) as f:
+                    x = f["x"]
+                    y = f["y"]
+            except ValueError:
+                x, y = np.genfromtxt(file, unpack=True)
+            self.spectra = np.append(
+                self.spectra,
+                h2o_processor(
+                    name,
+                    x,
+                    y,
+                    self.settings.loc[name].copy(),
+                    self.baseline_regions.loc[name].copy(),
+                    self.interpolation_regions.loc[name].copy(),
+                ),
+            )
+            self.calculate_sample(idx)
+            self.save_sample(idx=idx)
+
+    def add_interference(
+        self, file: str, name: Optional[str] = None, settings: Optional[Dict] = None
+    ):
+        if name is None:
+            current_sample = self.current_sample
+            name = current_sample.name
+        else:
+            idx = np.where(self.names == name)[0][0]
+            current_sample = self.get_sample(idx)
+
+        if self.interference_settings["settings"].shape[0] < 1:
+            self.add_interference_settings(names=self.names, settings=settings)
+        elif name not in self.interference_settings["settings"].index:
+            self.add_interference_settings(names=[name], settings=settings)
+
+        settings, birs = (
+            self.interference_settings["settings"].loc[name],
+            self.interference_settings["baseline_interpolation_regions"].loc[name],
+        )
+
+        try:
+            with np.load(file) as f:
+                x = f["x"]
+                y = f["y"]
+        except ValueError:
+            x, y = np.genfromtxt(file, unpack=True)
+
+        current_sample.set_interference(x, y, settings, birs)
+
+    def add_settings_results(self, names: List[str], settings: Optional[Dict] = None):
+
+        if settings is None:
+            new_settings, (
+                new_birs,
+                new_interpolation_regions,
+            ) = app_configuration.get_default_settings(names, type="glass")
+
+        else:
+            new_settings = settings["settings"]
+            new_birs = settings["baseline_interpolation_regions"]
+            new_interpolation_regions = settings["interpolation_regions"]
+
+        self.settings = pd.concat(_match_columns(self.settings, new_settings), axis=0)
+        self.baseline_regions = pd.concat(
+            _match_columns(self.baseline_regions, new_birs), axis=0
+        )
+        self.interpolation_regions = pd.concat(
+            _match_columns(self.interpolation_regions, new_interpolation_regions),
+            axis=0,
+        )
+
+        new_results = Results_DF(index=names)
+        self.results = pd.concat([self.results, new_results], axis=0)
+
+    def add_interference_settings(
+        self, names: Optional[List[str]], settings: Optional[Dict] = None
+    ):
+
+        if not settings:
+            (
+                new_settings,
+                (new_birs, *_),
+            ) = app_configuration.get_default_settings(names, type="interference")
+        else:
+            new_settings = settings["settings"].copy()
+            new_birs = settings["baseline_interpolation_regions"].copy()
+
+        self.interference_settings["settings"] = pd.concat(
+            _match_columns(self.interference_settings["settings"], new_settings),
+            axis=0,
+        )
+        self.interference_settings["baseline_interpolation_regions"] = pd.concat(
+            _match_columns(
+                self.interference_settings["baseline_interpolation_regions"],
+                new_birs,
+            ),
+            axis=0,
+        )
 
     def save_interference(self, idx: Optional[int] = None):
         if idx is None:
@@ -360,10 +378,14 @@ class Database_controller:
         elif current_tab == "interpolation":
             sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
         elif current_tab == "interference":
-            sample.interference.settings = self.interference_settings["settings"]
-            sample.interference.baseline_regions = self.interference_settings[
-                "baseline_interpolation_regions"
-            ]
+            sample.interference.settings = (
+                self.interference_settings["settings"].loc[name].copy()
+            )
+            sample.interference.baseline_regions = (
+                self.interference_settings["baseline_interpolation_regions"]
+                .loc[name]
+                .copy()
+            )
 
         on_display_message.send(message="sample reset")
 

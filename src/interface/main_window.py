@@ -10,7 +10,7 @@ from .infobar import Infobar
 from .menus import io_menu
 from .sample_navigation import Sample_navigation
 from .screens import Computer_screen
-from .tabs import Baseline_correction_frame, Interpolation_frame, Subtraction_frame
+from .tabs import Baseline_correction_frame, Interference_frame, Interpolation_frame
 
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
@@ -151,14 +151,14 @@ class Main_window(tk.Tk):
             tabs, name="baseline", variables=variables, widgets=widgets
         )
 
-        subtraction = Subtraction_frame(
+        interference = Interference_frame(
             tabs, name="interference", variables=variables, widgets=widgets
         )
         interpolation = Interpolation_frame(
             tabs, name="interpolation", variables=variables, widgets=widgets
         )
 
-        frames = (baseline_correction, interpolation, subtraction)
+        frames = (baseline_correction, interpolation, interference)
         names = (
             "baseline\ncorrection",
             "interpolation\n ",

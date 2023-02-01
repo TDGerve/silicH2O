@@ -6,7 +6,7 @@ from typing import Dict
 import blinker as bl
 
 from ... import app_configuration
-from ..validate_input import validate_numerical_input
+from ..widgets.validate_input import validate_numerical_input
 from .scrollframes import ScrollFrame
 
 _font = app_configuration.gui["font"]["family"]
@@ -194,18 +194,15 @@ class Baseline_interpolation_frame(ttk.Frame):
 
 class Baseline_interpolation_regions:
     def __init__(self, widgets: Dict, variables: Dict, name: str):
-        self.widgets = {}
-        self.variables = {}
-
-        widgets[name] = self.widgets
-        variables[name] = self.variables
+        self.widgets = widgets
+        self.variables = variables
 
         self.name = name
 
     def clear_birs(self):
         for i in range(len(self.widgets.keys()) - 1):
-            _ = self.widgets.pop(f"bir_{i:02d}")
-            _ = self.variables.pop(f"bir_{i:02d}")
+            _ = self.widgets.pop(f"bir_{i:02d}", None)
+            _ = self.variables.pop(f"bir_{i:02d}", None)
 
     def add_bir(self, index: int, widget, variable):
         self.widgets[f"bir_{index:02d}"] = widget

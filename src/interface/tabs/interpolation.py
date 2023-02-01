@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ... import app_configuration
 from ..frames.scrollframes import ScrollFrame
 from ..frames.vertical_toolbar import vertical_toolbar
-from ..validate_input import validate_numerical_input
+from ..widgets.validate_input import validate_numerical_input
 
 on_settings_change = bl.signal("settings change")
 

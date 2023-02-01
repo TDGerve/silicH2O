@@ -3,20 +3,11 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+from numpy import dtype
 
 settings_columns = pd.MultiIndex.from_tuples(
     [
         ("baseline", "smoothing"),
-        ("interpolation", "use"),
-        ("interpolation", "smoothing"),
-        ("interference", "use"),
-        ("interference", "boundary_left"),
-        ("interference", "boundary_right"),
-        ("interference", "smoothing"),
-        ("interference", "peak_prominence"),
-        ("interference", "noise_threshold"),
-        ("interference", "fit_window"),
-        ("interference", "baseline_smoothing"),
     ],
 )
 
@@ -62,11 +53,19 @@ def _match_columns(left: pd.DataFrame, right: Union[pd.DataFrame, pd.Series]):
     missing_right = left.columns.difference(right_names)
     missing_left = right_names.difference(left.columns)
 
+    if all([len(missing) < 1 for missing in (missing_left, missing_right)]):
+        return [left, right]
+
     new_left = left.copy()
     new_right = right.copy()
 
-    new_left[missing_left] = np.nan
-    new_right[missing_right] = np.nan
+    dtypes_left = right[missing_left].dtypes
+    dtypes_right = left[missing_right].dtypes
+
+    new_left[missing_left] = _get_fill_values(dtypes_left)
+    # Loop in case 'right' is a series
+    for missing, type in zip(missing_right, dtypes_right):
+        new_right[missing] = _get_fill_values(type)
 
     return [new_left, new_right]
 
@@ -78,3 +77,18 @@ def _insert_row(df: pd.DataFrame, row: pd.Series):
     df_new.loc[row_new.name] = row_new
 
     return df_new
+
+
+def _get_fill_values(dtypes):
+    try:
+        return [fill_values[type] for type in dtypes.values]
+    except AttributeError:
+        return fill_values[dtypes]
+
+
+fill_values = {
+    dtype("int16"): np.nan,
+    dtype("int64"): np.nan,
+    dtype("float64"): np.nan,
+    dtype(bool): False,
+}

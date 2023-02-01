@@ -1,8 +1,12 @@
+from contextlib import redirect_stdout
+from typing import Dict, Optional
+
 import blinker as bl
 
 from .. import app_configuration
 from ..interface import Gui
 from ..spectral_processing import Database_controller
+from .message_processor import Message_processor
 
 
 class Calculation_listener:
@@ -18,11 +22,13 @@ class Calculation_listener:
     on_interference_added = bl.signal("show interference")
     on_switch_tab = bl.signal("switch tab")
     on_reset_sample = bl.signal("reset sample")
+    on_deconvolve_interference = bl.signal("deconvolve interference")
 
     on_add_bir = bl.signal("add bir")
     on_delete_bir = bl.signal("delete bir")
 
     on_display_message = bl.signal("display message")
+
     on_change_bir_widgets = bl.signal("change bir widgets")
 
     copied_birs = None
@@ -48,31 +54,35 @@ class Calculation_listener:
         new_bir_amount = self._calculate_bir_amount()
         self.update_bir_widgets(new_bir_amount)
 
-        self.gui.update_variables(**{current_tab: settings})
+        self.gui.update_variables(**settings)
         self.update_gui_results()
 
         self.refresh_plots(message)
 
-    def copy_birs(self, *args, message="copied birs"):
+    def copy_birs(self, *args, store=True, message="copied birs"):
         current_tab = app_configuration.gui["current_tab"]
         try:
-            self.copied_birs = self.database_controller.get_sample_settings()[
-                current_tab
-            ]
+            birs = self.database_controller.get_sample_birs(type=current_tab)
             self.on_display_message.send(message=message)
         except AttributeError:
-            pass
+            return
+        if store:
+            self.copied_birs = birs
+            return
+        return birs
 
-    def paste_birs(self, *args, message="pasted birs"):
-        if self.copied_birs is None:
-            pass
+    def paste_birs(self, *args, birs: Optional[Dict] = None, message="pasted birs"):
+        if (self.copied_birs is None) & (birs is None):
+            return
+        if birs is None:
+            birs = self.copied_birs
 
-        new_bir_amount = len(self.copied_birs.keys()) - 1
+        new_bir_amount = len(birs.keys()) - 1
         self.update_bir_widgets(new_bir_amount)
 
         current_tab = app_configuration.gui["current_tab"]
 
-        self.update_from_plot(**{current_tab: self.copied_birs})
+        self.update_from_plot(**{current_tab: birs})
         self.refresh_plots("settings change")
         self.on_display_message.send(message=message)
 
@@ -80,19 +90,19 @@ class Calculation_listener:
         self.database_controller.change_birs(action="add", index=index)
 
         self.bir_amount_changed = True
-        self.copy_birs(message="")
-        self.paste_birs(message="")
+        birs = self.copy_birs(store=False, message="")
+        self.paste_birs(birs=birs, message="")
 
     def delete_bir(self, *args, index: int):
         self.database_controller.change_birs(action="remove", index=index)
 
         self.bir_amount_changed = True
-        self.copy_birs(message="")
-        self.paste_birs(message="")
+        birs = self.copy_birs(store=False, message="")
+        self.paste_birs(birs=birs, message="")
 
     def _calculate_bir_amount(self):
         current_tab = app_configuration.gui["current_tab"]
-        settings = self.database_controller.get_sample_settings()[current_tab]
+        settings = self.database_controller.get_sample_birs(type=current_tab)
         number_of_birs = sum(["bir" in name for name in settings.keys()])
         return number_of_birs
 
@@ -112,6 +122,12 @@ class Calculation_listener:
 
         self.database_controller.change_sample_settings(**kwargs)
         self.database_controller.calculate_sample()
+
+    def deconvolve_interference(self, *args, **kwargs):
+        with redirect_stdout(Message_processor()):
+            self.database_controller.deconvolve_interference()
+
+        self.on_display_message.send(message="deconvolution complete!", duration=10)
 
     def update_gui_results(self):
 
@@ -155,6 +171,7 @@ class Calculation_listener:
         self.on_settings_change.connect(self.update_from_plot, sender="plot")
         self.on_settings_change.connect(self.update_from_widgets, sender="widget")
         self.on_interference_added.connect(self.display_sample)
+        self.on_deconvolve_interference.connect(self.deconvolve_interference)
 
         self.on_add_bir.connect(self.add_bir)
         self.on_delete_bir.connect(self.delete_bir)

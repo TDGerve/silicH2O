@@ -82,7 +82,7 @@ class Subtraction_plot(Double_plot):
 
         bir_surplus = len(self.birs) - len(birs)
         if bir_surplus > 0:
-            self.clear_birs(amount=bir_surplus)
+            self.clear_birs()
 
         for i, (left_boundary, right_boundary) in enumerate(birs):
             try:

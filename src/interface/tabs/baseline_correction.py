@@ -1,7 +1,6 @@
 import tkinter as tk
-from functools import partial
 from tkinter import ttk
-from typing import List, Optional
+from typing import List
 
 import blinker as bl
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -9,9 +8,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from ... import app_configuration
 from ...plots import Baseline_correction_plot
 from ..frames.Baseline_interpolation import Baseline_interpolation_frame
-from ..frames.scrollframes import ScrollFrame
 from ..frames.vertical_toolbar import vertical_toolbar
-from ..validate_input import validate_numerical_input
+from ..widgets import make_label_widgets
 
 on_settings_change = bl.signal("settings change")
 
@@ -29,17 +27,23 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.canvas = None
 
+        self.baseline_widgets = {}
+
+        widgets["baseline"] = self.baseline_widgets
+
+        self.baseline_variables = {}
         self.areas_variables = {}
         self.signal_variables = {}
 
         variables["areas"] = self.areas_variables
         variables["signal"] = self.signal_variables
+        variables["baseline"] = self.baseline_variables
 
         self.baseline_interpolation = Baseline_interpolation_frame(
             parent=self,
             name="baseline",
-            widgets=widgets,
-            variables=variables,
+            widgets=self.baseline_widgets,
+            variables=self.baseline_variables,
             bir_amount=5,
             width="7c",
         )
@@ -109,7 +113,13 @@ class Baseline_correction_frame(ttk.Frame):
         labels = ["Silicate", "H\u2082O", "H\u2082O:silicate"]
         names = ["silicate", "H2O", "H2OSi"]
 
-        make_label_widgets(frame, labels, names, [1, 1], self.areas_variables)
+        make_label_widgets(
+            parent=frame,
+            labels=labels,
+            names=names,
+            start_indeces=[1, 0],
+            variables=self.areas_variables,
+        )
 
     def make_signal_frame(self, parent, row, col):
 
@@ -128,39 +138,45 @@ class Baseline_correction_frame(ttk.Frame):
         labels = ["noise", "Silicate S:N", "H\u2082O S:N"]
         names = ["noise", "Si_SNR", "H2O_SNR"]
 
-        make_label_widgets(frame, labels, names, [1, 1], self.signal_variables)
-
-
-def make_label_widgets(
-    frame,
-    labels: List[str],
-    names: List[str],
-    start_indeces: List[int],
-    variables,
-    trace: Optional[callable] = None,
-):
-
-    row, column = start_indeces
-
-    for i, (name, label) in enumerate(zip(names, labels)):
-        text_label = ttk.Label(frame, text=label, width=7, font=(_font, _fontsize))
-        text_label.grid(row=i + 1, sticky="nesw")
-
-        var = tk.StringVar(name=name)
-        if trace is not None:
-            var.trace("w", partial(trace, var=var))
-        widget = ttk.Label(
-            frame,
-            textvariable=var,
-            anchor="e",
-            background="white",
-            width=7,
-            font=(_font, _fontsize),
-            style="TButton",
-            # borderwidth=1,
-        )
-        widget.grid(
-            row=i + row, column=column, sticky=("nse")  # , padx=padding, pady=padding
+        make_label_widgets(
+            parent=frame,
+            labels=labels,
+            names=names,
+            start_indeces=[1, 0],
+            variables=self.signal_variables,
         )
 
-        variables[name] = var
+
+# def make_label_widgets(
+#     parent,
+#     labels: List[str],
+#     names: List[str],
+#     start_indeces: List[int],
+#     variables,
+#     trace: Optional[callable] = None,
+# ):
+
+#     row, column = start_indeces
+
+#     for i, (name, label) in enumerate(zip(names, labels)):
+#         text_label = ttk.Label(parent, text=label, width=7, font=(_font, _fontsize))
+#         text_label.grid(row=i + 1, sticky="nesw")
+
+#         var = tk.StringVar(name=name)
+#         if trace is not None:
+#             var.trace("w", partial(trace, var=var))
+#         widget = ttk.Label(
+#             parent,
+#             textvariable=var,
+#             anchor="e",
+#             background="white",
+#             width=7,
+#             font=(_font, _fontsize),
+#             style="TButton",
+#             # borderwidth=1,
+#         )
+#         widget.grid(
+#             row=i + row, column=column, sticky=("nse")  # , padx=padding, pady=padding
+#         )
+
+#         variables[name] = var

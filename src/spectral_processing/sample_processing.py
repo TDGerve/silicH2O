@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 import blinker as bl
 import numpy as np
@@ -45,13 +45,22 @@ class Raman_processor:
 
     def set_baseline(self, kwargs) -> None:
 
-        smoothing = kwargs.pop("smoothing", None)
+        smoothing = kwargs.get("smoothing", None)
         if smoothing:
             self.settings[("baseline", "smoothing")] = smoothing
 
         for bir, new_value in kwargs.items():
+            if "bir" not in bir:
+                continue
             index = int(bir[-2:])
-            self.baseline_regions.iloc[index] = int(new_value)
+            i = index // 2
+            j = ["from", "to"][index % 2]
+            self.baseline_regions.loc[(str(i), j)] = int(new_value)
+
+    def get_baseline_settings(self):
+        baseline_settings = self.settings[("baseline")].to_dict()
+        birs = self.get_birs()
+        return {**baseline_settings, **birs}
 
     def add_bir(self, index: int, max_width: int = 30):
 
@@ -75,7 +84,7 @@ class Raman_processor:
             self.baseline_regions.loc[(str(i + 1), "from")] = values[0]
             self.baseline_regions.loc[(str(i + 1), "to")] = values[1]
 
-        self.baseline_regions.loc[str(index + 1)] = (
+        self.baseline_regions.loc[(str(index + 1))] = (
             int(left_boundary),
             int(right_boundary),
         )
@@ -109,19 +118,30 @@ class Raman_processor:
             use=self.settings[("interpolate", "use")],
         )
 
-    def deconvolve(self, **kwargs):
+    def deconvolve(self):
         if self.data.noise is None:
             self.data.calculate_noise()
 
-        settings = self.settings[("deconvolution")].to_dict()
-        default_settings = {"baseline0": True,
+        settings = self.get_deconvolution_settings()
+        default_settings = {
+            "baseline0": True,
         }
 
         self.data.deconvolve(
-            y="baseline_corrected", noise=self.data.noise, **settings, **kwargs
+            y="baseline_corrected",
+            noise=self.data.noise,
+            **settings,
+            **default_settings,
         )
 
-    def get_deconvolution_settings():
+    def get_deconvolution_settings(self):
+
+        settings = self.settings[("deconvolution")]
+        return settings.to_dict()
+
+    def set_deconvolution_settings(self, kwargs):
+        for key, value in kwargs:
+            self.settings[("deconvolution", key)] = value
 
     def calculate_noise(self):
 
@@ -187,6 +207,15 @@ class h2o_processor(Raman_processor):
             sample_settings,
             birs,
         )
+
+    def get_interference_settings(self) -> Tuple[Dict, Dict]:
+        if self.interference is None:
+            return {}
+
+        return {
+            "interference": self.interference.get_baseline_settings(),
+            "deconvolution": self.interference.get_deconvolution_settings(),
+        }
 
     def calculate_noise(self):
 
