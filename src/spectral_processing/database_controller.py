@@ -33,6 +33,7 @@ class Database_controller:
         self.interference_settings = {
             "settings": None,
             "baseline_interpolation_regions": None,
+            "deconvolution": None,
         }
 
         self.results: pd.DataFrame = Results_DF()
@@ -138,10 +139,11 @@ class Database_controller:
                 ) = app_configuration.get_default_settings(
                     self.names, type="interference"
                 )
-            elif name not in self.interference_settings.index:
-                new_settings, new_birs = app_configuration.get_default_settings(
-                    [name], type="interference"
-                )
+            elif name not in self.interference_settings["settings"].index:
+                (
+                    new_settings,
+                    (new_birs, *_),
+                ) = app_configuration.get_default_settings([name], type="interference")
                 self.interference_settings[name] = new_settings
                 self.interference_settings[
                     "baseline_interpolation_regions"
@@ -150,7 +152,7 @@ class Database_controller:
                     new_birs,
                 )
 
-        settings, birs, = (
+        settings, birs = (
             self.interference_settings["settings"].loc[name],
             self.interference_settings["baseline_interpolation_regions"].loc[name],
         )
@@ -245,16 +247,20 @@ class Database_controller:
         }
 
     def get_all_settings(self):
-        settings = [
-            self.settings,
-            self.baseline_regions.dropna(axis="columns", how="all"),
-            self.interpolation_regions.dropna(axis="columns", how="all"),
-        ]
-        if self.interference_settings:
-            settings.extend(self.interference_settings.values())
+        settings = {
+            "settings": self.settings,
+            "baseline_interpolation_regions": self.baseline_regions.dropna(
+                axis="columns", how="all"
+            ),
+            "interpolation_regions": self.interpolation_regions.dropna(
+                axis="columns", how="all"
+            ),
+        }
+
         return settings
 
-    # def get_all_interference_settings(self):
+    def get_all_interference_settings(self):
+        return self.interference_settings
 
     def get_sample_results(self):
 

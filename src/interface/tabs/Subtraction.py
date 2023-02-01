@@ -87,6 +87,22 @@ class Subtraction_frame(ttk.Frame):
                 row=row, column=col, sticky=("new")
             )
 
+    def make_deconvolution_frame(self, parent, widgets, variables, row: int, col: int):
+
+        frame = ttk.Frame(parent, name="deconvolution")
+        frame.grid(row=row, column=col, sticky="nesw")
+
+        tk.Label(
+            frame, text="Deconvolution", font=(_font, _fontsize_head, "bold")
+        ).grid(row=0, column=0, sticky=("nsw"))
+
+        """
+        peak height 0 - 100
+        fit window 1 - 20
+        residuals threshold 0 - 1
+        max iterations 1 - 10
+        """
+
     def make_interference_frame(self, parent, widgets, variables, row: int, col: int):
 
         frame = ttk.Frame(parent, name="interference")

@@ -38,9 +38,6 @@
         "use": false,
         "boundary_left": 700,
         "boundary_right": 1020,
-        "smoothing": 1,
-        "peak_prominence": 4,
-        "noise_threshold": 1.6,
-        "fit_window": 6
+        "smoothing": 1
     }
 }

@@ -142,13 +142,19 @@ class Database_listener:
                     x=sample.interference.data.signal.x,
                     y=sample.interference.data.signal.raw,
                 )
+                if not (temp_interferencepath / "settings.parquet").is_file():
+                    interference_settings = (
+                        self.database_controller.get_all_interference_settings()
+                    )
+                    for name, f in interference_settings.items():
+                        f.to_parquet(temp_interferencepath / f"{name}.parquet")
 
-        fnames = ["settings", "baseline_interpolation_regions", "interpolation_regions"]
-        if self.database_controller.interference_settings["settings"] is not None:
-            fnames.extend(["interference_settings", "interference_baseline_regions"])
-        data = self.database_controller.get_all_settings()
+        # fnames = ["settings", "baseline_interpolation_regions", "interpolation_regions"]
+        # if self.database_controller.interference_settings["settings"] is not None:
+        #     fnames.extend(["interference_settings", "interference_baseline_regions"])
+        settings = self.database_controller.get_all_settings()
 
-        for f, name in zip(data, fnames):
+        for name, f in settings.items():
             f.to_parquet(temp_path / f"{name}.parquet")
 
         with tarfile.open(filepath, mode="w") as tar:
@@ -208,6 +214,7 @@ class Database_listener:
         spectrum_files.extend(glob.glob(f"{temp_datapath}\\*.npz"))
 
         interference_files = glob.glob(f"{temp_interferencepath}\\*.npz")
+        interference_setting_files = glob.glob(f"{temp_interferencepath}\\*.parquet")
 
         names = [pathlib.Path(spectrum).stem for spectrum in spectrum_files]
         interference_names = [
@@ -225,6 +232,11 @@ class Database_listener:
                     str(setting), index_col=[0], header=header
                 )
 
+        interference_settings_dict = {}
+        for setting in interference_setting_files:
+            name = pathlib.Path(setting).stem
+            interference_settings_dict[name] = pd.read_parquet(str(setting))
+
         self.database_controller.__init__()
         self.database_controller.read_files(
             spectrum_files, names=names, settings=settings_dict
@@ -234,12 +246,7 @@ class Database_listener:
             self.database_controller.add_interference(
                 file=file,
                 name=name,
-                settings={
-                    "settings": settings_dict["interference_settings"],
-                    "baseline_interpolation_regions": settings_dict[
-                        "interference_baseline_regions"
-                    ],
-                },
+                settings=interference_settings_dict,
             )
 
         self.database_controller.set_project(filepath=filepath)

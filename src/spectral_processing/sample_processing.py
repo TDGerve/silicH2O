@@ -112,8 +112,16 @@ class Raman_processor:
     def deconvolve(self, **kwargs):
         if self.data.noise is None:
             self.data.calculate_noise()
-        y = self.data.signal.get("baseline_corrected")
-        self.data.deconvolve(y=y, noise=self.data.noise, **kwargs)
+
+        settings = self.settings[("deconvolution")].to_dict()
+        default_settings = {"baseline0": True,
+        }
+
+        self.data.deconvolve(
+            y="baseline_corrected", noise=self.data.noise, **settings, **kwargs
+        )
+
+    def get_deconvolution_settings():
 
     def calculate_noise(self):
 
