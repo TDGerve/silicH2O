@@ -200,12 +200,14 @@ class h2o_processor(Raman_processor):
         )
 
     def get_interference_settings(self) -> Tuple[Dict, Dict]:
+        subtraction_settings = self.get_subtraction_settings()
         if self.interference is None:
-            return {}
+            return {"subtraction": subtraction_settings}
 
         return {
             "interference": self.interference.get_baseline_settings(),
             "deconvolution": self.interference.get_deconvolution_settings(),
+            "subtraction": subtraction_settings,
         }
 
     def calculate_noise(self):
@@ -261,6 +263,10 @@ class h2o_processor(Raman_processor):
 
     def set_subtraction_region(self, kwargs: Dict):
 
+        smoothing = kwargs.pop("smoothing", None)
+        if smoothing is not None:
+            self.settings[("interference", "smoothing")] = smoothing
+
         for ID, new_value in kwargs.items():
             location = ["left", "right"][int(ID[-2:]) % 2]
             self.settings[("interference", f"boundary_{location}")] = new_value
@@ -271,9 +277,11 @@ class h2o_processor(Raman_processor):
         ].values
 
     def get_subtraction_settings(self):
+        boundary_left, boundary_right = self.get_subtraction_region()
         return {
-            "interval": self.get_subtraction_region(),
-            "smooth_factor": self.settings[("interference", "smoothing")],
+            "bir_00": boundary_left,
+            "bir_01": boundary_right,
+            "smoothing": self.settings[("interference", "smoothing")],
             "use": self.settings[("interference", "use")],
         }
 

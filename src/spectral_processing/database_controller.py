@@ -151,6 +151,7 @@ class Database_controller:
         baseline_settings = sample.get_baseline_settings()
         interpolation_settings = {}
         interference_settings = sample.get_interference_settings()
+        subtraction_settings = sample.get_subtraction_settings()
 
         return {
             "baseline": {"baseline": baseline_settings},

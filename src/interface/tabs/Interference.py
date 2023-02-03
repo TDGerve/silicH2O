@@ -173,7 +173,7 @@ class Interference_frame(ttk.Frame):
             zip(labels, names, limits, dtypes)
         ):
             text_label = ttk.Label(frame, text=label, width=20, font=(_font, _fontsize))
-            text_label.grid(row=i + 1, column=0, sticky="nesw")
+            text_label.grid(row=i + 1, column=0, sticky="esw")
 
             validate_func = partial(
                 validate_widget_input,
@@ -300,3 +300,7 @@ class Interference_frame(ttk.Frame):
         entry.grid(row=3, column=1, sticky=("nesw"))
 
         self.subtraction_regions.add_smoothing(widget=entry, variable=var)
+
+        # PLACEHOLDER
+        use = tk.StringVar(name="use")
+        self.subtraction_variables["use"] = use

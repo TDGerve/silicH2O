@@ -132,6 +132,9 @@ class Calculation_listener:
         self.refresh_plots()
 
     def update_gui_results(self):
+        current_tab = app_configuration.gui["current_tab"]
+        if current_tab != "baseline":
+            return
 
         results = self.database_controller.get_sample_results()
         self.gui.update_variables(**results)
