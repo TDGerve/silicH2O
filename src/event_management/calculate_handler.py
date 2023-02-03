@@ -124,10 +124,12 @@ class Calculation_listener:
         self.database_controller.calculate_sample()
 
     def deconvolve_interference(self, *args, **kwargs):
-        with redirect_stdout(Message_processor()):
-            self.database_controller.deconvolve_interference()
+        self.on_display_message.send(message="deconvolving ...", duration=None)
+        # with redirect_stdout(Message_processor()):
+        self.database_controller.deconvolve_interference()
 
-        self.on_display_message.send(message="deconvolution complete!", duration=10)
+        self.on_display_message.send(message="deconvolution complete!", duration=5)
+        self.refresh_plots()
 
     def update_gui_results(self):
 
@@ -149,7 +151,7 @@ class Calculation_listener:
 
         self.refresh_plots("settings change")
 
-    def refresh_plots(self, message: str):
+    def refresh_plots(self, message: Optional[str] = None):
         try:
             plot_data = self.database_controller.get_sample_plotdata()
         except AttributeError:

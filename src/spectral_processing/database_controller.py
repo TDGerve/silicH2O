@@ -72,11 +72,14 @@ class Database_controller:
 
         current_tab = app_configuration.gui["current_tab"]
 
-        if (current_tab == "interference") & (sample.interference is not None):
-            sample.interference.calculate_baseline()
+        if current_tab == "interference":
+            sample.calculate_interpolation()
+            interference = sample.interference
+            if interference is not None:
+                sample.interference.calculate_baseline()
             return
         elif current_tab == "interpolation":
-            return
+            sample.calculate_interpolation()
 
         sample.calculate_baseline()
         sample.calculate_noise()
@@ -84,10 +87,16 @@ class Database_controller:
 
     def deconvolve_interference(self):
         sample = self.current_sample
-        if sample.interference is None:
+        interference = sample.interference
+        if interference is None:
             return
 
-        sample.interference.deconvolve()
+        interference.deconvolve()
+        sample.data.signal.set_with_interpolation(
+            name="interference_deconvoluted",
+            x=interference.data.signal.x,
+            y=interference.data.signal.get("deconvoluted"),
+        )
 
     def change_birs(self, action: str, index: int):
 
@@ -112,6 +121,7 @@ class Database_controller:
         func_dict = {
             "baseline": sample.set_baseline,
             "interpolate": sample.set_interpolation,
+            "subtraction": sample.set_subtraction_region,
         }
         if sample.interference is not None:
             func_dict["interference"] = sample.interference.set_baseline

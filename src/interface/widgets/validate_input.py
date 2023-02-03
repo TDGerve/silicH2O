@@ -92,4 +92,4 @@ def invalid_widget_input(self, old_value: str, name, widgets, variables):
 
 
 def send_new_value(new_value, group: str, name: str):
-    on_settings_change.send("", **{group: {name: new_value}})
+    on_settings_change.send("widget", **{group: {name: new_value}})

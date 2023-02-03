@@ -1,4 +1,4 @@
-from typing import Dict, Protocol, Tuple
+from typing import Dict, List, Optional, Protocol, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -31,7 +31,7 @@ class Double_plot:
             size * screen.scaling / screen.dpi for size in screen.resolution
         ]
 
-        pl.Plot_layout(scaling=screen.scaling, colors=self.colors)
+        pl.plot_layout(scaling=screen.scaling, colors=self.colors)
 
         self.fig, self.axs = plt.subplots(
             2, 1, figsize=(width, height)  # , constrained_layout=True
@@ -74,6 +74,17 @@ class Double_plot:
 
         self.fig.canvas.draw_idle()
 
+    def clear_plot_elements(self, plot_elements: List, amount: Optional[int] = None):
+        if amount is None:
+            amount = len(plot_elements)
+        for _ in range(amount):
+            try:
+                plot_elements[0].remove()
+            except TypeError:
+                plot_elements[0][0].remove()
+            plot_elements.remove(plot_elements[0])
+        self.fig.canvas.draw_idle()
+
     def display_name(self, sample_name):
         if self.name is None:
             self.name = self.axs[0].text(
@@ -88,30 +99,9 @@ class Double_plot:
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
     ):
-        colors = self.colors.by_key()["color"]
 
         for i in range(2):
             self.plot_lines_axis(i, x, spectra)
-
-        # for ax, lines in zip(self.axs, self.lines.values()):
-
-        #     xmin, xmax = ax.get_xlim()
-        #     ymax = []
-        #     for (name, spectrum), color in zip(spectra.items(), colors):
-        #         ymax.append(spectrum[(xmin < x) & (x < xmax)].max())
-        #         try:
-        #             if np.array_equal(lines[name][0].get_ydata(), spectrum):
-        #                 continue
-
-        #             lines[name][0].set_xdata(x)
-        #             lines[name][0].set_ydata(spectrum)
-        #         except KeyError:
-        #             lines[name] = ax.plot(x, spectrum, label=name, color=color)
-
-        #     ymax = max(ymax) * 1.1
-        #     ax.set_ylim(0, ymax)
-        #     if ymax > 2e3:
-        #         ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
 
     def plot_lines_axis(
         self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
@@ -134,6 +124,8 @@ class Double_plot:
                 lines[name][0].set_ydata(y)
             except KeyError:
                 lines[name] = ax.plot(x, y, label=name, color=color)
+                if name in ("deconvoluted", "baseline"):
+                    lines[name][0].set(linewidth=2, alpha=0.5)
 
         ymax = max(ymax) * 1.1
         ax.set_ylim(0, ymax)

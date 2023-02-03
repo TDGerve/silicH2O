@@ -2,9 +2,9 @@ from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 import blinker as bl
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import ramCOH as ram
-from scipy import interpolate as itp
 
 from .. import app_configuration
 
@@ -107,17 +107,6 @@ class Raman_processor:
 
         self.data.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)
 
-    def calculate_interpolation(self):
-
-        amount = self.interpolation_regions.shape[0] // 2
-        regions = np.reshape(self.interpolation_regions.values, (amount, 2))
-        smoothing = self.settings[("interpolation", "smoothing")]
-        self.data.interpolate(
-            interpolate=regions,
-            smooth_factor=smoothing,
-            use=self.settings[("interpolate", "use")],
-        )
-
     def deconvolve(self):
         if self.data.noise is None:
             self.data.calculate_noise()
@@ -140,7 +129,7 @@ class Raman_processor:
         return settings.to_dict()
 
     def set_deconvolution_settings(self, kwargs):
-        for key, value in kwargs:
+        for key, value in kwargs.items():
             self.settings[("deconvolution", key)] = value
 
     def calculate_noise(self):
@@ -169,6 +158,7 @@ class Raman_processor:
             "spectra": self.data.signal.all,
             "baseline_spectrum": self.data._spectrumSelect,
             "birs": self.get_birs(),
+            "peaks": self.data.peaks,
         }
 
 
@@ -189,6 +179,7 @@ class h2o_processor(Raman_processor):
         )
 
         self._interference: Optional[Raman_processor] = None
+        self.interpolated_interval: Optional[Tuple[npt.NDArray, npt.NDArray]] = None
 
         self.data = ram.H2O(
             x, y, laser=app_configuration.data_processing["laser_wavelength"]
@@ -231,15 +222,76 @@ class h2o_processor(Raman_processor):
         self.results[["SiArea", "H2Oarea"]] = self.data.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
 
-    def set_interpolation(self, **kwargs) -> None:
+    def calculate_interpolation(self):
+
+        settings = self.get_interpolation_settings()
+
+        self.interpolated_interval = self.data.interpolate(
+            **settings,
+            output=True,
+        )
+
+    def get_interpolation_settings(self):
+        current_tab = app_configuration.gui["current_tab"]
+        if current_tab == "interpolation":
+            regions = self.interpolation_regions.values
+            amount = len(regions) // 2
+            regions = np.reshape(regions, (amount, 2))
+
+            smoothing = self.settings[("interpolation", "smoothing")]
+            use = self.settings[("interpolate", "use")]
+            add_noise = True
+        elif current_tab == "interference":
+            regions = np.array([self.get_subtraction_region()])
+            smoothing = self.settings[("interference", "smoothing")]
+            use = False
+            add_noise = False
+        return {
+            "interpolate": regions,
+            "smooth_factor": smoothing,
+            "add_noise": add_noise,
+            "use": use,
+        }
+
+    def set_interpolation(self, kwargs: Dict) -> None:
 
         for region, new_value in kwargs.items():
             index = int(region[-2:])
-            self.baseline_regions.iloc[index] = new_value
+            self.interpolation_regions.iloc[index] = new_value
+
+    def set_subtraction_region(self, kwargs: Dict):
+
+        for ID, new_value in kwargs.items():
+            location = ["left", "right"][int(ID[-2:]) % 2]
+            self.settings[("interference", f"boundary_{location}")] = new_value
+
+    def get_subtraction_region(self):
+        return self.settings.loc[
+            (["interference"], ["boundary_left", "boundary_right"])
+        ].values
+
+    def get_subtraction_settings(self):
+        return {
+            "interval": self.get_subtraction_region(),
+            "smooth_factor": self.settings[("interference", "smoothing")],
+            "use": self.settings[("interference", "use")],
+        }
+
+    def subtract_interference(self, use):
+
+        interference = self.data.signal.get("interference_deconvoluted")
+        if interference is None:
+            return
+
+        settings = self.get_subtraction_settings()
+
+        self.data.subtract_interference(interference=interference, **settings)
 
     def get_plotdata(self) -> Dict[str, Any]:
 
         plot_data = super().get_plotdata()
+        plot_data["subtraction_region"] = self.get_subtraction_region()
+        plot_data["interpolation_regions"] = None
 
         if self.interference:
             plot_data["interference"] = self.interference.get_plotdata()

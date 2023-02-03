@@ -25,6 +25,7 @@ class Baseline_correction_plot(Double_plot):
         self.birs = []
         self.plot_interactions = []
         self.mouse_connections = []
+        self.plot_interactions = []
 
     def draw_plot(self, **kwargs):
         birs = kwargs.pop("birs")
@@ -96,7 +97,7 @@ class Baseline_correction_plot(Double_plot):
                     ax.axvspan(
                         left_boundary,
                         right_boundary,
-                        alpha=0.3,
+                        alpha=0.5,
                         color="lightgray",
                         edgecolor=None,
                     )
@@ -114,13 +115,17 @@ class Baseline_correction_plot(Double_plot):
         bir_amount = len(self.birs) // 2
 
         drag_ax0 = drag_polygons(
-            ax=self.axs[0], polygons=self.birs[:bir_amount], identifier="baseline"
+            ax=self.axs[0],
+            polygons=self.birs[:bir_amount],
+            identifier="baseline",
         )
         drag_ax1 = drag_polygons(
-            ax=self.axs[1], polygons=self.birs[bir_amount:], identifier="baseline"
+            ax=self.axs[1],
+            polygons=self.birs[bir_amount:],
+            identifier="baseline",
         )
 
-        self.plot_interactions += [drag_ax0, drag_ax1]
+        self.plot_interactions = [drag_ax0, drag_ax1]
 
         # connect mouse events
         for ax in [drag_ax0, drag_ax1]:

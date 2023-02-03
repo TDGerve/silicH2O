@@ -21,8 +21,8 @@ class Message_processor:
                 self.buf += buffer
                 break
             # get data to next return and combine with any buffered data
-            data = self.buf + buffer[: newline_index + 1]
+            data = self.buf + buffer[:newline_index]
             self.buf = ""
             buffer = buffer[newline_index + 1 :]
             # post event
-            self.on_display_message.send(message=data)
+            self.on_display_message.send(message=data, duration=None)

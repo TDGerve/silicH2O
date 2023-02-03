@@ -8,7 +8,10 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from ... import app_configuration
-from ..frames.Baseline_interpolation import Baseline_interpolation_frame
+from ..frames.Baseline_interpolation import (
+    Baseline_interpolation_frame,
+    Baseline_interpolation_regions,
+)
 from ..frames.vertical_toolbar import vertical_toolbar
 from ..widgets.validate_input import invalid_widget_input, validate_widget_input
 
@@ -32,13 +35,17 @@ class Interference_frame(ttk.Frame):
 
         self.interference_widgets = {}
         self.deconvolution_widgets = {}
+        self.subtraction_widgets = {}
         widgets["interference"] = self.interference_widgets
         widgets["deconvolution"] = self.deconvolution_widgets
+        widgets["subtraction"] = self.subtraction_widgets
 
         self.interference_variables = {}
         self.deconvolution_variables = {}
+        self.subtraction_variables = {}
         variables["interference"] = self.interference_variables
         variables["deconvolution"] = self.deconvolution_variables
+        variables["subtraction"] = self.subtraction_variables
 
         self.make_interference_frame(
             parent=self,
@@ -59,8 +66,8 @@ class Interference_frame(ttk.Frame):
         self.make_subtraction_frame(
             parent=self,
             name="subtraction",
-            widgets=self.deconvolution_widgets,
-            variables=self.deconvolution_variables,
+            widgets=self.subtraction_widgets,
+            variables=self.subtraction_variables,
             row=4,
             col=3,
         )
@@ -216,11 +223,80 @@ class Interference_frame(ttk.Frame):
     def make_subtraction_frame(
         self, parent, name, widgets, variables, row: int, col: int
     ):
+        self.subtraction_regions = Baseline_interpolation_regions(
+            widgets, variables, name="subtraction"
+        )
 
         frame = ttk.Frame(parent, name=name)
         frame.grid(row=row, column=col, sticky="nesw")
-        frame.columnconfigure(0, minsize="7c")
+        for i in range(2):
+            frame.columnconfigure(i, weight=1)
 
         tk.Label(frame, text="Subtract", font=(_font, _fontsize_head, "bold")).grid(
-            row=0, column=0, sticky=("nsw")
+            row=0, column=0, columnspan=2, sticky=("nsw")
         )
+
+        tk.Label(
+            frame,
+            text="minimisation interval",
+            font=(_font, _fontsize_head),
+        ).grid(row=1, column=0, columnspan=2, sticky=("nsw"))
+
+        for i in range(2):
+            var = tk.StringVar()
+
+            entry = ttk.Entry(
+                frame,
+                validate="focusout",
+                validatecommand=(
+                    parent.register(
+                        partial(self.subtraction_regions.validate_bir_input, index=i)
+                    ),
+                    r"%P %s %W",
+                ),
+                invalidcommand=(
+                    parent.register(
+                        partial(self.subtraction_regions.invalid_bir_input, index=i)
+                    ),
+                    r"%s %P",
+                ),
+                width=4,
+                background="white",
+                font=(_font, _fontsize),
+                state=tk.DISABLED,
+            )
+            entry.grid(row=2, column=i, sticky=("nesw"))
+
+            self.subtraction_regions.add_bir(index=i, widget=entry, variable=var)
+
+        ttk.Label(
+            frame,
+            text="smoothing",
+            font=(_font, _fontsize_head),
+        ).grid(row=3, column=0, sticky=("nsw"))
+
+        var = tk.StringVar(name="smoothing")
+        entry = ttk.Spinbox(
+            frame,
+            from_=0.1,
+            to=100,
+            increment=0.1,
+            # textvariable=var,
+            validate="focusout",
+            validatecommand=(
+                parent.register(self.subtraction_regions.validate_smoothing),
+                "%P",
+            ),
+            invalidcommand=(
+                parent.register(self.subtraction_regions.invalid_smoothing),
+                r"%s",
+            ),
+            width=5,
+            background="white",
+            font=(_font, _fontsize),
+            state=tk.DISABLED,
+            name=name,
+        )
+        entry.grid(row=3, column=1, sticky=("nesw"))
+
+        self.subtraction_regions.add_smoothing(widget=entry, variable=var)

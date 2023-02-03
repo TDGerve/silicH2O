@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 
-
+markers = ["^", "D", "s", "o", "p", "8", "h", "d", 4, 5]
 # Color palettes
 class colors:
     """
@@ -33,13 +33,77 @@ class colors:
         color=["#DFE2F2", "#88ABF2", "#4384D9", "#56BFAC", "#D9B341"]
     )
 
+    hollywood = plt.cycler(
+        color=[
+            "#8ECAE6",
+            "#FD9E02",
+            "#219EBC",
+            "#FB8500",
+            "#126782",
+            "#FFB703",
+            "#023047",
+        ],
+    )
 
-def Plot_layout(
+    campfire = plt.cycler(color=["#588C7E", "#F2E394", "#F2AE72", "#D96459", "#8C4646"])
+
+    pastel = plt.cycler(
+        color=[
+            "#FAD2E1",
+            "#BCD4E6",
+            "#C5DEDD",
+            "#99C1DE",
+            "#EDDCD2",
+            "#DBE7E4",
+            "#FFF1E6",
+            "#F0EFEB",
+            "#FDE2E4",
+            "#D6E2E9",
+        ],
+    )
+
+    autumn = plt.cycler(
+        color=[
+            "#797D62",
+            "#FFCB69",
+            "#9B9B7A",
+            "#E8AC65",
+            "#BAA587",
+            "#D08C60",
+            "#D9AE94",
+            "#B58463",
+            "#997B66",
+            "#F1DCA7",
+        ],
+    )
+
+    rainbow = plt.cycler(
+        color=[
+            "#54478C",
+            "#83E377",
+            "#2C699A",
+            "#048BA8",
+            "#B9E769",
+            "#EFEA5A",
+            "#0DB39E",
+            "#F1C453",
+            "#16DB93",
+            "#F29E4C",
+        ]
+    )
+
+    matteblue = plt.cycler(
+        color=["#666A86", "#788AA3", "#92B6B1", "#B2C9AB", "#E8DDB5"],
+    )
+
+
+def plot_layout(
     scaling,
-    linewidth=0.8,
+    linewidth=0.5,
     font_size=8,
-    colors=colors.vitaminC,
+    colors=colors.rainbow,
 ):
+
     font_size = font_size / scaling
     axtitle_size = font_size + 3
     axlabel_size = font_size + 2
@@ -49,6 +113,8 @@ def Plot_layout(
 
     plt.rcParams["figure.constrained_layout.use"] = True
     plt.rcParams["savefig.dpi"] = 300
+
+    plt.rc("figure", figsize=(8, 7), facecolor="white")
 
     # Text
     plt.rc("font", family="sans-serif", size=font_size)
@@ -61,18 +127,17 @@ def Plot_layout(
     plt.rc("xtick.major", size=3 / scaling, width=linewidth)
     plt.rc("ytick", right=True, direction="in", labelsize=ticklabel_size)
 
+    # Axes
     plt.rc(
         "axes",
         grid=True,
-        titlesize=axtitle_size,
-        labelsize=axlabel_size,
         axisbelow=True,
-        linewidth=linewidth,
         prop_cycle=colors,
-        facecolor="white",
+        facecolor="snow",
+        linewidth=1,
     )
+    plt.rc("grid", color="gainsboro")
     plt.rc("axes.grid", axis="x")
-    plt.rc("grid", color="whitesmoke", alpha=1)
 
     # Lines
     plt.rc("lines", linewidth=linewidth, markersize=10 / scaling, markeredgecolor="k")

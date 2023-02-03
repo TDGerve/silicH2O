@@ -128,7 +128,8 @@ class Database_listener:
         temp_interferencepath = temp_datapath / "interference"
         if not temp_interferencepath.is_dir():
             temp_interferencepath.mkdir(parents=True, exist_ok=True)
-        # data folder
+
+        has_interference = None
 
         for sample in self.database_controller.spectra:
             # data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
@@ -136,18 +137,19 @@ class Database_listener:
             if not file.is_file():
                 np.savez(file, x=sample.data.signal.x, y=sample.data.signal.raw)
             if sample.interference:
+                has_interference = True
                 file = temp_interferencepath / f"{sample.name}"
                 np.savez(
                     file,
                     x=sample.interference.data.signal.x,
                     y=sample.interference.data.signal.raw,
                 )
-                if not (temp_interferencepath / "settings.parquet").is_file():
-                    interference_settings = (
-                        self.database_controller.get_all_interference_settings()
-                    )
-                    for name, f in interference_settings.items():
-                        f.to_parquet(temp_interferencepath / f"{name}.parquet")
+        if has_interference:
+            interference_settings = (
+                self.database_controller.get_all_interference_settings()
+            )
+            for name, f in interference_settings.items():
+                f.to_parquet(temp_interferencepath / f"{name}.parquet")
 
         # fnames = ["settings", "baseline_interpolation_regions", "interpolation_regions"]
         # if self.database_controller.interference_settings["settings"] is not None:
