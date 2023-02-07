@@ -36,6 +36,9 @@ class Raman_processor:
             x, y, laser=app_configuration.data_processing["laser_wavelength"]
         )
 
+    def set_spectrum_processing(self, spectrum: str, value: bool) -> None:
+        self.data._set_processing(spectrum=spectrum, value=value)
+
     def get_birs(self) -> Dict[str, int]:
 
         birs = self.baseline_regions.copy()
@@ -136,6 +139,19 @@ class Raman_processor:
 
         self.data.calculate_noise()
 
+    def _set_parameters(self, group: str, parameters: Dict, names: List[str]) -> None:
+
+        for name in names:
+            value = parameters.pop(name, None)
+            if value is not None:
+                self.settings[(group, name)] = value
+
+    def get_plot_spectra(self):
+        spectra = {"baseline_spectrum": None}
+        spectra = {**spectra, **self.data.signal.all}
+        spectra["baseline_spectrum"] = spectra.get(self.data._spectrumSelect)
+        return spectra
+
     def get_plotdata(self) -> Dict[str, Any]:
         """
         Returns
@@ -155,8 +171,7 @@ class Raman_processor:
         return {
             "sample_name": self.name,
             "x": self.data.x,
-            "spectra": self.data.signal.all,
-            "baseline_spectrum": self.data._spectrumSelect,
+            "spectra": self.get_plot_spectra(),
             "birs": self.get_birs(),
             "peaks": self.data.peaks,
         }
@@ -243,16 +258,21 @@ class h2o_processor(Raman_processor):
             smoothing = self.settings[("interpolation", "smoothing")]
             use = self.settings[("interpolate", "use")]
             add_noise = True
+            kwargs = {}
         elif current_tab == "interference":
             regions = np.array([self.get_subtraction_region()])
             smoothing = self.settings[("interference", "smoothing")]
             use = False
             add_noise = False
+            kwargs = {"y": "raw"}
         return {
-            "interpolate": regions,
-            "smooth_factor": smoothing,
-            "add_noise": add_noise,
-            "use": use,
+            **{
+                "interpolate": regions,
+                "smooth_factor": smoothing,
+                "add_noise": add_noise,
+                "use": use,
+            },
+            **kwargs,
         }
 
     def set_interpolation(self, kwargs: Dict) -> None:
@@ -261,11 +281,9 @@ class h2o_processor(Raman_processor):
             index = int(region[-2:])
             self.interpolation_regions.iloc[index] = new_value
 
-    def set_subtraction_region(self, kwargs: Dict):
-
-        smoothing = kwargs.pop("smoothing", None)
-        if smoothing is not None:
-            self.settings[("interference", "smoothing")] = smoothing
+    def set_subtraction_parameters(self, kwargs: Dict):
+        names = ("smoothing", "spectrum", "use")
+        self._set_parameters(group="interference", parameters=kwargs, names=names)
 
         for ID, new_value in kwargs.items():
             location = ["left", "right"][int(ID[-2:]) % 2]
@@ -282,26 +300,47 @@ class h2o_processor(Raman_processor):
             "bir_00": boundary_left,
             "bir_01": boundary_right,
             "smoothing": self.settings[("interference", "smoothing")],
+            "spectrum": self.settings[("interference", "spectrum")],
             "use": self.settings[("interference", "use")],
         }
 
-    def subtract_interference(self, use):
+    def get_interference_spectrum(self):
 
-        interference = self.data.signal.get("interference_deconvoluted")
+        spectrum_name = self.settings[("interference", "spectrum")]
+        interference = self.interference
+
+        spectrum = interference.data.signal.get(spectrum_name)
+        if spectrum is None:
+            return None
+
+        return self.data.signal.interpolate_spectrum(
+            old_x=interference.data.signal.x,
+            old_y=spectrum,
+        )
+
+    def subtract_interference(self) -> bool:
+
+        interference = self.get_interference_spectrum()
         if interference is None:
-            return
+            on_display_message.send(message="interference not found", duration=5)
+            return False
 
         settings = self.get_subtraction_settings()
+        settings["interval"] = [settings.pop(key) for key in ("bir_00", "bir_01")]
 
         self.data.subtract_interference(interference=interference, **settings)
+        return True
 
     def get_plotdata(self) -> Dict[str, Any]:
 
-        plot_data = super().get_plotdata()
-        plot_data["subtraction_region"] = self.get_subtraction_region()
-        plot_data["interpolation_regions"] = None
+        plotdata = super().get_plotdata()
+        plotdata["subtraction_region"] = self.get_subtraction_region()
+        plotdata["interpolation_regions"] = None
+
+        if self.interpolated_interval is not None:
+            plotdata["interpolated_interval"] = self.interpolated_interval
 
         if self.interference:
-            plot_data["interference"] = self.interference.get_plotdata()
+            plotdata["interference"] = self.interference.get_plotdata()
 
-        return plot_data
+        return plotdata

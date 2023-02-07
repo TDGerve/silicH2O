@@ -13,11 +13,13 @@ from ..frames.Baseline_interpolation import (
     Baseline_interpolation_regions,
 )
 from ..frames.vertical_toolbar import vertical_toolbar
+from ..widgets import set_value_from_widget
 from ..widgets.validate_input import invalid_widget_input, validate_widget_input
 
-on_settings_change = bl.signal("settings change")
 on_load_interference = bl.signal("load interference")
 on_deconvolve_interference = bl.signal("deconvolve interference")
+on_subtract_interference = bl.signal("subtract interference")
+on_set_processing = bl.signal("set processing")
 
 _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
@@ -162,11 +164,11 @@ class Interference_frame(ttk.Frame):
         labels = [
             "min. peak height",
             "fit window",
-            "residuals threshold",
+            "residuals threshold (%)",
             "max iterations",
         ]
         names = ["peak_height", "fit_window", "residuals_threshold", "max_iterations"]
-        limits = [[1, np.Inf], [1, 50], [0, 1], [1, 20]]
+        limits = [[1, np.Inf], [1, 50], [1, 100], [1, 20]]
         dtypes = [int, int, float, int]
 
         for i, (label, var_name, limit, dtype) in enumerate(
@@ -215,7 +217,7 @@ class Interference_frame(ttk.Frame):
         )
         deconvolve_button.grid(row=5, column=0, columnspan=2, sticky="ns")
 
-        self.deconvolution_widgets["load_spectrum"] = deconvolve_button
+        self.deconvolution_widgets["deconvolve_spectrum"] = deconvolve_button
 
         for i in range(2):
             frame.columnconfigure(i, weight=1)
@@ -301,6 +303,62 @@ class Interference_frame(ttk.Frame):
 
         self.subtraction_regions.add_smoothing(widget=entry, variable=var)
 
-        # PLACEHOLDER
-        use = tk.StringVar(name="use")
-        self.subtraction_variables["use"] = use
+        # ADD RADIOBUTTIONS TO SELECT RAW OR DECONVOLUTED SPECTRUM
+        spectrum_selection = tk.StringVar(value="baseline_corrected")
+        spectra = ("baseline_corrected", "deconvoluted")
+        names = ("baseline*", "deconvoluted")
+        for i, (spectrum, name) in enumerate(zip(spectra, names)):
+            radio = ttk.Radiobutton(
+                frame,
+                text=name,
+                variable=spectrum_selection,
+                value=spectrum,
+                command=partial(
+                    set_value_from_widget,
+                    variable=spectrum_selection,
+                    group="subtraction",
+                    name="spectrum",
+                ),
+                state=tk.DISABLED,
+            )
+            radio.grid(row=4, column=i)
+            widgets[spectrum] = radio
+        variables["spectrum"] = spectrum_selection
+
+        subtract_button = ttk.Button(
+            frame,
+            text="subtract",
+            state=tk.DISABLED,
+            name="subtract",
+            command=on_subtract_interference.send,
+        )
+        subtract_button.grid(row=5, column=0, sticky="ns")
+
+        widgets["subtract_interference"] = subtract_button
+
+        self.make_use_checkbutton(
+            parent=frame, variables=variables, widgets=widgets, row=5, col=1
+        )
+
+    def make_use_checkbutton(self, parent, variables, widgets, row, col):
+        var = tk.StringVar(value="False")
+        checkbutton = ttk.Checkbutton(
+            parent,
+            text="use",
+            variable=var,
+            onvalue="True",
+            offvalue="False",
+            command=lambda: on_set_processing.send(
+                spectrum="interference_corrected", value=eval(var.get())
+            ),
+            state=tk.DISABLED,
+        )
+
+        checkbutton.grid(row=row, column=col, sticky="ns")
+
+        variables["use"] = var
+        widgets["use"] = checkbutton
+
+    def send_spectrum_processing(self, variable, type: str):
+        value = eval(variable.get())
+        on_set_processing.send(type=type, value=value)

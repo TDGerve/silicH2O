@@ -91,4 +91,5 @@ fill_values = {
     dtype("int64"): np.nan,
     dtype("float64"): np.nan,
     dtype(bool): False,
+    dtype("O"): np.nan,
 }

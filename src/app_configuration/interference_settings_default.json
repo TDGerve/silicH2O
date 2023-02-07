@@ -27,7 +27,7 @@
     "deconvolution": {
         "peak_height": 15,
         "fit_window": 6,
-        "residuals_threshold": 0.9,
+        "residuals_threshold": 10,
         "max_iterations": 5
     }
 }

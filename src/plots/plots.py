@@ -36,8 +36,9 @@ class Double_plot:
         self.fig, self.axs = plt.subplots(
             2, 1, figsize=(width, height)  # , constrained_layout=True
         )
-        self.lines = {"ax0": {}, "ax1": {}}
+        # self.lines = {"ax0": {}, "ax1": {}}
         self.name = None
+        self.lines = {"ax0": {}, "ax1": {}}
 
         # Needs matplotlib > 3.4 & Python > 3.7
         self.fig.supxlabel(xlabel)
@@ -66,11 +67,8 @@ class Double_plot:
 
         self.name.set_text("")
 
-        for _, lines in zip(self.axs, self.lines.values()):
-
-            for line in lines.values():
-                line[0].set_xdata([])
-                line[0].set_ydata([])
+        for lines in self.lines.values():
+            self.clear_lines(lines)
 
         self.fig.canvas.draw_idle()
 
@@ -84,6 +82,17 @@ class Double_plot:
                 plot_elements[0][0].remove()
             plot_elements.remove(plot_elements[0])
         self.fig.canvas.draw_idle()
+
+    def clear_lines(self, lines: Dict, keys: Optional[List[str]] = None):
+        if keys is None:
+            keys = lines.keys()
+        for key in keys:
+            try:
+                line = lines[key][0]
+                line.set_xdata([])
+                line.set_ydata([])
+            except KeyError:
+                pass
 
     def display_name(self, sample_name):
         if self.name is None:
@@ -104,7 +113,13 @@ class Double_plot:
             self.plot_lines_axis(i, x, spectra)
 
     def plot_lines_axis(
-        self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
+        self,
+        ax_id: int,
+        x: np.ndarray,
+        spectra: Dict[str, np.ndarray],
+        set_ylim=True,
+        *args,
+        **kwargs,
     ):
 
         ax = self.axs[ax_id]
@@ -113,6 +128,10 @@ class Double_plot:
 
         xmin, xmax = ax.get_xlim()
         ymax = []
+
+        # line_surplus = set(lines.keys()).difference(set(spectra.keys()))
+        # if line_surplus:
+        #     self.clear_lines(lines, keys=list(line_surplus))
 
         for (name, y), color in zip(spectra.items(), colors):
             ymax.append(y[(xmin < x) & (x < xmax)].max())
@@ -123,14 +142,33 @@ class Double_plot:
                 lines[name][0].set_xdata(x)
                 lines[name][0].set_ydata(y)
             except KeyError:
-                lines[name] = ax.plot(x, y, label=name, color=color)
-                if name in ("deconvoluted", "baseline"):
-                    lines[name][0].set(linewidth=2, alpha=0.5)
+                lines[name] = ax.plot(x, y, label=name, color=color, **kwargs)
+                # if name in ("deconvoluted", "baseline"):
+                #     lines[name][0].set(linewidth=2, alpha=0.5)
+
+        if not set_ylim:
+            return
 
         ymax = max(ymax) * 1.1
         ax.set_ylim(0, ymax)
         if ymax > 2e3:
             ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
+
+        self.set_line_formatting()
+
+    def set_line_formatting(self):
+        formatting = {
+            "deconvoluted": [3, 0.4],
+            "baseline": [2, 0.5],
+            "interpolated": [2, 0.7],
+            "interference_corrected": [1, 0.7],
+        }
+        for lines in self.lines.values():
+            for name, fmt in formatting.items():
+                try:
+                    lines[name][0].set(linewidth=fmt[0], alpha=fmt[1])
+                except KeyError:
+                    continue
 
 
 class Single_plot:
@@ -184,7 +222,12 @@ class Single_plot:
         self.fig.canvas.draw_idle()
 
     def plot_lines(
-        self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
+        self,
+        x: np.ndarray,
+        spectra: Dict[str, np.ndarray],
+        set_ylim=True,
+        *args,
+        **kwargs,
     ):
         colors = self.colors.by_key()["color"]
 
@@ -206,7 +249,10 @@ class Single_plot:
             except KeyError:
                 self.lines[name] = self.ax.plot(x, new_vals, label=name, color=color)
 
-            ymax = max(ymax) * 1.1
-            self.ax.set_ylim(0, ymax)
-            if ymax > 2e3:
-                self.ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
+        if not set_ylim:
+            return
+
+        ymax = max(ymax) * 1.1
+        self.ax.set_ylim(0, ymax)
+        if ymax > 2e3:
+            self.ax.ticklabel_format(axis="y", style="scientific", useMathText=True)

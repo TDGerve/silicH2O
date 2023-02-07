@@ -19,6 +19,7 @@ class Subtraction_plot(Double_plot):
         self.peak_curves = []
         self.peak_centers = []
         self.subtraction_region = []
+
         self.mouse_connections = {"interference": [], "subtraction": []}
         self.plot_interactions = {"interference": [], "subtraction": []}
 
@@ -35,9 +36,24 @@ class Subtraction_plot(Double_plot):
         else:
             self.clear_interference()
 
+        if "interference_corrected" not in kwargs["spectra"].keys():
+            self.clear_lines(self.lines["ax0"], keys=["interference_corrected"])
+
         self.plot_lines_axis(0, **kwargs)
         self.plot_subtraction_region(**kwargs)
+        self.plot_interpolation(*kwargs.get("interpolated_interval"))
+
         self.fig.canvas.draw_idle()
+
+    # def set_line_formatting(self):
+    #     names = ("deconvoluted", "baseline", "interpolated")
+    #     formatting = ([3, 0.5], [2, 0.5], [3, 0.7])
+    #     for lines in self.lines.values():
+    #         for name, fmt in zip(names, formatting):
+    #             try:
+    #                 lines[name][0].set(linewidth=fmt[0], alpha=fmt[1])
+    #             except KeyError:
+    #                 continue
 
     def plot_lines_axis(
         self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
@@ -52,7 +68,17 @@ class Subtraction_plot(Double_plot):
             if key not in plot_items:
                 _ = spectra.pop(key)
 
-        return super().plot_lines_axis(ax_id, x, spectra, *args, **kwargs)
+        return super().plot_lines_axis(ax_id, x, spectra, *args, zorder=10)
+
+    def plot_interpolation(self, x, y, *args, **kwargs):
+
+        super().plot_lines_axis(
+            0,
+            x,
+            {"interpolated": y},
+            set_ylim=False,
+            zorder=100,
+        )
 
     def clear_figure(self):
         for e in (
@@ -66,13 +92,17 @@ class Subtraction_plot(Double_plot):
         return super().clear_figure()
 
     def clear_interference(self):
-        if self.birs:
-            self.clear_plot_elements(self.birs)
-            self.clear_plot_elements(self.peak_curves)
 
-        for line in self.lines["ax1"].values():
-            line[0].set_xdata([])
-            line[0].set_ydata([])
+        for elements in (self.birs, self.peak_curves, self.peak_centers):
+            self.clear_plot_elements(elements)
+
+        self.clear_lines(
+            self.lines["ax0"],
+            keys=["interference_corrected"],
+        )
+
+        self.clear_lines(self.lines["ax1"])
+
         self.fig.canvas.draw_idle()
 
     def plot_peaks(self, peaks, plot_width=16, num=200):
@@ -211,7 +241,7 @@ class Subtraction_plot(Double_plot):
 
         plot_interaction = drag_polygons(
             ax=ax,
-            polygons=objects,  # drag_polygons=[1, 2]
+            polygons=objects,
             identifier=identifier,
         )
         self.plot_interactions[identifier] = plot_interaction

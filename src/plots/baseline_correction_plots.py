@@ -35,15 +35,9 @@ class Baseline_correction_plot(Double_plot):
 
         self.fig.canvas.draw_idle()
 
-    def plot_lines(
-        self,
-        x: np.ndarray,
-        spectra: Dict[str, np.ndarray],
-        baseline_spectrum: str,
-        **kwargs
-    ):
+    def plot_lines(self, x: np.ndarray, spectra: Dict[str, np.ndarray], **kwargs):
 
-        plot_items = (baseline_spectrum, "baseline", "baseline_corrected")
+        plot_items = ("baseline_corrected", "baseline", "baseline_spectrum")
 
         keys = list(spectra.keys())
         for key in keys:

@@ -1,28 +1,33 @@
+import sys
+
 import blinker as bl
 
 """
 from:
 https://stackoverflow.com/questions/71024919/how-to-capture-prints-in-real-time-from-function
 """
+real_stdout_for_test = sys.stdout
 
 
 class Message_processor:
+
+    on_display_message = bl.signal("display message")
+
     def __init__(self):
         self.buf = ""
-        self.on_display_message = bl.signal("display message")
 
-    def write(self, buffer):
-        # emit on each return
-        while buffer:
+    def write(self, buf):
+        # emit on each newline
+        while buf:
             try:
-                newline_index = buffer.index("\r")
+                newline_index = buf.index("\n")
             except ValueError:
-                # no return, buffer for next call
-                self.buf += buffer
+                # no newline, buffer for next call
+                self.buf += buf
                 break
-            # get data to next return and combine with any buffered data
-            data = self.buf + buffer[:newline_index]
+            # get data to next newline and combine with any buffered data
+            data = self.buf + buf[:newline_index]
             self.buf = ""
-            buffer = buffer[newline_index + 1 :]
-            # post event
+            buf = buf[newline_index + 1 :]
+            real_stdout_for_test.write("fiddled with " + data)
             self.on_display_message.send(message=data, duration=None)

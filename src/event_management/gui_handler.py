@@ -23,7 +23,9 @@ class Gui_listener:
         self.gui.update_variables(**kwargs)
 
     def display_message(self, *args, message: str, duration: Optional[int] = 2):
-
+        # clear current message
+        self.gui.update_variables(infobar={"info": ""})
+        # construct new message
         message = f"{message:<50}"
         kwargs = {"infobar": {"info": message}}
         self.gui.update_variables(**kwargs)

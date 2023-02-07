@@ -19,6 +19,10 @@ class Plot_listener:
 
         self.subscribe_to_signals()
 
+    @property
+    def current_tab(self):
+        return app_configuration.gui["current_tab"]
+
     def plot_sample(
         self,
         *args,
@@ -29,9 +33,8 @@ class Plot_listener:
         # birs: List[int],
         **kwargs,
     ):
-        current_tab = app_configuration.gui["current_tab"]
 
-        plot = self.plots[current_tab]
+        plot = self.plots[self.current_tab]
 
         plot.display_name(sample_name)
         plot.draw_plot(**kwargs)

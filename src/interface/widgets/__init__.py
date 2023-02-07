@@ -3,13 +3,22 @@ from functools import partial
 from tkinter import ttk
 from typing import List, Optional
 
+import blinker as bl
+
 from ... import app_configuration
+
+on_settings_change = bl.signal("settings change")
 
 _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
 padding = 2
+
+
+def set_value_from_widget(variable, group: str, name: str):
+    value = variable.get()
+    on_settings_change.send("widget", **{group: {name: value}})
 
 
 def make_label_widgets(

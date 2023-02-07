@@ -39,7 +39,7 @@ class App_interface:
                     widget = self.widgets[group][name]
                     widget.delete(0, tk.END)
                     widget.insert(0, "")
-                except KeyError:
+                except (KeyError, AttributeError):
                     pass
 
     def update_variables(self, **kwargs) -> None:
@@ -59,7 +59,7 @@ class App_interface:
                     widget.delete(0, tk.END)
                     widget.insert(0, f"{value}")
 
-                except KeyError:
+                except (KeyError, AttributeError):
                     pass
 
                 variable.set(value)
