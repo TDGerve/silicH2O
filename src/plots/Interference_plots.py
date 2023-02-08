@@ -24,7 +24,7 @@ class Subtraction_plot(Double_plot):
         self.plot_interactions = {"interference": [], "subtraction": []}
 
     def draw_plot(self, **kwargs):
-
+        self.display_name()
         interference = kwargs.pop("interference", None)
         if interference:
             birs = interference.pop("birs")
@@ -44,16 +44,6 @@ class Subtraction_plot(Double_plot):
         self.plot_interpolation(*kwargs.get("interpolated_interval"))
 
         self.fig.canvas.draw_idle()
-
-    # def set_line_formatting(self):
-    #     names = ("deconvoluted", "baseline", "interpolated")
-    #     formatting = ([3, 0.5], [2, 0.5], [3, 0.7])
-    #     for lines in self.lines.values():
-    #         for name, fmt in zip(names, formatting):
-    #             try:
-    #                 lines[name][0].set(linewidth=fmt[0], alpha=fmt[1])
-    #             except KeyError:
-    #                 continue
 
     def plot_lines_axis(
         self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs

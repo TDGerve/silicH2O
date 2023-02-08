@@ -1,8 +1,6 @@
-import os
-import pathlib
-import shutil
 import sys
-import time
+
+import blinker as bl
 
 from .event_management import (
     Calculation_listener,
@@ -12,6 +10,8 @@ from .event_management import (
 )
 from .interface import App_interface
 from .spectral_processing import Database_controller
+
+on_clean_temp_files = bl.signal("clean temp files")
 
 
 class Raman_app:
@@ -27,7 +27,7 @@ class Raman_app:
 
     def run(self) -> None:
 
-        self.clean_files()
+        on_clean_temp_files.send()
         self.gui.window.protocol("WM_DELETE_WINDOW", self.close)
         self.gui.window.mainloop()
 
@@ -36,27 +36,28 @@ class Raman_app:
         Runs on close
         """
 
-        self.clean_files()
+        # self.clean_files()
+        on_clean_temp_files.send()
         # close everything
         sys.exit()
 
-    def clean_files(self):
+    # def clean_files(self):
 
-        file = pathlib.Path(__file__)
-        tempdir = file.parents[0] / "temp"
+    #     file = pathlib.Path(__file__)
+    #     tempdir = file.parents[0] / "temp"
 
-        # delete temporary files
-        for root, dirs, files in os.walk(tempdir):
+    #     # delete temporary files
+    #     for root, dirs, files in os.walk(tempdir):
 
-            for f in files:
-                os.unlink(os.path.join(root, f))
+    #         for f in files:
+    #             os.unlink(os.path.join(root, f))
 
-            for d in dirs:
-                try:
-                    shutil.rmtree(os.path.join(root, d))
-                except PermissionError:
-                    time.sleep(0.5)
-                    shutil.rmtree(os.path.join(root, d))
+    #         for d in dirs:
+    #             try:
+    #                 shutil.rmtree(os.path.join(root, d))
+    #             except PermissionError:
+    #                 time.sleep(0.5)
+    #                 shutil.rmtree(os.path.join(root, d))
 
 
 def run_raman_app():

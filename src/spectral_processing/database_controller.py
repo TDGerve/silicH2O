@@ -71,16 +71,16 @@ class Database_controller:
             sample = self.get_sample(idx)
 
         if tab == "interference":
-            sample.calculate_interpolation()
+            sample.calculate_interpolation(tab=tab)
             interference = sample.interference
             if interference is not None:
                 sample.interference.calculate_baseline()
             return
         elif tab == "interpolation":
-            sample.calculate_interpolation()
+            sample.calculate_interpolation(tab=tab)
 
-        if sample.settings[("interference", "use")]:
-            sample.subtract_interference()
+        # if sample.settings[("interference", "use")]:
+        #     sample.subtract_interference()
 
         sample.calculate_baseline()
         sample.calculate_noise()
@@ -123,7 +123,7 @@ class Database_controller:
 
         func_dict = {
             "baseline": sample.set_baseline,
-            "interpolate": sample.set_interpolation,
+            "interpolation": sample.set_interpolation,
             "subtraction": sample.set_subtraction_parameters,
         }
         if sample.interference is not None:
@@ -137,8 +137,7 @@ class Database_controller:
         sample = self.current_sample
         get_birs = {
             "baseline": sample.get_baseline_settings,
-            "interpolation": dict,
-            "interference": dict,
+            "interpolation": sample.get_interpolation_settings(),
         }
         if sample.interference is not None:
             get_birs["interference"] = sample.interference.get_baseline_settings
@@ -152,7 +151,7 @@ class Database_controller:
         sample = self.current_sample
 
         baseline_settings = sample.get_baseline_settings()
-        interpolation_settings = {}
+        interpolation_settings = sample.get_interpolation_settings()
         interference_settings = sample.get_interference_settings()
 
         return {
@@ -266,6 +265,17 @@ class Database_controller:
 
         current_sample.set_interference(x, y, settings, birs)
 
+    def add_processed_spectra(self, files: List[str], names: List[str]):
+        for file, name in zip(files, names):
+
+            idx = np.where(self.names == name)[0][0]
+            sample = self.get_sample(idx)
+
+            with np.load(file, allow_pickle=True) as f:
+                keys = f.keys()
+                for key in keys:
+                    sample.data.signal.add(name=key, values=f[key])
+
     def add_settings_results(self, names: List[str], settings: Optional[Dict] = None):
 
         if settings is None:
@@ -360,7 +370,7 @@ class Database_controller:
         for sample_idx in range(self.results.shape[0]):
             self.save_sample(sample_idx)
 
-    def reset_sample(self, tab: str) -> None:
+    def reset_sample(self, tab: str) -> None:  # CHANGE SETTINGS PER TAB
 
         sample = self.current_sample
         name = sample.name

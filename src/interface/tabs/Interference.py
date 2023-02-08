@@ -17,6 +17,9 @@ from ..widgets import set_value_from_widget
 from ..widgets.validate_input import invalid_widget_input, validate_widget_input
 
 on_load_interference = bl.signal("load interference")
+on_remove_interference = bl.signal("remove interference")
+
+
 on_deconvolve_interference = bl.signal("deconvolve interference")
 on_subtract_interference = bl.signal("subtract interference")
 on_set_processing = bl.signal("set processing")
@@ -49,6 +52,10 @@ class Interference_frame(ttk.Frame):
         variables["deconvolution"] = self.deconvolution_variables
         variables["subtraction"] = self.subtraction_variables
 
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(3, minsize="7c")
+        self.rowconfigure(6, weight=1)
+
         self.make_interference_frame(
             parent=self,
             name="interference",
@@ -73,10 +80,6 @@ class Interference_frame(ttk.Frame):
             row=4,
             col=3,
         )
-
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(3, minsize="7c")
-        self.rowconfigure(6, weight=1)
 
         self.make_horizontal_dividers(self, rows=[1, 3, 5], col=3)
         self.make_vertical_divider(self, col=2)
@@ -123,22 +126,33 @@ class Interference_frame(ttk.Frame):
 
         frame = ttk.Frame(parent, name=name)
         frame.grid(row=row, column=col, sticky="nesw")
-        frame.columnconfigure(0, minsize="7c")
+        for i in range(2):
+            frame.columnconfigure(i, weight=1)
 
         tk.Label(frame, text="Interference", font=(_font, _fontsize_head, "bold")).grid(
-            row=0, column=0, sticky=("nsw")
+            row=0, column=0, columnspan=2, sticky=("nsw")
         )
 
         load_button = ttk.Button(
             frame,
-            text="load spectrum",
+            text="load",
             state=tk.DISABLED,
             name="load_interference",
             command=on_load_interference.send,
         )
-        load_button.grid(row=1, column=0, sticky="ns")
+        load_button.grid(row=1, column=0, sticky="nesw")
 
-        self.interference_widgets["load_spectrum"] = load_button
+        remove_button = ttk.Button(
+            frame,
+            text="remove",
+            state=tk.DISABLED,
+            name="remove_interference",
+            command=on_remove_interference.send,
+        )
+        remove_button.grid(row=1, column=1, sticky="nesw")
+
+        widgets["load_spectrum"] = load_button
+        widgets["remove_spectrum"] = remove_button
 
         baseline_interpolation = Baseline_interpolation_frame(
             parent=frame,
@@ -148,7 +162,7 @@ class Interference_frame(ttk.Frame):
             bir_amount=5,
             width="7c",
         )
-        baseline_interpolation.grid(row=2, column=0, sticky="nesw")
+        baseline_interpolation.grid(row=2, column=0, columnspan=2, sticky="nesw")
 
     def make_deconvolution_frame(
         self, name, parent, widgets, variables, row: int, col: int
@@ -303,7 +317,6 @@ class Interference_frame(ttk.Frame):
 
         self.subtraction_regions.add_smoothing(widget=entry, variable=var)
 
-        # ADD RADIOBUTTIONS TO SELECT RAW OR DECONVOLUTED SPECTRUM
         spectrum_selection = tk.StringVar(value="baseline_corrected")
         spectra = ("baseline_corrected", "deconvoluted")
         names = ("baseline*", "deconvoluted")
@@ -341,15 +354,15 @@ class Interference_frame(ttk.Frame):
         )
 
     def make_use_checkbutton(self, parent, variables, widgets, row, col):
-        var = tk.StringVar(value="False")
+        var = tk.BooleanVar(value=False)
         checkbutton = ttk.Checkbutton(
             parent,
             text="use",
             variable=var,
-            onvalue="True",
-            offvalue="False",
+            onvalue=True,
+            offvalue=False,
             command=lambda: on_set_processing.send(
-                spectrum="interference_corrected", value=eval(var.get())
+                type="interference_corrected", value=var.get()
             ),
             state=tk.DISABLED,
         )

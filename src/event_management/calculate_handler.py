@@ -23,6 +23,7 @@ class Calculation_listener:
     on_switch_tab = bl.signal("switch tab")
     on_reset_sample = bl.signal("reset sample")
 
+    on_remove_interference = bl.signal("remove interference")
     on_deconvolve_interference = bl.signal("deconvolve interference")
     on_subtract_interference = bl.signal("subtract interference")
 
@@ -52,7 +53,7 @@ class Calculation_listener:
     def sample(self):
         return self.database_controller.current_sample
 
-    def display_sample(self, message: str):
+    def display_sample(self, *args):
         try:
             self.database_controller.calculate_sample(tab=self.current_tab)
         except AttributeError:
@@ -68,7 +69,7 @@ class Calculation_listener:
         self.gui.update_variables(**settings)
         self.update_gui_results()
 
-        self.refresh_plots(message)
+        self.refresh_plots()
 
     def copy_birs(self, *args, store=True, message="copied birs"):
 
@@ -129,19 +130,25 @@ class Calculation_listener:
 
         self.database_controller.current_sample_index = index
 
-        self.display_sample("sample change")
+        self.display_sample()
 
     def change_settings(self, *args, **kwargs):
 
         self.database_controller.change_sample_settings(**kwargs)
         self.database_controller.calculate_sample(tab=self.current_tab)
 
-    def set_spectrum_processing(self, *args, spectrum: str, value: bool):
-        self.sample.set_spectrum_processing(spectrum=spectrum, value=value)
+    def set_spectrum_processing(self, *args, type: str, value: bool):
         group = {
             "interpolated": "interpolation",
             "interference_corrected": "subtraction",
-        }[spectrum]
+        }[type]
+
+        if self.sample.data.signal.get(type) is not None:
+            self.sample.set_spectrum_processing(types=[type], values=[value])
+        else:
+            value = False
+            self.gui.update_variables(**{group: {"use": value}})
+
         self.change_settings(**{group: {"use": value}})
 
     def deconvolve_interference(self, *args, **kwargs):
@@ -160,6 +167,10 @@ class Calculation_listener:
 
         self.on_display_message.send(message="subtraction complete!", duration=5)
         self.refresh_plots()
+
+    def remove_interference(self, *args):
+        self.sample.remove_interference()
+        self.display_sample()
 
     def update_gui_results(self):
 
@@ -194,12 +205,12 @@ class Calculation_listener:
     def reset_sample(self, *args):
 
         self.database_controller.reset_sample(tab=self.current_tab)
-        self.display_sample("sample reset")
+        self.display_sample()
 
     def tab_change(self, *args):
         self.copied_birs = None
         self.bir_amount = self._calculate_bir_amount
-        self.display_sample(*args)
+        self.display_sample()
 
     def subscribe_to_signals(self):
         self.on_sample_change.connect(self.switch_sample, sender="navigator")
@@ -207,6 +218,7 @@ class Calculation_listener:
         self.on_settings_change.connect(self.update_from_widgets, sender="widget")
 
         self.on_interference_added.connect(self.display_sample)
+        self.on_remove_interference.connect(self.remove_interference)
         self.on_deconvolve_interference.connect(self.deconvolve_interference)
         self.on_subtract_interference.connect(self.subtract_interference)
 

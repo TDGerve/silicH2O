@@ -3,8 +3,9 @@ import os
 import pathlib
 import shutil
 import tarfile
+import time
 from tkinter import filedialog
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import blinker as bl
 import numpy as np
@@ -33,6 +34,8 @@ class Database_listener:
 
     on_save_project = bl.signal("save project")
     on_export_results = bl.signal("export results")
+
+    on_clean_temp_files = bl.signal("clean temp files")
 
     on_clear_plot = bl.signal("clear plot")
     on_plot_change = bl.signal("refresh plot")
@@ -96,6 +99,7 @@ class Database_listener:
 
     def new_project(self, *args):
 
+        self.clean_temp_files()
         self.database_controller.__init__()
         self.gui.clear_variables()
         self.on_clear_plot.send("new project")
@@ -120,64 +124,69 @@ class Database_listener:
 
         self.database_controller.set_project(filepath=filepath)
 
-    def save_project_data(self, filepath: pathlib.Path, name: str):
+    def _make_project_folders(self, name: str) -> Dict:
 
-        # project folder
-        temp_path = temp_folder / name
-        temp_datapath = temp_path / "data"
-        temp_interferencepath = temp_datapath / "interference"
-        temp_correctedpath = temp_datapath / "interference_corrected"
-        temp_interpolatedpath = temp_datapath / "interpolated"
+        paths = {"project": temp_folder / name}
+        paths["data"] = paths["project"] / "data"
+        paths["processed"] = paths["data"] / "processed"
+        paths["interference"] = paths["data"] / "interference"
 
-        dirs = (temp_interferencepath, temp_correctedpath, temp_interpolatedpath)
-        for dir in dirs:
+        for dir in paths.values():
             if dir.is_dir():
                 continue
             dir.mkdir(parents=True, exist_ok=True)
-        # if not temp_interferencepath.is_dir():
-        #     temp_interferencepath.mkdir(parents=True, exist_ok=True)
-        #     temp_correctedpath.mkdir(exist_ok=True)
-        #     temp_interpolatedpath.mkdir(exist_ok=True)
+
+        return paths
+
+    def save_project_data(self, filepath: pathlib.Path, name: str):
+
+        paths = self._make_project_folders(name)
 
         has_interference = False
 
         for sample in self.database_controller.spectra:
             # data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
-            file = temp_datapath / f"{sample.name}"
+            file = paths["data"] / f"{sample.name}"
             if not file.is_file():
-                np.savez(file, x=sample.data.signal.x, y=sample.data.signal.raw)
-                if sample.settings[("interpolation", "use")]:
-                    pass
-            if sample.interference:
-                has_interference = True
-                file = temp_interferencepath / f"{sample.name}"
                 np.savez(
-                    file,
-                    x=sample.interference.data.signal.x,
-                    y=sample.interference.data.signal.raw,
+                    file, x=sample.data.signal.get("x"), y=sample.data.signal.get("raw")
                 )
-                if sample.settings[("interference", "use")]:
-                    file = temp_correctedpath / f"{sample.name}"
-                    np.savez(
-                        file,
-                        x=sample.data.signal.x,
-                        y=sample.data.signal.interference_corrected,
-                    )
+
+            file_processed = paths["processed"] / f"{sample.name}"
+            names = ("interference_corrected", "interpolated")
+            data = [sample.data.signal.get(name) for name in names]
+            processed = {
+                name: vals for name, vals in zip(names, data) if vals is not None
+            }
+
+            if len(processed) > 0:
+                np.savez(file_processed, **processed)
+
+            if not sample.interference:
+                continue
+
+            has_interference = True
+            file_interference = paths["interference"] / f"{sample.name}"
+            np.savez(
+                file_interference,
+                x=sample.interference.data.signal.get("x"),
+                y=sample.interference.data.signal.get("raw"),
+            )
 
         if has_interference:
             interference_settings = (
                 self.database_controller.get_all_interference_settings()
             )
             for name, f in interference_settings.items():
-                f.to_parquet(temp_interferencepath / f"{name}.parquet")
+                f.to_parquet(paths["interference"] / f"{name}.parquet")
 
         settings = self.database_controller.get_all_settings()
 
         for name, f in settings.items():
-            f.to_parquet(temp_path / f"{name}.parquet")
+            f.to_parquet(paths["project"] / f"{name}.parquet")
 
         with tarfile.open(filepath, mode="w") as tar:
-            tar.add(temp_path, arcname="")
+            tar.add(paths["project"], arcname="")
 
     def export_results(self, *args, filepath: str):
 
@@ -189,12 +198,14 @@ class Database_listener:
 
     def move_project_files(self, filepath, name):
 
-        temp_path = temp_folder / name
-        temp_datapath = temp_path / "data"
-        temp_interferencepath = temp_datapath / "interference"
+        # temp_path = temp_folder / name
+        # temp_datapath = temp_path / "data"
+        # temp_interferencepath = temp_datapath / "interference"
 
-        if not temp_interferencepath.is_dir():
-            temp_interferencepath.mkdir(parents=True, exist_ok=True)
+        # if not temp_interferencepath.is_dir():
+        #     temp_interferencepath.mkdir(parents=True, exist_ok=True)
+
+        paths = self._make_project_folders(name)
 
         with tarfile.open(str(filepath), "r") as tar:
 
@@ -208,7 +219,7 @@ class Database_listener:
 
                 name = path.stem
 
-                to_path = temp_path / path
+                to_path = paths["project"] / path
 
                 tar.extract(info)
                 shutil.move(str(path), to_path)
@@ -220,25 +231,28 @@ class Database_listener:
         filepath = pathlib.Path(filepath)
         name = filepath.stem
 
-        temp_path = temp_folder / name
-        temp_datapath = temp_path / "data"
-        temp_interferencepath = temp_datapath / "interference"
+        # temp_path = temp_folder / name
+        # temp_datapath = temp_path / "data"
+        # temp_interferencepath = temp_datapath / "interference"
+
+        paths = self._make_project_folders(name)
 
         self.move_project_files(filepath=filepath, name=name)
 
-        setting_files = glob.glob(f"{temp_path}\\*.parquet")
-        setting_files.extend(glob.glob(f"{temp_path}\\*.csv"))
+        setting_files = glob.glob(f"{paths['project']}\\*.parquet")
+        setting_files.extend(glob.glob(f"{paths['project']}\\*.csv"))  # DELETE
 
-        spectrum_files = glob.glob(f"{temp_datapath}\\*.sp")
-        spectrum_files.extend(glob.glob(f"{temp_datapath}\\*.npz"))
+        spectrum_files = glob.glob(f"{paths['data']}\\*.sp")  # DELETE
+        spectrum_files.extend(glob.glob(f"{paths['data']}\\*.npz"))
 
-        interference_files = glob.glob(f"{temp_interferencepath}\\*.npz")
-        interference_setting_files = glob.glob(f"{temp_interferencepath}\\*.parquet")
+        interference_files = glob.glob(f"{paths['interference']}\\*.npz")
+        interference_setting_files = glob.glob(f"{paths['interference']}\\*.parquet")
 
-        names = [pathlib.Path(spectrum).stem for spectrum in spectrum_files]
-        interference_names = [
-            pathlib.Path(spectrum).stem for spectrum in interference_files
-        ]
+        processed_files = glob.glob(f"{paths['processed']}\\*.npz")
+
+        names = [pathlib.Path(s).stem for s in spectrum_files]
+        interference_names = [pathlib.Path(s).stem for s in interference_files]
+        processed_names = [pathlib.Path(s).stem for s in processed_files]
 
         settings_dict = {}
         for setting in setting_files:
@@ -246,7 +260,7 @@ class Database_listener:
             try:
                 settings_dict[name] = pd.read_parquet(str(setting))
             except pa.ArrowInvalid:
-                header = [[0, 1], "infer"][name == "settings"]
+                header = [[0, 1], "infer"][name == "settings"]  # DELETE
                 settings_dict[name] = pd.read_csv(
                     str(setting), index_col=[0], header=header
                 )
@@ -259,6 +273,10 @@ class Database_listener:
         self.database_controller.__init__()
         self.database_controller.read_files(
             spectrum_files, names=names, settings=settings_dict
+        )
+
+        self.database_controller.add_processed_spectra(
+            files=processed_files, names=processed_names
         )
 
         for file, name in zip(interference_files, interference_names):
@@ -290,6 +308,21 @@ class Database_listener:
         if self.database_controller.has_project:
             self.save_project()
 
+    def clean_temp_files(self, *args):
+
+        # delete temporary files
+        for root, dirs, files in os.walk(temp_folder):
+
+            for f in files:
+                os.unlink(os.path.join(root, f))
+
+            for d in dirs:
+                try:
+                    shutil.rmtree(os.path.join(root, d))
+                except PermissionError:
+                    time.sleep(0.5)
+                    shutil.rmtree(os.path.join(root, d))
+
     def subscribe_to_signals(self) -> None:
         self.on_samples_added.connect(self.add_samples)
         self.on_samples_removed.connect(self.remove_samples)
@@ -303,6 +336,8 @@ class Database_listener:
         self.on_save_sample.connect(self.save_sample)
         self.on_save_all.connect(self.save_all_samples)
         self.on_Ctrl_s.connect(self.save_samples_to_project)
+
+        self.on_clean_temp_files.connect(self.clean_temp_files)
 
 
 def get_names_from_files(files: List, previous_names: List[str] = []) -> List:

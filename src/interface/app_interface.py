@@ -61,8 +61,10 @@ class App_interface:
 
                 except (KeyError, AttributeError):
                     pass
-
-                variable.set(value)
+                try:
+                    variable.set(value)
+                except TypeError:
+                    variable.set(str(value))
 
                 self.window.focus_set()
 

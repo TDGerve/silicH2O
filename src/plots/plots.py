@@ -202,13 +202,32 @@ class Single_plot:
             return
 
         self.name.set_text("")
-
-        for line in self.lines.values():
-
-            line[0].set_xdata([])
-            line[0].set_ydata([])
+        self.clear_lines(self.lines)
 
         self.fig.canvas.draw_idle()
+
+    def clear_plot_elements(self, plot_elements: List, amount: Optional[int] = None):
+        if amount is None:
+            amount = len(plot_elements)
+        for _ in range(amount):
+            try:
+                plot_elements[0].remove()
+            except TypeError:
+                plot_elements[0][0].remove()
+            plot_elements.remove(plot_elements[0])
+
+        self.fig.canvas.draw_idle()
+
+    def clear_lines(self, lines: Dict, keys: Optional[List[str]] = None):
+        if keys is None:
+            keys = lines.keys()
+        for key in keys:
+            try:
+                line = lines[key][0]
+                line.set_xdata([])
+                line.set_ydata([])
+            except KeyError:
+                pass
 
     def display_name(self, sample_name):
         if self.name is None:
@@ -233,9 +252,6 @@ class Single_plot:
 
         for color, (name, new_vals) in zip(colors, spectra.items()):
 
-            if name in ("baseline", "baseline_corrected"):
-                continue
-
             xmin, xmax = self.ax.get_xlim()
             ymax = []
 
@@ -249,6 +265,8 @@ class Single_plot:
             except KeyError:
                 self.lines[name] = self.ax.plot(x, new_vals, label=name, color=color)
 
+        self.set_line_formatting()
+
         if not set_ylim:
             return
 
@@ -256,3 +274,17 @@ class Single_plot:
         self.ax.set_ylim(0, ymax)
         if ymax > 2e3:
             self.ax.ticklabel_format(axis="y", style="scientific", useMathText=True)
+
+    def set_line_formatting(self):
+        formatting = {
+            "deconvoluted": [3, 0.4],
+            "baseline": [2, 0.5],
+            "interpolated": [2, 0.7],
+            "interference_corrected": [1, 0.7],
+        }
+        for lines in self.lines.values():
+            for name, fmt in formatting.items():
+                try:
+                    lines[name][0].set(linewidth=fmt[0], alpha=fmt[1])
+                except KeyError:
+                    continue

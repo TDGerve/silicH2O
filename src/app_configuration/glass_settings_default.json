@@ -39,6 +39,6 @@
         "boundary_left": 700,
         "boundary_right": 1020,
         "smoothing": 1,
-        "spectrum": "raw"
+        "spectrum": "baseline_corrected"
     }
 }

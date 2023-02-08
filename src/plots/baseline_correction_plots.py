@@ -28,6 +28,7 @@ class Baseline_correction_plot(Double_plot):
         self.plot_interactions = []
 
     def draw_plot(self, **kwargs):
+
         birs = kwargs.pop("birs")
 
         self.plot_lines(**kwargs)
