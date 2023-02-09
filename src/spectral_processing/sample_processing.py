@@ -25,9 +25,16 @@ class Sample_proccessor(Protocol):
 
 
 class Raman_processor:
+    """
+    SEPARATE BASELINE AND DECONVOLVE INTO AN OBJECTS #CH
+    """
+
     def __init__(self, name, x, y, sample_settings, birs):
 
         self.name = name
+
+        # self.baseline = Baseline_processor()
+        # self.deconvolve = Deconvolution_processor()
 
         self.settings = sample_settings.dropna().copy()
         self.baseline_regions = birs.dropna().copy()
@@ -144,10 +151,10 @@ class Raman_processor:
                 self.settings[(group, name)] = value
 
     def get_plot_spectra(self) -> Dict:
-        spectra = {"baseline_spectrum"}
+        spectra = self.data.signal.all
         return {
             **{"baseline_spectrum": spectra.get(self.data._spectrumSelect)},
-            **self.data.signal.all,
+            **spectra,
         }
 
     def get_plotdata(self) -> Dict[str, Any]:
@@ -176,9 +183,16 @@ class Raman_processor:
 
 
 class h2o_processor(Raman_processor):
+    """
+    SEPARATE INTERPOLATION AND SUBTRACTION INTO DIFFERENT OBJECTS #CH
+    """
+
     def __init__(self, name, x, y, sample_settings, birs, interpolation_regions):
 
         self.name = name
+
+        # self.interpolation = Interpolation_processor()
+        # self.interference = Interference_processor()
 
         self.settings = sample_settings.dropna().copy()
         self.baseline_regions = birs.dropna().copy()
@@ -392,7 +406,7 @@ class h2o_processor(Raman_processor):
 
         plotdata = super().get_plotdata()
         plotdata["subtraction_region"] = self.get_subtraction_region()
-        plotdata["interpolation_regions"] = self.get_interpolation_settings()["regions"]
+        # plotdata["interpolation_regions"] = self.get_interpolation_settings()["regions"]
 
         if self.interpolated_interval is not None:
             plotdata["interpolated_interval"] = self.interpolated_interval

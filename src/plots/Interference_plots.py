@@ -24,7 +24,7 @@ class Subtraction_plot(Double_plot):
         self.plot_interactions = {"interference": [], "subtraction": []}
 
     def draw_plot(self, **kwargs):
-        self.display_name()
+
         interference = kwargs.pop("interference", None)
         if interference:
             birs = interference.pop("birs")
