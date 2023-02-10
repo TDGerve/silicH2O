@@ -1,57 +1,59 @@
-from .Interpolation import Interpolation_processor
+from typing import Dict, Tuple
+
+import blinker as bl
+import pandas as pd
+import ramCOH as ram
+
+on_display_message = bl.signal("display message")
 
 
-class Interference:
-    def __init__(self, glass, interference):
-        # self.interference = Sample_processor()
-        ...
+class Interference_processor:
+    def __init__(self, sample: ram.RamanProcessing, settings: pd.Series):
 
-    def apply_settings(self):
-        ...
+        self.sample = sample
+        self.settings = settings
 
-    def get_settings(self):
-        ...
-
-    def set_subtraction_parameters(self, kwargs: Dict):
+    def apply_settings(self, **kwargs) -> None:
         names = ("smoothing", "spectrum", "use")
-        self._set_parameters(group="interference", parameters=kwargs, names=names)
+        for name in names:
+            val = kwargs.pop(name, None)
+            if val is None:
+                continue
+            self.settings[name] = val
 
         for ID, new_value in kwargs.items():
             location = ["left", "right"][int(ID[-2:]) % 2]
-            self.settings[("interference", f"boundary_{location}")] = new_value
+            self.settings[f"boundary_{location}"] = new_value
 
-    def get_subtraction_region(self):
-        return self.settings.loc[
-            (["interference"], ["boundary_left", "boundary_right"])
-        ].values
-
-    def get_subtraction_parameters(self):
-        boundary_left, boundary_right = self.get_subtraction_region()
+    def get_settings(self) -> Dict:
+        boundary_left, boundary_right = self.get_minimisation_region()
         return {
             "bir_00": boundary_left,
             "bir_01": boundary_right,
-            "smoothing": self.settings[("interference", "smoothing")],
-            "spectrum": self.settings[("interference", "spectrum")],
-            "use": self.settings[("interference", "use")],
+            "smoothing": self.settings["smoothing"],
+            "spectrum": self.settings["spectrum"],
+            "use": self.settings["use"],
         }
 
-    def get_interference_spectrum(self):
+    def get_minimisation_region(self) -> Tuple[float, float]:
+        return tuple(self.settings.loc[["boundary_left", "boundary_right"]])
 
-        spectrum_name = self.settings[("interference", "spectrum")]
-        interference = self.interference
+    def get_interference_spectrum(self, interference: ram.RamanProcessing) -> None:
+
+        spectrum_name = self.settings["spectrum"]
 
         spectrum = interference.data.signal.get(spectrum_name)
         if spectrum is None:
             return None
 
-        return self.data.signal.interpolate_spectrum(
+        return self.sample.signal.interpolate_spectrum(
             old_x=interference.data.signal.x,
             old_y=spectrum,
         )
 
-    def subtract_interference(self) -> bool:
+    def calculate(self, interference: ram.RamanProcessing) -> bool:
 
-        interference = self.get_interference_spectrum()
+        interference = self.get_interference_spectrum(interference)
         if interference is None:
             on_display_message.send(message="interference not found", duration=5)
             return False

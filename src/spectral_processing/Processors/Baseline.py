@@ -14,27 +14,27 @@ class Baseline_processor:
         self,
         sample: RamanProcessing,
         interpolation_regions: pd.Series,
-        smoothing: float,
+        settings: pd.Series,
     ):
         self.sample = sample
-        self.smoothing = smoothing
+        self.settings = settings
         self.interpolation_regions = Interpolation_regions(interpolation_regions)
 
     def apply_settings(self, kwargs) -> None:
 
         smoothing = kwargs.pop("smoothing", None)
         if smoothing:
-            self.smoothing = smoothing
+            self.settings["smoothing"] = smoothing
 
         self.interpolation_regions.set_regions(**kwargs)
 
     def get_settings(self) -> Dict:
 
         birs = self.interpolation_regions.dictionary
-        return {"smoothing": self.smoothing, **birs}
+        return {"smoothing": self.settings["smoothing"], **birs}
 
     def calculate(self) -> None:
         birs = self.interpolation_regions.nested_array
-        smooth_factor = self.smoothing
+        smooth_factor = self.settings["smoothing"]
 
         self.sample.baselineCorrect(baseline_regions=birs, smooth_factor=smooth_factor)

@@ -31,7 +31,7 @@ class Interpolation_regions:
     def nested_array(self) -> npt.NDArray:
         return np.reshape(self._regions.values, (self.amount, 2))
 
-    def set_regions(self, **kwargs):
+    def set(self, **kwargs):
         for bir, new_value in kwargs.items():
             if "bir" not in bir:
                 continue
@@ -40,7 +40,7 @@ class Interpolation_regions:
             j = ["from", "to"][index % 2]
             self._regions.loc[(str(i), j)] = int(new_value)
 
-    def add_region(self, index: int, max_width: int = 30) -> None:
+    def add(self, index: int, max_width: int = 30) -> None:
         min_value = self._regions.loc[str(index)].values[1]
         max_value = self._regions.loc[str(index + 1)].values[0]
 
@@ -64,7 +64,7 @@ class Interpolation_regions:
             int(right_boundary),
         )
 
-    def remove_region(self, index: int) -> None:
+    def remove(self, index: int) -> None:
 
         for i in range(index, self.amount - 1):
             values = self._regions.loc[str(i + 1)].values
