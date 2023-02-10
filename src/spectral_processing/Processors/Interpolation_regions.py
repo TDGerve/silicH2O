@@ -10,17 +10,17 @@ on_display_message = bl.signal("display message")
 
 class Interpolation_regions:
     def __init__(self, regions: pd.Series):
-        self._regions = regions
+        self._regions = regions.copy()
 
     @property
     def amount(self) -> int:
-        len(self._regions) // 2
+        return len(self._regions) // 2
 
     @property
     def dictionary(self) -> Dict:
         return {
             f"bir_{idx:02d}": int(value)
-            for idx, value in enumerate(self._regions.values())
+            for idx, value in enumerate(self._regions.values)
         }
 
     @property

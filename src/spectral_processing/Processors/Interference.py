@@ -13,6 +13,10 @@ class Interference_processor:
         self.sample = sample
         self.settings = settings
 
+    @property
+    def minimisation_region(self) -> Tuple[float, float]:
+        return list(self.settings.loc[["boundary_left", "boundary_right"]])
+
     def apply_settings(self, **kwargs) -> None:
         names = ("smoothing", "spectrum", "use")
         for name in names:
@@ -26,7 +30,7 @@ class Interference_processor:
             self.settings[f"boundary_{location}"] = new_value
 
     def get_settings(self) -> Dict:
-        boundary_left, boundary_right = self.get_minimisation_region()
+        boundary_left, boundary_right = self.minimisation_region
         return {
             "bir_00": boundary_left,
             "bir_01": boundary_right,
@@ -35,19 +39,16 @@ class Interference_processor:
             "use": self.settings["use"],
         }
 
-    def get_minimisation_region(self) -> Tuple[float, float]:
-        return tuple(self.settings.loc[["boundary_left", "boundary_right"]])
-
     def get_interference_spectrum(self, interference: ram.RamanProcessing) -> None:
 
         spectrum_name = self.settings["spectrum"]
 
-        spectrum = interference.data.signal.get(spectrum_name)
+        spectrum = interference.signal.get(spectrum_name)
         if spectrum is None:
             return None
 
         return self.sample.signal.interpolate_spectrum(
-            old_x=interference.data.signal.x,
+            old_x=interference.signal.x,
             old_y=spectrum,
         )
 
@@ -58,8 +59,8 @@ class Interference_processor:
             on_display_message.send(message="interference not found", duration=5)
             return False
 
-        settings = self.get_subtraction_parameters()
+        settings = self.get_settings()
         settings["interval"] = [settings.pop(key) for key in ("bir_00", "bir_01")]
 
-        self.data.subtract_interference(interference=interference, **settings)
+        self.sample.subtract_interference(interference=interference, **settings)
         return True

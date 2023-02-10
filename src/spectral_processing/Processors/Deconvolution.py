@@ -23,7 +23,7 @@ class Deconvolution_processor:
 
         self.sample.deconvolve(
             y="baseline_corrected",
-            noise=self.data.noise,
+            noise=self.sample.noise,
             baseline0=baseline0,
             **settings,
         )

@@ -26,7 +26,7 @@ class Baseline_processor:
         if smoothing:
             self.settings["smoothing"] = smoothing
 
-        self.interpolation_regions.set_regions(**kwargs)
+        self.interpolation_regions.set(**kwargs)
 
     def get_settings(self) -> Dict:
 

@@ -1,7 +1,6 @@
-from typing import Dict
+from typing import Dict, Optional
 
 import blinker as bl
-import numpy as np
 import numpy.typing as npt
 import pandas as pd
 from ramCOH import RamanProcessing
@@ -17,12 +16,12 @@ class Interpolation_processor:
         sample: RamanProcessing,
         regions: pd.Series,
         settings: pd.Series,
-        add_noise: bool,
     ):
         self.sample = sample
         self.regions = Interpolation_regions(regions)
         self.settings = settings
-        self.add_noise = add_noise
+
+        self.results = None
 
     def apply_settings(self, kwargs) -> None:
 
@@ -32,7 +31,7 @@ class Interpolation_processor:
                 continue
             self.settings[name] = val
 
-        self.regions.set_regions(**kwargs)
+        self.regions.set(**kwargs)
 
     def get_settings(self) -> Dict:
         settings = {
@@ -43,22 +42,29 @@ class Interpolation_processor:
 
         return {**settings, **regions}
 
-    def calculate(self, spectrum, add_noise) -> npt.NDArray:
+    def calculate(
+        self,
+        spectrum: str,
+        add_noise: bool = True,
+        regions: Optional[npt.NDArray] = None,
+        **kwargs
+    ) -> None:
 
-        settings = self._get_parameters()
+        settings = self._get_parameters(regions=regions)
+        smoothing = kwargs.pop("smoothing", settings.pop("smooth_factor"))
 
-        return self.data.interpolate(
+        self.results = self.sample.interpolate(
             **settings,
             add_noise=add_noise,
+            smooth_factor=smoothing,
             y=spectrum,
             output=True,
         )
 
-    def _get_parameters(self):
+    def _get_parameters(self, regions: Optional[npt.NDArray] = None) -> Dict:
 
         return {
-            "interpolate": self.regions.nested_array,
+            "interpolate": self.regions.nested_array if regions is None else regions,
             "smooth_factor": self.settings["smoothing"],
-            "add_noise": self.add_noise,
             "use": self.settings["use"],
         }

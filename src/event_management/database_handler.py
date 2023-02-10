@@ -144,17 +144,19 @@ class Database_listener:
 
         has_interference = False
 
-        for sample in self.database_controller.spectra:
-            # data = np.column_stack([sample.data.signal.x, sample.data.signal.raw])
-            file = paths["data"] / f"{sample.name}"
+        for processor in self.database_controller.spectra:
+            # data = np.column_stack([sample.sample.signal.x, sample.sample.signal.raw])
+            file = paths["data"] / f"{processor.name}"
             if not file.is_file():
                 np.savez(
-                    file, x=sample.data.signal.get("x"), y=sample.data.signal.get("raw")
+                    file,
+                    x=processor.sample.signal.get("x"),
+                    y=processor.sample.signal.get("raw"),
                 )
 
-            file_processed = paths["processed"] / f"{sample.name}"
+            file_processed = paths["processed"] / f"{processor.name}"
             names = ("interference_corrected", "interpolated")
-            data = [sample.data.signal.get(name) for name in names]
+            data = [processor.sample.signal.get(name) for name in names]
             processed = {
                 name: vals for name, vals in zip(names, data) if vals is not None
             }
@@ -162,15 +164,15 @@ class Database_listener:
             if len(processed) > 0:
                 np.savez(file_processed, **processed)
 
-            if not sample.interference:
+            if not processor.interference_sample:
                 continue
 
             has_interference = True
-            file_interference = paths["interference"] / f"{sample.name}"
+            file_interference = paths["interference"] / f"{processor.name}"
             np.savez(
                 file_interference,
-                x=sample.interference.data.signal.get("x"),
-                y=sample.interference.data.signal.get("raw"),
+                x=processor.interference_sample.sample.signal.get("x"),
+                y=processor.interference_sample.sample.signal.get("raw"),
             )
 
         if has_interference:

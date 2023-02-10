@@ -143,7 +143,7 @@ class Calculation_listener:
             "interference_corrected": "subtraction",
         }[type]
 
-        if self.sample.data.signal.get(type) is not None:
+        if self.sample.sample.signal.get(type) is not None:
             self.sample.set_spectrum_processing(types=[type], values=[value])
         else:
             value = False

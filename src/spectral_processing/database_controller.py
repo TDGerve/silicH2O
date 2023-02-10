@@ -71,13 +71,13 @@ class Database_controller:
             sample = self.get_sample(idx)
 
         if tab == "interference":
-            sample.calculate_interpolation(tab=tab)
-            interference = sample.interference
+            sample.calculate_interpolation(interference=(tab == "interference"))
+            interference = sample.interference_sample
             if interference is not None:
-                sample.interference.calculate_baseline()
+                sample.interference_sample.calculate_baseline()
             return
         elif tab == "interpolation":
-            sample.calculate_interpolation(tab=tab)
+            sample.calculate_interpolation(interference=(tab == "interference"))
 
         # if sample.settings[("interference", "use")]:
         #     sample.subtract_interference()
@@ -88,7 +88,7 @@ class Database_controller:
 
     def deconvolve_interference(self):  # move #CH
         sample = self.current_sample
-        interference = sample.interference
+        interference = sample.interference_sample
         if interference is None:
             return
 
@@ -107,7 +107,7 @@ class Database_controller:
 
         sample = {
             "baseline": self.current_sample,
-            "interference": self.current_sample.interference,
+            "interference": self.current_sample.interference_sample,
         }[tab]
         func = {"remove": sample.remove_bir, "add": sample.add_bir}[action]
 
@@ -126,9 +126,11 @@ class Database_controller:
             "interpolation": sample.set_interpolation,
             "subtraction": sample.set_subtraction_parameters,
         }
-        if sample.interference is not None:
-            func_dict["interference"] = sample.interference.set_baseline
-            func_dict["deconvolution"] = sample.interference.set_deconvolution_settings
+        if sample.interference_sample is not None:
+            func_dict["interference"] = sample.interference_sample.set_baseline
+            func_dict[
+                "deconvolution"
+            ] = sample.interference_sample.set_deconvolution_settings
 
         for key, value in kwargs.items():
             func_dict[key](value)
@@ -140,8 +142,8 @@ class Database_controller:
             "interpolation": sample.get_interpolation_settings(),
             "interference": dict,
         }
-        if sample.interference is not None:
-            get_birs["interference"] = sample.interference.get_baseline_settings
+        if sample.interference_sample is not None:
+            get_birs["interference"] = sample.interference_sample.get_baseline_settings
 
         get_birs = get_birs[type]
 
@@ -214,6 +216,10 @@ class Database_controller:
 
         self.add_settings_results(names=names, settings=settings)
 
+        laser_wavelength = app_configuration.data_processing[
+            "laser_wavelength"
+        ]  # CH CHANGE TO USER INPUT
+
         for idx, (file, name) in enumerate(
             zip(self.files[old_files:], self.names[old_files:])
         ):
@@ -223,15 +229,17 @@ class Database_controller:
                     y = f["y"]
             except ValueError:
                 x, y = np.genfromtxt(file, unpack=True)
+
             self.spectra = np.append(
                 self.spectra,
                 h2o_processor(
-                    name,
-                    x,
-                    y,
-                    self.settings.loc[name].copy(),
-                    self.baseline_regions.loc[name].copy(),
-                    self.interpolation_regions.loc[name].copy(),
+                    name=name,
+                    x=x,
+                    y=y,
+                    settings=self.settings.loc[name].copy(),
+                    baseline_regions=self.baseline_regions.loc[name].copy(),
+                    interpolation_regions=self.interpolation_regions.loc[name].copy(),
+                    laser_wavelength=laser_wavelength,
                 ),
             )
             # self.calculate_sample(idx)
@@ -253,8 +261,10 @@ class Database_controller:
             self.add_interference_settings(names=[name], settings=settings)
 
         settings, birs = (
-            self.interference_settings["settings"].loc[name],
-            self.interference_settings["baseline_interpolation_regions"].loc[name],
+            self.interference_settings["settings"].loc[name].copy(),
+            self.interference_settings["baseline_interpolation_regions"]
+            .loc[name]
+            .copy(),
         )
 
         try:
@@ -264,7 +274,17 @@ class Database_controller:
         except ValueError:
             x, y = np.genfromtxt(file, unpack=True)
 
-        current_sample.set_interference(x, y, settings, birs)
+        laser_wavelength = app_configuration.data_processing[
+            "laser_wavelength"
+        ]  # CH CHANGE TO USER INPUT
+
+        current_sample.set_interference(
+            x=x,
+            y=y,
+            settings=settings,
+            baseline_regions=birs,
+            laser_wavelength=laser_wavelength,
+        )
 
     def add_processed_spectra(self, files: List[str], names: List[str]):
         for file, name in zip(files, names):
@@ -275,7 +295,7 @@ class Database_controller:
             with np.load(file, allow_pickle=True) as f:
                 keys = f.keys()
                 for key in keys:
-                    sample.data.signal.add(name=key, values=f[key])
+                    sample.sample.signal.add(name=key, values=f[key])
 
     def add_settings_results(self, names: List[str], settings: Optional[Dict] = None):
 
@@ -329,9 +349,9 @@ class Database_controller:
 
     def save_interference(self, idx: Optional[int] = None):
         if idx is None:
-            sample = self.current_sample.interference
+            sample = self.current_sample.interference_sample
         else:
-            sample = self.get_sample(idx).interference
+            sample = self.get_sample(idx).interference_sample
         name = sample.name
 
         # save current settings
@@ -339,7 +359,7 @@ class Database_controller:
 
         self.interference_settings["baseline_interpolation_regions"] = _insert_row(
             self.interference_settings["baseline_interpolation_regions"],
-            sample.baseline_regions,
+            sample.baseline.interpolation_regions.series,
         )
 
     def save_sample(self, idx=None) -> None:
@@ -355,13 +375,13 @@ class Database_controller:
         self.settings.loc[name] = sample.settings.copy()
 
         self.baseline_regions = _insert_row(
-            self.baseline_regions, sample.baseline_regions
+            self.baseline_regions, sample.baseline.interpolation_regions.series
         )
         self.interpolation_regions = _insert_row(
-            self.interpolation_regions, sample.interpolation_regions
+            self.interpolation_regions, sample.interpolation.regions.series
         )
 
-        if sample.interference:
+        if sample.interference_sample:
             self.save_interference()
 
         self.results.loc[name] = sample.results.copy()
@@ -384,10 +404,10 @@ class Database_controller:
         elif tab == "interpolation":
             sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
         elif tab == "interference":
-            sample.interference.settings = (
+            sample.interference_sample.settings = (
                 self.interference_settings["settings"].loc[name].copy()
             )
-            sample.interference.baseline_regions = (
+            sample.interference_sample.baseline_regions = (
                 self.interference_settings["baseline_interpolation_regions"]
                 .loc[name]
                 .copy()

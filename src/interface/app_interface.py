@@ -33,7 +33,10 @@ class App_interface:
     def clear_variables(self):
         for group, variables in self.variables.items():
             for name, var in variables.items():
-                var.set("")
+                try:
+                    var.set("")
+                except tk.TclError:
+                    var.set(False)
 
                 try:
                     widget = self.widgets[group][name]
