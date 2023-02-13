@@ -78,9 +78,7 @@ class Database_controller:
             return
         elif tab == "interpolation":
             sample.calculate_interpolation(interference=(tab == "interference"))
-
-        # if sample.settings[("interference", "use")]:
-        #     sample.subtract_interference()
+            return
 
         sample.calculate_baseline()
         sample.calculate_noise()
@@ -403,22 +401,40 @@ class Database_controller:
         sample = self.current_sample
         name = sample.name
 
+        sample.apply_settings(settings=self.settings.loc[name], groups=[tab])
+
         if tab == "baseline":
             # restore previous settings
-            sample.settings = self.settings.loc[name].copy()
+
+            # sample.settings = self.settings.loc[name].copy()
             # ONLY RESTORE BASELINE SETTINGS ETC #CH
-            sample.baseline_regions = self.baseline_regions.loc[name].copy()
+            sample.baseline.interpolation_regions.set_series(
+                self.baseline_regions.loc[name]
+            )
+            # sample.baseline_regions = self.baseline_regions.loc[name]
         elif tab == "interpolation":
-            sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
+
+            sample.interpolation.regions.set_series(
+                self.interpolation_regions.loc[name]
+            )
+            # sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
         elif tab == "interference":
-            sample.interference_sample.settings = (
-                self.interference_settings["settings"].loc[name].copy()
+
+            sample.interference_sample.apply_settings(
+                self.interference_settings["settings"].loc[name],
+                groups=["baseline", "deconvolution"],
             )
-            sample.interference_sample.baseline_regions = (
-                self.interference_settings["baseline_interpolation_regions"]
-                .loc[name]
-                .copy()
+            # sample.interference_sample.settings = (
+            #     self.interference_settings["settings"].loc[name].copy()
+            # )
+            sample.interference_sample.baseline.interpolation_regions.set_series(
+                self.interference_settings["baseline_interpolation_regions"].loc[name]
             )
+            # sample.interference_sample.baseline_regions = (
+            #     self.interference_settings["baseline_interpolation_regions"]
+            #     .loc[name]
+            #     .copy()
+            # )
 
         on_display_message.send(message="sample reset")
 

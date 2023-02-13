@@ -122,8 +122,8 @@ class Baseline_interpolation_frame(ttk.Frame):
     ):
 
         rows = parent.grid_size()[1]
-        rows = (rows + 1) if (rows == 1) else rows
-        for index in range(rows - 1):
+        add_rows = (rows + 1) if (rows == 1) else rows
+        for index in range(add_rows - 1):
             button = ttk.Button(
                 parent,
                 text="\uff0b",
@@ -138,7 +138,7 @@ class Baseline_interpolation_frame(ttk.Frame):
         if rows <= self.min_regions:
             return
 
-        for index in range(1, rows - 1):
+        for index in range(1, rows):  # - 1
             button = ttk.Button(
                 parent,
                 text="\uff0d",

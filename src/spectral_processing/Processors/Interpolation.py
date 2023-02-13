@@ -18,7 +18,7 @@ class Interpolation_processor:
         settings: pd.Series,
     ):
         self.sample = sample
-        self.regions = Interpolation_regions(regions)
+        self.regions = Interpolation_regions(regions, max_width=150)
         self.settings = settings
 
         self.results = None
@@ -66,5 +66,5 @@ class Interpolation_processor:
         return {
             "interpolate": self.regions.nested_array if regions is None else regions,
             "smooth_factor": self.settings["smoothing"],
-            "use": self.settings["use"],
+            "use": self.settings["use"] if regions is None else False,
         }

@@ -146,9 +146,10 @@ class Subtraction_plot(Double_plot):
                     )
                 )
 
-    def plot_birs(self, birs: npt.NDArray):
+    def plot_birs(self, birs: npt.NDArray, connect_mouse=False):
 
-        connect_mouse = False if self.birs else True
+        if not self.birs:
+            connect_mouse = True
 
         ax = self.axs[1]
 
@@ -156,8 +157,9 @@ class Subtraction_plot(Double_plot):
         # birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
 
         # bir_surplus = len(self.birs) - len(birs)
-        if len(self.birs) < len(birs):
+        if len(self.birs) != len(birs):
             self.clear_plot_elements(self.birs)
+            connect_mouse = True
 
         for i, (left_boundary, right_boundary) in enumerate(birs):
             try:
@@ -226,7 +228,7 @@ class Subtraction_plot(Double_plot):
 
         for connection in mouse_connections:
             self.fig.canvas.mpl_disconnect(connection)
-            self.mouse_connections[identifier] = []
+        self.mouse_connections[identifier] = []
 
         ax = self.axs[ax_id]
 

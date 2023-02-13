@@ -43,18 +43,30 @@ class Raman_processor:
 
         self.name = name
 
-        self.settings = settings.dropna().copy()
-
         self.sample = ram.RamanProcessing(x, y, laser=laser_wavelength)
 
         self.baseline = Baseline_processor(
             sample=self.sample,
             interpolation_regions=baseline_regions,
-            settings=self.settings["baseline"],
+            settings=settings.loc["baseline"],
         )
         self.deconvolution = Deconvolution_processor(
-            sample=self.sample, settings=self.settings["deconvolution"]
+            sample=self.sample, settings=settings.loc["deconvolution"]
         )
+
+    @property
+    def settings(self) -> pd.Series:
+        settings = {
+            "baseline": self.baseline.settings,
+            "deconvolution": self.deconvolution.settings,
+        }
+        return pd.concat(settings, axis=0)
+
+    def apply_settings(self, settings: pd.Series, groups: List[str]):
+
+        for group in groups:
+            processor = getattr(self, group)
+            setattr(processor, "settings", settings.loc[group].copy())
 
     def get_birs(self) -> Dict[str, int]:
 
@@ -68,9 +80,9 @@ class Raman_processor:
 
         return self.baseline.get_settings()
 
-    def add_bir(self, index: int, max_width: int = 30):
+    def add_bir(self, index: int):
 
-        self.baseline.interpolation_regions.add(index=index, max_width=max_width)
+        self.baseline.interpolation_regions.add(index=index)
 
     def remove_bir(self, index: int):
 
@@ -146,22 +158,22 @@ class h2o_processor(Raman_processor):
 
         self.name = name
 
-        self.settings = settings.dropna().copy()
+        # self.settings = settings.dropna().copy()
 
         self.sample = ram.H2O(x, y, laser=laser_wavelength)
 
         self.baseline = Baseline_processor(
             sample=self.sample,
             interpolation_regions=baseline_regions,
-            settings=self.settings["baseline"],
+            settings=settings.loc["baseline"],
         )
         self.interference = Interference_processor(
-            sample=self.sample, settings=self.settings["interference"]
+            sample=self.sample, settings=settings.loc["interference"]
         )
         self.interpolation = Interpolation_processor(
             sample=self.sample,
             regions=interpolation_regions,
-            settings=self.settings["interpolation"],
+            settings=settings.loc["interpolation"],
         )
 
         self.results = pd.Series(
@@ -175,6 +187,23 @@ class h2o_processor(Raman_processor):
 
         self.set_spectrum_processing()
 
+    @property
+    def settings(self):
+        settings = {
+            "baseline": self.baseline.settings,
+            "interference": self.interference.settings,
+            "interpolation": self.interpolation.settings,
+        }
+        return pd.concat(settings, axis=0)
+
+    @property
+    def interference_sample(self):
+        return self._interference_sample
+
+    @property
+    def interpolation_spectrum(self) -> str:
+        return ["raw", "interference_corrected"][self.settings[("interference", "use")]]
+
     def set_spectrum_processing(
         self, types: Optional[str] = None, values: Optional[bool] = None
     ) -> None:
@@ -186,16 +215,8 @@ class h2o_processor(Raman_processor):
 
         self.sample._set_processing(types=types, values=values)
 
-    @property
-    def interference_sample(self):
-        return self._interference_sample
-
-    @property
-    def interpolation_spectrum(self) -> str:
-        return ["raw", "interference_corrected"][self.settings[("interference", "use")]]
-
-    def add_interpolation_region(self, index: int, max_width=30):
-        self.interpolation.regions.add(index=index, max_width=max_width)
+    def add_interpolation_region(self, index: int):
+        self.interpolation.regions.add(index=index)
 
     def remove_interpolation_region(self, index):
         self.interpolation.regions.remove(index=index)

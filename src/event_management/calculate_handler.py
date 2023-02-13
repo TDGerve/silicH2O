@@ -53,6 +53,26 @@ class Calculation_listener:
     def sample(self):
         return self.database_controller.current_sample
 
+        # def calculate_sample(self, idx: Optional[int]=None):
+        #     if idx is None:
+        #         sample = self.sample
+        #     else:
+        #         sample = self.get_sample(idx)
+
+        #     if self.current_tab == "interference":
+        #         sample.calculate_interpolation(interference=(self.current_tab == "interference"))
+        #         interference = sample.interference_sample
+        #         if interference is not None:
+        #             sample.interference_sample.calculate_baseline()
+        #         return
+        #     elif self.current_tab == "interpolation":
+        #         sample.calculate_interpolation(interference=(self.current_tab == "interference"))
+        #         return
+
+        #     sample.calculate_baseline()
+        #     sample.calculate_noise()
+        sample.calculate_areas()
+
     def display_sample(self, *args):
         try:
             self.database_controller.calculate_sample(tab=self.current_tab)

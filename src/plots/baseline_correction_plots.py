@@ -60,12 +60,14 @@ class Baseline_correction_plot(Double_plot):
         self.clear_birs()
         super().clear_figure()
 
-    def plot_birs(self, birs: npt.NDArray):
+    def plot_birs(self, birs: npt.NDArray, connect_mouse=False):
 
-        connect_mouse = False if self.birs else True
+        if not self.birs:
+            connect_mouse = True
 
-        if len(self.birs) < len(birs):
+        if len(self.birs) // 2 != len(birs):
             self.clear_birs()
+            connect_mouse = True
 
         # bir_values = list(birs.values())
         # birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
@@ -108,7 +110,8 @@ class Baseline_correction_plot(Double_plot):
         for connection in self.mouse_connections:
 
             self.fig.canvas.mpl_disconnect(connection)
-            self.mouse_connections = []
+
+        self.mouse_connections = []
 
         bir_amount = len(self.birs) // 2
 
