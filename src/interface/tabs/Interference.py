@@ -154,15 +154,20 @@ class Interference_frame(ttk.Frame):
         widgets["load_spectrum"] = load_button
         widgets["remove_spectrum"] = remove_button
 
+        tk.Label(self, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
+            row=2, column=0, columnspan=2, sticky=("nsw")
+        )
+
         baseline_interpolation = Baseline_interpolation_frame(
             parent=frame,
             name=name,
             widgets=widgets,
             variables=variables,
             bir_amount=5,
+            min_regions=2,
             width="7c",
         )
-        baseline_interpolation.grid(row=2, column=0, columnspan=2, sticky="nesw")
+        baseline_interpolation.grid(row=3, column=0, columnspan=2, sticky="nesw")
 
     def make_deconvolution_frame(
         self, name, parent, widgets, variables, row: int, col: int

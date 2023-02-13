@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 
 import numpy as np
+import numpy.typing as npt
 from ramCOH.signal_processing.curves import GaussLorentz
 
 from ..interface.screens import Screen
@@ -145,18 +146,17 @@ class Subtraction_plot(Double_plot):
                     )
                 )
 
-    def plot_birs(self, birs: Dict[(int, float)], connect_mouse=False):
+    def plot_birs(self, birs: npt.NDArray):
 
-        if not self.birs:
-            connect_mouse = True
+        connect_mouse = False if self.birs else True
 
         ax = self.axs[1]
 
-        bir_values = list(birs.values())
-        birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
+        # bir_values = list(birs.values())
+        # birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
 
-        bir_surplus = len(self.birs) - len(birs)
-        if bir_surplus > 0:
+        # bir_surplus = len(self.birs) - len(birs)
+        if len(self.birs) < len(birs):
             self.clear_plot_elements(self.birs)
 
         for i, (left_boundary, right_boundary) in enumerate(birs):
@@ -226,6 +226,7 @@ class Subtraction_plot(Double_plot):
 
         for connection in mouse_connections:
             self.fig.canvas.mpl_disconnect(connection)
+            self.mouse_connections[identifier] = []
 
         ax = self.axs[ax_id]
 

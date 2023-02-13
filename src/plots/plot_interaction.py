@@ -30,7 +30,6 @@ class drag_polygons:
         self.dragging = None
         self.width = None
         self.mouse_location = None
-        self.mouse_location = None
 
         self.identifier = identifier
         self.ax_xlimits = ax_xlimits
@@ -65,64 +64,19 @@ class drag_polygons:
         poly_id = self.dragging
 
         x_min, x_max = self._get_x_limits(poly_id, buffer)
-
         current_polygon = self.polygons[poly_id[0]]
 
-        # if poly_id[1] in [drag.LEFT, drag.BOTH]:
-        #     if poly_id[0] == 0:
-        #         x_min = 0
-        #     else:
-        #         previous_polygon = self.polygons[poly_id[0] - 1]
-        #         x_coordinates = [c[0] for c in previous_polygon.get_xy()]
-        #         x_min = max(x_coordinates) + buffer
-        #     if poly_id[1] == drag.LEFT:
-        #         current_polygon = self.polygons[poly_id[0]]
-        #         x_coordinates = [c[0] for c in current_polygon.get_xy()]
-        #         x_max = max(x_coordinates) - buffer
-
-        # if poly_id[1] in [drag.RIGHT, drag.BOTH]:
-        #     if poly_id[0] == (len(self.polygons) - 1):
-        #         x_max = np.Inf
-        #     else:
-        #         next_polygon = self.polygons[poly_id[0] + 1]
-        #         x_coordinates = [c[0] for c in next_polygon.get_xy()]
-        #         x_max = min(x_coordinates) - buffer
-        #     if poly_id[1] == drag.RIGHT:
-        #         current_polygon = self.polygons[poly_id[0]]
-        #         x_coordinates = [c[0] for c in current_polygon.get_xy()]
-        #         x_min = min(x_coordinates) + buffer
-
         if poly_id[1] != drag.BOTH:
-            # x_new = np.clip(x_new, a_min=x_min, a_max=x_max)
 
             if poly_id[1] == drag.LEFT:
                 self.set_new_left(current_polygon, x_new, x_min, x_max)
 
-                # x_right = max(x_coordinates)
-                # new_coordinates = construct_polygon_coordinates(
-                #     int(x_new), int(x_right)
-                # )
-                # current_polygon.set_xy(new_coordinates)
             elif poly_id[1] == drag.RIGHT:
                 self.set_new_right(current_polygon, x_new, x_min, x_max)
-                # x_left = min(x_coordinates)
-                # new_coordinates = construct_polygon_coordinates(int(x_left), int(x_new))
-                # current_polygon.set_xy(new_coordinates)
         else:
-            current_polygon = self.polygons[poly_id[0]]
             self.set_new_borders(current_polygon, x_new, x_min, x_max)
-            # current_polygon = self.polygons[poly_id[0]]
-            # x_coordinates = [c[0] for c in current_polygon.get_xy()]
-            # left_old = min(x_coordinates)
 
-            # movement = x_new - self.mouse_location
-            # self.mouse_location = self.mouse_location + movement
-
-            # x_left = np.clip(left_old + movement, x_min, x_max)
-            # x_right = np.clip(x_left + self.width, x_min, x_max)
-            # new_coordinates = construct_polygon_coordinates(int(x_left), int(x_right))
-            # current_polygon.set_xy(new_coordinates)
-
+        self.mouse_location = x_new
         self.send_bir_change(poly_id)
 
     def _get_x_limits(self, polygon_id, buffer):
@@ -175,7 +129,6 @@ class drag_polygons:
         left_old = min(x_coordinates)
 
         movement = x_new - self.mouse_location
-        self.mouse_location = self.mouse_location + movement
 
         x_left = np.clip(left_old + movement, x_min, x_max)
         x_right = np.clip(x_left + self.width, x_min, x_max)
@@ -183,10 +136,8 @@ class drag_polygons:
         polygon.set_xy(new_coordinates)
 
     def on_release(self, event):
-
         self.dragging = None
         self.width = None
-        self.mouse_location = None
         self.mouse_location = None
 
     def find_neighbor_object(self, event, border_threshold: int = 5):

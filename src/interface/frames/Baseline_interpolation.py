@@ -25,9 +25,11 @@ class Baseline_interpolation_frame(ttk.Frame):
         name: str,
         widgets: Dict,
         variables: Dict,
+        min_regions: int,
         bir_amount=5,
         width="7c",
     ):
+        self.min_regions = min_regions
 
         self.birs = Baseline_interpolation_regions(
             name=name, widgets=widgets, variables=variables
@@ -36,18 +38,14 @@ class Baseline_interpolation_frame(ttk.Frame):
         super().__init__(parent, name="baseline")
         # frame.grid_propagate(0)
 
-        tk.Label(self, text="Baseline", font=(_font, _fontsize_head, "bold")).grid(
-            row=0, column=0, columnspan=2, sticky=("nsw")
-        )
-
         tk.Label(
             self,
             text="Interpolation regions",
             font=(_font, _fontsize_head),
-        ).grid(row=1, column=0, columnspan=2, sticky=("nsw"))
+        ).grid(row=0, column=0, columnspan=2, sticky=("nsw"))
 
         self.make_bir_scrollframe(self, width=width, bir_amount=bir_amount)
-        self.make_smoothing_widgets(self, rowstart=9)
+        self.make_smoothing_widgets(self, rowstart=8)
 
         for i in range(2):
             self.columnconfigure(i, weight=1)
@@ -61,7 +59,7 @@ class Baseline_interpolation_frame(ttk.Frame):
             width=width,
             background_color=background_color,
         )
-        self.scrollframe.grid(row=3, column=0, columnspan=2, sticky="nesw")
+        self.scrollframe.grid(row=1, column=0, columnspan=2, sticky="nesw")
         for k, name in zip(range(3), ["No.", "From", "to"]):
             tk.Label(
                 self.scrollframe.headers, text=name, font=(_font, _fontsize, "italic")
@@ -124,6 +122,7 @@ class Baseline_interpolation_frame(ttk.Frame):
     ):
 
         rows = parent.grid_size()[1]
+        rows = (rows + 1) if (rows == 1) else rows
         for index in range(rows - 1):
             button = ttk.Button(
                 parent,
@@ -136,7 +135,7 @@ class Baseline_interpolation_frame(ttk.Frame):
             )
             button.grid(row=index, column=start_column)
 
-        if rows < 4:
+        if rows <= self.min_regions:
             return
 
         for index in range(1, rows - 1):

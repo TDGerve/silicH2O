@@ -46,7 +46,7 @@ class Interpolation_regions:
 
         max_allowed_width = (max_value - 5) - (min_value + 5)
         if max_allowed_width < 0:
-            on_display_message(message="new bir does not fit!")
+            on_display_message.send(message="new bir does not fit!")
             return
         set_width = min(max_width, max_allowed_width)
         center = np.mean([max_value, min_value])

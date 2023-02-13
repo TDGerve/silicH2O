@@ -180,7 +180,7 @@ class Single_plot:
             size * screen.scaling / screen.dpi for size in screen.resolution
         ]
 
-        pl.Plot_layout(scaling=screen.scaling, colors=self.colors)
+        pl.plot_layout(scaling=screen.scaling, colors=self.colors)
 
         self.fig, self.ax = plt.subplots(figsize=(width, height))
         self.lines = {}
@@ -282,9 +282,9 @@ class Single_plot:
             "interpolated": [2, 0.7],
             "interference_corrected": [1, 0.7],
         }
-        for lines in self.lines.values():
-            for name, fmt in formatting.items():
-                try:
-                    lines[name][0].set(linewidth=fmt[0], alpha=fmt[1])
-                except KeyError:
-                    continue
+
+        for name, fmt in formatting.items():
+            try:
+                self.lines[name][0].set(linewidth=fmt[0], alpha=fmt[1])
+            except KeyError:
+                continue

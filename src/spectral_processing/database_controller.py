@@ -105,11 +105,18 @@ class Database_controller:
 
     def change_birs(self, action: str, index: int, tab: str):
 
-        sample = {
-            "baseline": self.current_sample,
-            "interference": self.current_sample.interference_sample,
-        }[tab]
-        func = {"remove": sample.remove_bir, "add": sample.add_bir}[action]
+        if tab in ("baseline", "interpolation"):
+            sample = self.current_sample
+        elif tab == "interference":
+            sample = self.current_sample.interference_sample
+
+        if tab in ("baseline", "interference"):
+            func = {"remove": sample.remove_bir, "add": sample.add_bir}[action]
+        elif tab == "interpolation":
+            func = {
+                "remove": sample.remove_interpolation_region,
+                "add": sample.add_interpolation_region,
+            }[action]
 
         func(index=index)
 
@@ -139,7 +146,7 @@ class Database_controller:
         sample = self.current_sample
         get_birs = {
             "baseline": sample.get_baseline_settings,
-            "interpolation": sample.get_interpolation_settings(),
+            "interpolation": sample.get_interpolation_settings,
             "interference": dict,
         }
         if sample.interference_sample is not None:

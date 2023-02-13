@@ -1,6 +1,8 @@
 from typing import Dict
 
+import matplotlib.lines as l
 import numpy as np
+import numpy.typing as npt
 
 from ..interface.screens import Screen
 from .plot_interaction import construct_polygon_coordinates, drag_polygons
@@ -20,10 +22,14 @@ class Interpolation_plot(Single_plot):
 
     def draw_plot(self, **kwargs):
 
-        birs = kwargs.pop("birs")
+        interpolation_regions = kwargs.pop("interpolation_regions")
+        itp_x, itp_y = kwargs.pop("interpolated_interval")
 
         self.plot_lines(**kwargs)
-        self.plot_birs(birs)
+        self.plot_interpolation_regions(interpolation_regions)
+        self.plot_interpolation(
+            x=itp_x, y=itp_y, interpolation_regions=interpolation_regions
+        )
 
         self.fig.canvas.draw_idle()
 
@@ -42,12 +48,24 @@ class Interpolation_plot(Single_plot):
     def plot_interpolation(self, x, y, interpolation_regions, *args, **kwargs):
 
         color = self.colors.by_key()["color"][3]
-        data = []
-        for (x_min, x_max) in interpolation_regions:
-            mask = (x < x_max) & (x > x_min)
-            data.append(*[x[mask], y[mask], color])
 
-        self.interpolated_lines = self.ax.plot(*data, label="interpolated")
+        if len(interpolation_regions) < len(self.interpolated_lines):
+            self.clear_interpolations()
+
+        for i, (x_min, x_max) in enumerate(interpolation_regions):
+            mask = (x < x_max) & (x > x_min)
+            try:
+                line = self.interpolated_lines[i]
+                if np.array_equal(line.get_ydata, y[mask]):
+                    continue
+                line.set_xdata(x[mask])
+                line.set_ydata(y[mask])
+            except IndexError:
+                line = l.Line2D(
+                    x[mask], y[mask], color=color, label="interpolated", alpha=0.7
+                )
+                self.interpolated_lines.append(line)
+                self.ax.add_line(line)
 
     def clear_interpolations(self):
         for line in self.interpolated_lines:
@@ -59,15 +77,15 @@ class Interpolation_plot(Single_plot):
         self.clear_interpolations()
         super().clear_figure()
 
-    def plot_birs(self, birs: Dict[(int, float)], connect_mouse=False):
+    def plot_interpolation_regions(self, birs: npt.NDArray, connect_mouse=False):
 
         if not self.birs:
             connect_mouse = True
 
         ax = self.ax
 
-        bir_values = list(birs.values())
-        birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
+        # bir_values = list(birs.values())
+        # birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
 
         bir_surplus = len(self.birs) - len(birs)
         if bir_surplus > 0:

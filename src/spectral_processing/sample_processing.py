@@ -127,7 +127,7 @@ class Raman_processor:
             "sample_name": self.name,
             "x": self.sample.x,
             "spectra": self.get_plot_spectra(),
-            "birs": self.get_birs(),
+            "birs": self.baseline.interpolation_regions.nested_array,  # self.get_birs(),
             "peaks": self.sample.peaks,
         }
 
@@ -183,7 +183,6 @@ class h2o_processor(Raman_processor):
             values = self.settings.loc[
                 ["interpolation", "interference"], ["use", "use"]
             ].values
-            # values = [eval(val) for val in values]
 
         self.sample._set_processing(types=types, values=values)
 
@@ -195,8 +194,14 @@ class h2o_processor(Raman_processor):
     def interpolation_spectrum(self) -> str:
         return ["raw", "interference_corrected"][self.settings[("interference", "use")]]
 
+    def add_interpolation_region(self, index: int, max_width=30):
+        self.interpolation.regions.add(index=index, max_width=max_width)
+
+    def remove_interpolation_region(self, index):
+        self.interpolation.regions.remove(index=index)
+
     def set_interference(self, x, y, settings, baseline_regions, laser_wavelength):
-        # y_interpolated = self._intertpolate_spectrum(x, y)
+
         self._interference_sample = Raman_processor(
             self.name,
             x,
@@ -265,27 +270,8 @@ class h2o_processor(Raman_processor):
     def set_subtraction_parameters(self, kwargs: Dict) -> None:
         self.interference.apply_settings(**kwargs)
 
-    # def get_subtraction_region(self):
-    #     return self.settings.loc[
-    #         (["interference"], ["boundary_left", "boundary_right"])
-    #     ].values
-
     def get_subtraction_parameters(self) -> Dict:
         return self.interference.get_settings()
-
-    # def get_interference_spectrum(self):
-
-    #     spectrum_name = self.settings[("interference", "spectrum")]
-    #     interference = self.interference
-
-    #     spectrum = interference.data.signal.get(spectrum_name)
-    #     if spectrum is None:
-    #         return None
-
-    #     return self.data.signal.interpolate_spectrum(
-    #         old_x=interference.data.signal.x,
-    #         old_y=spectrum,
-    #     )
 
     def subtract_interference(self) -> bool:
 
@@ -302,7 +288,7 @@ class h2o_processor(Raman_processor):
 
         plotdata = super().get_plotdata()
         plotdata["subtraction_region"] = self.interference.minimisation_region
-        # plotdata["interpolation_regions"] = self.get_interpolation_settings()["regions"]
+        plotdata["interpolation_regions"] = self.interpolation.regions.nested_array
 
         if self.interpolation.results is not None:
             plotdata["interpolated_interval"] = self.interpolation.results

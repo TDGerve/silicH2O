@@ -3,6 +3,7 @@ from typing import Dict
 
 import blinker as bl
 import numpy as np
+import numpy.typing as npt
 
 from ..interface.screens import Screen
 from .plot_interaction import construct_polygon_coordinates, drag_polygons
@@ -59,15 +60,15 @@ class Baseline_correction_plot(Double_plot):
         self.clear_birs()
         super().clear_figure()
 
-    def plot_birs(self, birs: Dict[(int, float)]):
-
-        if len(birs.keys()) != len(self.birs):
-            self.clear_birs()
+    def plot_birs(self, birs: npt.NDArray):
 
         connect_mouse = False if self.birs else True
 
-        bir_values = list(birs.values())
-        birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
+        if len(self.birs) < len(birs):
+            self.clear_birs()
+
+        # bir_values = list(birs.values())
+        # birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
 
         # bir_surplus = (len(self.birs) / 2) - len(birs)
         # if bir_surplus > 0:
@@ -105,7 +106,9 @@ class Baseline_correction_plot(Double_plot):
 
         # disconnect previously existing connections
         for connection in self.mouse_connections:
+
             self.fig.canvas.mpl_disconnect(connection)
+            self.mouse_connections = []
 
         bir_amount = len(self.birs) // 2
 
@@ -122,14 +125,12 @@ class Baseline_correction_plot(Double_plot):
 
         self.plot_interactions = [drag_ax0, drag_ax1]
 
+        events = ("button_press_event", "button_release_event", "motion_notify_event")
+        actions = ("on_click", "on_release", "on_motion")
+
         # connect mouse events
-        for ax in [drag_ax0, drag_ax1]:
-            self.mouse_connections.append(
-                self.fig.canvas.mpl_connect("button_press_event", ax.on_click)
-            )
-            self.mouse_connections.append(
-                self.fig.canvas.mpl_connect("button_release_event", ax.on_release)
-            )
-            self.mouse_connections.append(
-                self.fig.canvas.mpl_connect("motion_notify_event", ax.on_motion)
-            )
+        for event, action in zip(events, actions):
+            for ax in self.plot_interactions:
+                self.mouse_connections.append(
+                    self.fig.canvas.mpl_connect(event, getattr(ax, action))
+                )
