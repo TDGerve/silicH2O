@@ -1,8 +1,10 @@
 import json
+import shutil
 from itertools import product
 from typing import Dict, List, Tuple
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from ..Dataframes import Baseline_DF
@@ -34,7 +36,7 @@ gui["current_tab"] = "baseline"
 
 # GENERAL SETTINGS
 with open(f"{__path__[0]}/general_settings.json") as f:
-    data_processing = json.load(f)
+    general = json.load(f)
 # data_processing["processing_settings"] = get_settings_from_json("processing_settings")
 
 
@@ -69,3 +71,63 @@ def get_default_settings(
     settings = pd.concat(settings, axis=1)
 
     return settings, baseline_interpolation_regions
+
+
+def set_glass_settings(
+    baseline_interpolation_regions: npt.NDArray,
+    interpolation_regions: npt.NDArray,
+    settings: Dict,
+):
+    baseline_settings = settings.pop("baseline")
+    interpolation_settings = settings.pop("interpolation")
+
+    baseline_interpolation_regions = {
+        i: list(region) for i, region in enumerate(baseline_interpolation_regions)
+    }
+
+    interpolation_regions = {
+        str(i): list(region) for i, region in enumerate(interpolation_regions)
+    }
+    settings = {
+        "baseline": {
+            "baseline_interpolation_regions": baseline_interpolation_regions,
+            **baseline_settings,
+        },
+        "interpolation": {
+            "baseline_interpolation_regions": interpolation_regions,
+            **interpolation_settings,
+        },
+        "interference": settings["interference"].to_dict(),
+    }
+
+    with open(f"{__path__[0]}/glass_settings.json", "w", encoding="utf-8") as f:
+        json.dump(settings, f, ensure_ascii=False, indent=4)
+
+
+def set_interference_settings(baseline_interpolation_regions: Dict, settings: Dict):
+    baseline_settings = settings.pop("baseline")
+
+    baseline_interpolation_regions = {
+        i: list(region) for i, region in enumerate(baseline_interpolation_regions)
+    }
+
+    settings = {
+        "baseline": {
+            "baseline_interpolation_regions": baseline_interpolation_regions,
+            **baseline_settings,
+        },
+        "deconvolution": settings["deconvolution"].to_dict(),
+    }
+
+    with open(f"{__path__[0]}/interference_settings.json", "w", encoding="utf-8") as f:
+        json.dump(settings, f, ensure_ascii=False, indent=4)
+
+
+def reset_default_settings(type: str):
+    if type not in ("glass", "interference"):
+        raise ValueError(f"{type} not recognised as type")
+    basepath = __path__[0]
+    shutil.copyfile(
+        src=f"{basepath}/{type}_settings_default.json",
+        dst=f"{basepath}/{type}_settings.json",
+    )

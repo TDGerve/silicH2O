@@ -10,7 +10,7 @@ on_display_message = bl.signal("display message")
 
 class Interpolation_regions:
     def __init__(self, regions: pd.Series, max_width: int = 30):
-        self._regions = regions.copy()
+        self._regions = regions.dropna().copy()
         self.max_width = max_width
 
     @property

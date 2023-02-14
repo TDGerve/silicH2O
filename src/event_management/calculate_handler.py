@@ -4,9 +4,8 @@ from typing import Dict, Optional
 import blinker as bl
 
 from .. import app_configuration
-from ..interface import Gui
+from ..interface.GUIS import Gui
 from ..spectral_processing import Database_controller
-from .message_processor import Message_processor
 
 
 class Calculation_listener:
@@ -209,11 +208,13 @@ class Calculation_listener:
             "interference_corrected": "subtraction",
         }[type]
 
-        if self.sample.sample.signal.get(type) is not None:
-            self.sample.set_spectrum_processing(types=[type], values=[value])
-        else:
+        if (type == "interference_corrected") & (
+            self.sample.sample.signal.get(type) is None
+        ):
             value = False
             self.gui.update_variables(**{group: {"use": value}})
+        else:
+            self.sample.set_spectrum_processing(types=[type], values=[value])
 
         self.change_settings(**{group: {"use": value}})
 

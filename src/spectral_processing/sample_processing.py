@@ -38,12 +38,11 @@ class Raman_processor:
         y: npt.NDArray,
         settings: pd.Series,
         baseline_regions: pd.Series,
-        laser_wavelength: float,
     ):
 
         self.name = name
 
-        self.sample = ram.RamanProcessing(x, y, laser=laser_wavelength)
+        self.sample = ram.RamanProcessing(x, y)
 
         self.baseline = Baseline_processor(
             sample=self.sample,
@@ -153,14 +152,13 @@ class h2o_processor(Raman_processor):
         settings: pd.Series,
         baseline_regions: pd.Series,
         interpolation_regions: pd.Series,
-        laser_wavelength: float,
     ):
 
         self.name = name
 
         # self.settings = settings.dropna().copy()
 
-        self.sample = ram.H2O(x, y, laser=laser_wavelength)
+        self.sample = ram.H2O(x, y)
 
         self.baseline = Baseline_processor(
             sample=self.sample,
@@ -191,8 +189,8 @@ class h2o_processor(Raman_processor):
     def settings(self):
         settings = {
             "baseline": self.baseline.settings,
-            "interference": self.interference.settings,
             "interpolation": self.interpolation.settings,
+            "interference": self.interference.settings,
         }
         return pd.concat(settings, axis=0)
 
@@ -221,7 +219,7 @@ class h2o_processor(Raman_processor):
                 "interference_corrected": "interference",
             }[t]
             processor = getattr(self, name)
-            processor.settings["use"] = val
+            processor.settings["use"] = bool(val)  # Make sure it is not numpy.bool_
 
         if len(values) > 1:
             return
@@ -237,7 +235,7 @@ class h2o_processor(Raman_processor):
     def remove_interpolation_region(self, index):
         self.interpolation.regions.remove(index=index)
 
-    def set_interference(self, x, y, settings, baseline_regions, laser_wavelength):
+    def set_interference(self, x, y, settings, baseline_regions):
 
         self._interference_sample = Raman_processor(
             self.name,
@@ -245,7 +243,6 @@ class h2o_processor(Raman_processor):
             y,
             settings,
             baseline_regions,
-            laser_wavelength=laser_wavelength,
         )
 
     def remove_interference(self):
@@ -280,6 +277,11 @@ class h2o_processor(Raman_processor):
         self.sample.calculate_SiH2Oareas()
         self.results[["SiArea", "H2Oarea"]] = self.sample.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
+
+    def calculate_results(self):
+        self.calculate_baseline()
+        self.calculate_noise()
+        self.calculate_areas()
 
     def get_interpolation_regions(self) -> Dict[str, int]:
 

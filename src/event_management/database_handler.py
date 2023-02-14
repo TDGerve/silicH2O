@@ -13,6 +13,11 @@ import pandas as pd
 import pyarrow as pa
 
 from .. import app_configuration
+from ..app_configuration import (
+    reset_default_settings,
+    set_glass_settings,
+    set_interference_settings,
+)
 from ..interface import Gui, GUI_state
 from ..spectral_processing import Database_controller
 
@@ -32,12 +37,18 @@ class Database_listener:
     on_save_all = bl.signal("save all")
     on_save_sample = bl.signal("save sample")
 
+    on_set_default_glass_settings = bl.signal("set default glass")
+    on_set_default_interference_settings = bl.signal("set default interference")
+    on_restore_default_settings = bl.signal("restore default settings")
+
     on_save_project = bl.signal("save project")
     on_export_results = bl.signal("export results")
+    on_export_sample = bl.signal("export sample")
+    on_export_all = bl.signal("export all")
 
     on_clean_temp_files = bl.signal("clean temp files")
-
     on_clear_plot = bl.signal("clear plot")
+
     on_plot_change = bl.signal("refresh plot")
     on_display_message = bl.signal("display message")
 
@@ -48,6 +59,41 @@ class Database_listener:
         self.gui = gui
 
         self.subscribe_to_signals()
+
+    def set_dafault_glass_settings(self, *args):
+        sample = self.database_controller.current_sample
+
+        settings = sample.settings
+        baseline_interpolation_regions = (
+            sample.baseline.interpolation_regions.nested_array
+        )
+        interpolation_regions = sample.interpolation.regions.nested_array
+        set_glass_settings(
+            baseline_interpolation_regions=baseline_interpolation_regions,
+            interpolation_regions=interpolation_regions,
+            settings=settings,
+        )
+
+    def set_default_interference_settings(self, *args):
+        sample = self.database_controller.current_sample.interference_sample
+        if sample is None:
+            self.on_display_message.send(
+                message="Sample has no interference!", duration=5
+            )
+            return
+
+        settings = sample.settings
+        baseline_interpolation_regions = (
+            sample.baseline.interpolation_regions.nested_array
+        )
+
+        set_interference_settings(
+            baseline_interpolation_regions=baseline_interpolation_regions,
+            settings=settings,
+        )
+
+    def reset_default_settings(self, *args, type: str):
+        reset_default_settings(type=type)
 
     def remove_samples(self, *args, index: List[int]) -> None:
 
@@ -71,10 +117,12 @@ class Database_listener:
             filepath = temp_datapath / f"{name}.sp"
             filepath.unlink()
 
-    def add_samples(self, *args, files: List[str]) -> None:
+    def add_samples(self, *args, files: List[str], name_delimiter: str) -> None:
 
         previous_names = list(self.database_controller.names)
-        names = get_names_from_files(files, previous_names=previous_names)
+        names = get_names_from_files(
+            files, previous_names=previous_names, delimiter=name_delimiter
+        )
         total_names = previous_names + names
 
         self.database_controller.read_files(files, names=names)
@@ -325,25 +373,46 @@ class Database_listener:
                     time.sleep(0.5)
                     shutil.rmtree(os.path.join(root, d))
 
+    def export_sample(self, *args, filepath: str):
+        filepath = pathlib.Path(filepath)
+        self.database_controller.export_sample(filepath=filepath)
+
+    def export_all(self, *args, folderpath: str):
+        folderpath = pathlib.Path(folderpath)
+        self.database_controller.export_all(folderpath=folderpath)
+
     def subscribe_to_signals(self) -> None:
         self.on_samples_added.connect(self.add_samples)
         self.on_samples_removed.connect(self.remove_samples)
         self.on_load_interference.connect(self.load_interference)
 
         self.on_new_project.connect(self.new_project)
-        self.on_save_project.connect(self.save_project)
         self.on_load_project.connect(self.load_project)
-        self.on_export_results.connect(self.export_results)
 
+        self.on_set_default_glass_settings.connect(self.set_dafault_glass_settings)
+        self.on_set_default_interference_settings.connect(
+            self.set_default_interference_settings
+        )
+        self.on_restore_default_settings.connect(self.reset_default_settings)
+
+        self.on_export_results.connect(self.export_results)
+        self.on_export_sample.connect(self.export_sample)
+        self.on_export_all.connect(self.export_all)
+
+        self.on_save_project.connect(self.save_project)
         self.on_save_sample.connect(self.save_sample)
         self.on_save_all.connect(self.save_all_samples)
+
         self.on_Ctrl_s.connect(self.save_samples_to_project)
 
         self.on_clean_temp_files.connect(self.clean_temp_files)
 
 
-def get_names_from_files(files: List, previous_names: List[str] = []) -> List:
-    separator = app_configuration.data_processing["name_separator"]
+def get_names_from_files(
+    files: List, previous_names: List[str] = [], delimiter: Optional[str] = None
+) -> List:
+    if delimiter is None:
+        delimiter = app_configuration.data_processing["name_separator"]
     names = []
 
     for file in files:
@@ -351,10 +420,10 @@ def get_names_from_files(files: List, previous_names: List[str] = []) -> List:
             name = os.path.basename(file)
         except TypeError:
             name = file.name
-        if separator not in name:
+        if delimiter not in name:
             names.append(name)
         else:
-            names.append(name[: name.index(separator)])
+            names.append(name[: name.index(delimiter)])
 
     names = remove_duplicate_names(names, previous_names=previous_names)
 

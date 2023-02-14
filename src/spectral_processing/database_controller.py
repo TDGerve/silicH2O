@@ -1,3 +1,4 @@
+import asyncio
 import pathlib
 import warnings as w
 from typing import Dict, List, Optional
@@ -14,7 +15,7 @@ from ..Dataframes import (
     _insert_row,
     _match_columns,
 )
-from .sample_processing import h2o_processor
+from .sample_processing import Sample_proccessor, h2o_processor
 
 on_display_message = bl.signal("display message")
 
@@ -111,10 +112,6 @@ class Database_controller:
 
         self.add_settings_results(names=names, settings=settings)
 
-        laser_wavelength = app_configuration.data_processing[
-            "laser_wavelength"
-        ]  # CH CHANGE TO USER INPUT
-
         for idx, (file, name) in enumerate(
             zip(self.files[old_files:], self.names[old_files:])
         ):
@@ -134,7 +131,6 @@ class Database_controller:
                     settings=self.settings.loc[name].copy(),
                     baseline_regions=self.baseline_regions.loc[name].copy(),
                     interpolation_regions=self.interpolation_regions.loc[name].copy(),
-                    laser_wavelength=laser_wavelength,
                 ),
             )
 
@@ -167,16 +163,11 @@ class Database_controller:
         except ValueError:
             x, y = np.genfromtxt(file, unpack=True)
 
-        laser_wavelength = app_configuration.data_processing[
-            "laser_wavelength"
-        ]  # CH CHANGE TO USER INPUT
-
         current_sample.set_interference(
             x=x,
             y=y,
             settings=settings,
             baseline_regions=birs,
-            laser_wavelength=laser_wavelength,
         )
 
     def add_processed_spectra(self, files: List[str], names: List[str]):
@@ -284,7 +275,7 @@ class Database_controller:
         for sample_idx in range(self.results.shape[0]):
             self.save_sample(sample_idx)
 
-    def reset_sample(self, tab: str) -> None:  # CHANGE SETTINGS PER TAB
+    def reset_sample(self, tab: str) -> None:
 
         sample = self.current_sample
         name = sample.name
@@ -340,9 +331,17 @@ class Database_controller:
     def has_project(self):
         return self.project is not None
 
+    def save_results(self):
+        for sample in self.spectra:
+            name = sample.name
+            sample.calculate_results()
+            self.results.loc[name] = sample.results.copy()
+
     def export_results(
         self, folder: pathlib.Path, name: str, incl_settings: bool = True
     ):
+        self.save_results()
+
         try:
             pd.concat([self.settings, self.results], axis=1).to_csv(
                 folder / f"{name}.csv"
@@ -373,3 +372,24 @@ class Database_controller:
                 message=f"{name}_baselines.csv is open!", duration=10
             )
             return
+
+    def export_sample(
+        self, filepath: pathlib.Path, sample: Optional[Sample_proccessor] = None
+    ):
+        if sample is None:
+            sample = self.current_sample
+
+        data = pd.DataFrame(
+            {**{"x": sample.sample.signal.x}, **sample.sample.signal.all}
+        )
+        data.to_csv(filepath, index=False)
+
+    def export_all(self, folderpath: pathlib.Path):
+
+        projectpath = folderpath / self.project.stem
+        projectpath.mkdir(parents=True, exist_ok=True)
+
+        for sample in self.spectra:
+            name = sample.name
+            filepath = projectpath / f"{name}.csv"
+            self.export_sample(filepath=filepath, sample=sample)

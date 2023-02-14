@@ -42,3 +42,38 @@ class vertical_toolbar(NavigationToolbar2Tk):
             else:
                 return s
         return f"X:{'-': >6} Y:{'-':>6}"
+
+
+# from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk, FigureCanvasTkAgg
+# from matplotlib.figure import Figure
+# from matplotlib.backends._backend_tk import ToolTip
+# def _init_toolbar(self):
+#         self.tool_buttons = []
+#         self.toolbar_icons = ["icons/home.png", #provide paths of your own icons
+#                               "icons/backward.png",
+#                               "icons/forward.png",
+#                               None,
+#                               "icons/pan.png",
+#                               "icons/zoom.png",
+#                               "icons/config.png",
+#                               None,
+#                               "icons/save.png"]
+#         xmin, xmax = self.canvas.figure.bbox.intervalx
+#         height, width = 50, xmax-xmin
+#         Frame.__init__(self, master=self.window,
+#                           width=500, height=int(height))
+#         self.update()
+#         num = 0
+#         for text, tooltip_text, image_file, callback in self.toolitems:
+#             if text is None:
+#                 self._Spacer()
+#             else:
+#                 try:
+#                     button = self._Button(text=text, file=self.toolbar_icons[num],
+#                                           command=getattr(self, callback))
+#                     if tooltip_text is not None:
+#                         ToolTip.createToolTip(button, tooltip_text)
+#                 except IndexError:
+#                     pass
+#             num+=1
+#         self.pack(side=BOTTOM, fill=X)

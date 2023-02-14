@@ -7,7 +7,7 @@ import blinker as bl
 
 from .. import app_configuration
 from .infobar import Infobar
-from .menus import io_menu
+from .menus import Menubar
 from .sample_navigation import Sample_navigation
 from .screens import Computer_screen
 from .tabs import Baseline_correction_frame, Interference_frame, Interpolation_frame
@@ -118,7 +118,7 @@ class Main_window(tk.Tk):
         self.option_add("*tearOff", False)
         menubar = tk.Menu(self, name="menus")
         self["menu"] = menubar
-        io_menu(menubar)
+        Menubar(menubar=menubar)
 
     def create_navigation_frame(self, variables: Dict, widgets: Dict):
         # Create the two main frames
