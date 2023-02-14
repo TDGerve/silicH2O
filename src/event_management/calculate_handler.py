@@ -53,33 +53,37 @@ class Calculation_listener:
     def sample(self):
         return self.database_controller.current_sample
 
-        # def calculate_sample(self, idx: Optional[int]=None):
-        #     if idx is None:
-        #         sample = self.sample
-        #     else:
-        #         sample = self.get_sample(idx)
+    def calculate_sample(self, idx: Optional[int] = None):
+        if idx is None:
+            sample = self.sample
+        else:
+            sample = self.get_sample(idx)
 
-        #     if self.current_tab == "interference":
-        #         sample.calculate_interpolation(interference=(self.current_tab == "interference"))
-        #         interference = sample.interference_sample
-        #         if interference is not None:
-        #             sample.interference_sample.calculate_baseline()
-        #         return
-        #     elif self.current_tab == "interpolation":
-        #         sample.calculate_interpolation(interference=(self.current_tab == "interference"))
-        #         return
+        if self.current_tab == "interference":
+            sample.calculate_interpolation(
+                interference=(self.current_tab == "interference")
+            )
+            interference = sample.interference_sample
+            if interference is not None:
+                sample.interference_sample.calculate_baseline()
+            return
+        elif self.current_tab == "interpolation":
+            sample.calculate_interpolation(
+                interference=(self.current_tab == "interference")
+            )
+            return
 
-        #     sample.calculate_baseline()
-        #     sample.calculate_noise()
+        sample.calculate_baseline()
+        sample.calculate_noise()
         sample.calculate_areas()
 
     def display_sample(self, *args):
         try:
-            self.database_controller.calculate_sample(tab=self.current_tab)
+            self.calculate_sample()
         except AttributeError:
             return
 
-        settings = self.database_controller.get_sample_settings()
+        settings = self.get_sample_settings()
 
         settings = settings[self.current_tab]
 
@@ -91,10 +95,24 @@ class Calculation_listener:
 
         self.refresh_plots()
 
+    def get_sample_settings(self):  # move #CH
+
+        sample = self.sample
+
+        baseline_settings = sample.get_baseline_settings()
+        interpolation_settings = sample.get_interpolation_settings()
+        interference_settings = sample.get_interference_settings()
+
+        return {
+            "baseline": {"baseline": baseline_settings},
+            "interpolation": {"interpolation": interpolation_settings},
+            "interference": interference_settings,
+        }
+
     def copy_birs(self, *args, store=True, message="copied birs"):
 
         try:
-            birs = self.database_controller.get_sample_birs(type=self.current_tab)
+            birs = self.get_sample_birs(type=self.current_tab)
             self.on_display_message.send(message=message)
         except AttributeError:
             return
@@ -136,9 +154,23 @@ class Calculation_listener:
 
     def _calculate_bir_amount(self):
 
-        settings = self.database_controller.get_sample_birs(type=self.current_tab)
+        settings = self.get_sample_birs(type=self.current_tab)
         number_of_birs = sum(["bir" in name for name in settings.keys()])
         return number_of_birs
+
+    def get_sample_birs(self, type: str):  # move #CH
+        sample = self.sample
+        get_birs = {
+            "baseline": sample.get_baseline_settings,
+            "interpolation": sample.get_interpolation_settings,
+            "interference": dict,
+        }
+        if sample.interference_sample is not None:
+            get_birs["interference"] = sample.interference_sample.get_baseline_settings
+
+        get_birs = get_birs[type]
+
+        return get_birs()
 
     def update_bir_widgets(self, new_bir_amount: int):
         if new_bir_amount == self.bir_amount:
@@ -153,9 +185,23 @@ class Calculation_listener:
         self.display_sample()
 
     def change_settings(self, *args, **kwargs):
+        sample = self.sample
 
-        self.database_controller.change_sample_settings(**kwargs)
-        self.database_controller.calculate_sample(tab=self.current_tab)
+        func_dict = {
+            "baseline": sample.set_baseline,
+            "interpolation": sample.set_interpolation,
+            "subtraction": sample.set_subtraction_parameters,
+        }
+        if sample.interference_sample is not None:
+            func_dict["interference"] = sample.interference_sample.set_baseline
+            func_dict[
+                "deconvolution"
+            ] = sample.interference_sample.set_deconvolution_settings
+
+        for key, value in kwargs.items():
+            func_dict[key](value)
+
+        self.calculate_sample()
 
     def set_spectrum_processing(self, *args, type: str, value: bool):
         group = {
@@ -171,10 +217,15 @@ class Calculation_listener:
 
         self.change_settings(**{group: {"use": value}})
 
-    def deconvolve_interference(self, *args, **kwargs):
+    def deconvolve_interference(self, *args):
         self.on_display_message.send(message="deconvolving ...", duration=None)
         # with redirect_stdout(Message_processor()):
-        self.database_controller.deconvolve_interference()
+        sample = self.current_sample
+        interference = sample.interference_sample
+        if interference is None:
+            return
+
+        interference.deconvolve()
 
         self.on_display_message.send(message="deconvolution complete!", duration=5)
         self.refresh_plots()
@@ -182,7 +233,7 @@ class Calculation_listener:
     def subtract_interference(self, *args, **kwargs):
         self.on_display_message.send(message="subtracting ...", duration=5)
         # with redirect_stdout(Message_processor()):
-        if not self.database_controller.subtract_interference():
+        if not self.sample.subtract_interference():
             return
 
         self.on_display_message.send(message="subtraction complete!", duration=5)
@@ -197,8 +248,25 @@ class Calculation_listener:
         if self.current_tab != "baseline":
             return
 
-        results = self.database_controller.get_sample_results()
+        results = self.get_sample_results()
         self.gui.update_variables(**results)
+
+    def get_sample_results(self):  # move #CH
+
+        all_results = list(self.sample.results.values)
+        names = ["silicate", "H2O", "H2OSi"]
+        areas = {}
+        for name, value in zip(names, all_results[:3]):
+            if abs(value) < 20:
+                value = round(value, 2)
+            else:
+                value = int(value)
+            areas[name] = value
+
+        names = ["noise", "Si_SNR", "H2O_SNR"]
+        signal = {name: round(value, 2) for name, value in zip(names, all_results[3:])}
+
+        return {"areas": areas, "signal": signal}
 
     def update_from_plot(self, *args, **settings):
 
@@ -217,10 +285,14 @@ class Calculation_listener:
 
     def refresh_plots(self, message: Optional[str] = None):
         try:
-            plotdata = self.database_controller.get_sample_plotdata()
+            plotdata = self.get_sample_plotdata()
         except AttributeError:
             return
         self.on_plot_change.send(message, **plotdata)
+
+    def get_sample_plotdata(self) -> Dict:  # move #CH
+
+        return self.sample.get_plotdata()
 
     def reset_sample(self, *args):
 

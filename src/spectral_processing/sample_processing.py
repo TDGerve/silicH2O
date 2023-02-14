@@ -215,6 +215,22 @@ class h2o_processor(Raman_processor):
 
         self.sample._set_processing(types=types, values=values)
 
+        for t, val in zip(types, values):
+            name = {
+                "interpolated": "interpolation",
+                "interference_corrected": "interference",
+            }[t]
+            processor = getattr(self, name)
+            processor.settings["use"] = val
+
+        if len(values) > 1:
+            return
+
+        interpolated = self.sample._spectrumSelect == "interpolated"
+        interference_set = types[0] == "interference_corrected"
+        if interpolated & interference_set:
+            self.calculate_interpolation(interference=False)
+
     def add_interpolation_region(self, index: int):
         self.interpolation.regions.add(index=index)
 
@@ -269,7 +285,9 @@ class h2o_processor(Raman_processor):
 
         return self.interpolation.regions.dictionary
 
-    def calculate_interpolation(self, interference: bool) -> None:
+    def calculate_interpolation(
+        self, interference: bool
+    ) -> Tuple[npt.NDArray, npt.NDArray]:
 
         kwargs = {"spectrum": self.interpolation_spectrum}
         if interference:
@@ -278,7 +296,7 @@ class h2o_processor(Raman_processor):
             kwargs["regions"] = [self.interference.minimisation_region]
             kwargs["smoothing"] = self.interference.settings["smoothing"]
 
-        self.interpolation.calculate(**kwargs)
+        return self.interpolation.calculate(**kwargs)
 
     def get_interpolation_settings(self) -> Dict:
 

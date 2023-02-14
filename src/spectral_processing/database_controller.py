@@ -64,43 +64,6 @@ class Database_controller:
 
         return self.spectra[index]
 
-    def calculate_sample(self, tab: str, idx=None):  # move #CH
-        if idx is None:
-            sample = self.current_sample
-        else:
-            sample = self.get_sample(idx)
-
-        if tab == "interference":
-            sample.calculate_interpolation(interference=(tab == "interference"))
-            interference = sample.interference_sample
-            if interference is not None:
-                sample.interference_sample.calculate_baseline()
-            return
-        elif tab == "interpolation":
-            sample.calculate_interpolation(interference=(tab == "interference"))
-            return
-
-        sample.calculate_baseline()
-        sample.calculate_noise()
-        sample.calculate_areas()
-
-    def deconvolve_interference(self):  # move #CH
-        sample = self.current_sample
-        interference = sample.interference_sample
-        if interference is None:
-            return
-
-        interference.deconvolve()
-        # sample.data.signal.set_with_interpolation(
-        #     name="interference_deconvoluted",
-        #     x=interference.data.signal.x,
-        #     y=interference.data.signal.get("deconvoluted"),
-        # )
-
-    def subtract_interference(self) -> bool:  # move #CH
-        sample = self.current_sample
-        return sample.subtract_interference()
-
     def change_birs(self, action: str, index: int, tab: str):
 
         if tab in ("baseline", "interpolation"):
@@ -118,57 +81,7 @@ class Database_controller:
 
         func(index=index)
 
-    def calculate_interpolation(self):  # move #CH
-        sample = self.current_sample
-
-        sample.calculate_interpolation()
-
-    def change_sample_settings(self, **kwargs) -> None:  # move #CH
-        sample = self.current_sample
-
-        func_dict = {
-            "baseline": sample.set_baseline,
-            "interpolation": sample.set_interpolation,
-            "subtraction": sample.set_subtraction_parameters,
-        }
-        if sample.interference_sample is not None:
-            func_dict["interference"] = sample.interference_sample.set_baseline
-            func_dict[
-                "deconvolution"
-            ] = sample.interference_sample.set_deconvolution_settings
-
-        for key, value in kwargs.items():
-            func_dict[key](value)
-
-    def get_sample_birs(self, type: str):  # move #CH
-        sample = self.current_sample
-        get_birs = {
-            "baseline": sample.get_baseline_settings,
-            "interpolation": sample.get_interpolation_settings,
-            "interference": dict,
-        }
-        if sample.interference_sample is not None:
-            get_birs["interference"] = sample.interference_sample.get_baseline_settings
-
-        get_birs = get_birs[type]
-
-        return get_birs()
-
-    def get_sample_settings(self):  # move #CH
-
-        sample = self.current_sample
-
-        baseline_settings = sample.get_baseline_settings()
-        interpolation_settings = sample.get_interpolation_settings()
-        interference_settings = sample.get_interference_settings()
-
-        return {
-            "baseline": {"baseline": baseline_settings},
-            "interpolation": {"interpolation": interpolation_settings},
-            "interference": interference_settings,
-        }
-
-    def get_all_settings(self):  # move #CH
+    def get_all_settings(self):
         settings = {
             "settings": self.settings,
             "baseline_interpolation_regions": self.baseline_regions.dropna(
@@ -181,34 +94,11 @@ class Database_controller:
 
         return settings
 
-    def get_all_interference_settings(self):  # move #CH
+    def get_all_interference_settings(self):
         return {
             name: df.dropna(axis="columns", how="all")
             for name, df in self.interference_settings.items()
         }
-
-    def get_sample_results(self):  # move #CH
-
-        all_results = list(self.current_sample.results.values)
-        names = ["silicate", "H2O", "H2OSi"]
-        areas = {}
-        for name, value in zip(names, all_results[:3]):
-            if abs(value) < 20:
-                value = round(value, 2)
-            else:
-                value = int(value)
-            areas[name] = value
-
-        names = ["noise", "Si_SNR", "H2O_SNR"]
-        signal = {name: round(value, 2) for name, value in zip(names, all_results[3:])}
-
-        return {"areas": areas, "signal": signal}
-
-    def get_sample_plotdata(self):  # move #CH
-
-        sample = self.current_sample
-
-        return sample.get_plotdata()
 
     def read_files(
         self, files: List, names: List[str], settings: Optional[Dict] = None
@@ -247,8 +137,6 @@ class Database_controller:
                     laser_wavelength=laser_wavelength,
                 ),
             )
-            # self.calculate_sample(idx)
-            # self.save_sample(idx=idx)
 
     def add_interference(
         self, file: str, name: Optional[str] = None, settings: Optional[Dict] = None
@@ -404,37 +292,25 @@ class Database_controller:
         sample.apply_settings(settings=self.settings.loc[name], groups=[tab])
 
         if tab == "baseline":
-            # restore previous settings
 
-            # sample.settings = self.settings.loc[name].copy()
-            # ONLY RESTORE BASELINE SETTINGS ETC #CH
             sample.baseline.interpolation_regions.set_series(
                 self.baseline_regions.loc[name]
             )
-            # sample.baseline_regions = self.baseline_regions.loc[name]
         elif tab == "interpolation":
 
             sample.interpolation.regions.set_series(
                 self.interpolation_regions.loc[name]
             )
-            # sample.interpolation_regions = self.interpolation_regions.loc[name].copy()
         elif tab == "interference":
 
             sample.interference_sample.apply_settings(
                 self.interference_settings["settings"].loc[name],
                 groups=["baseline", "deconvolution"],
             )
-            # sample.interference_sample.settings = (
-            #     self.interference_settings["settings"].loc[name].copy()
-            # )
+
             sample.interference_sample.baseline.interpolation_regions.set_series(
                 self.interference_settings["baseline_interpolation_regions"].loc[name]
             )
-            # sample.interference_sample.baseline_regions = (
-            #     self.interference_settings["baseline_interpolation_regions"]
-            #     .loc[name]
-            #     .copy()
-            # )
 
         on_display_message.send(message="sample reset")
 
