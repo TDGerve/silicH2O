@@ -155,6 +155,7 @@ class h2o_processor(Raman_processor):
     ):
 
         self.name = name
+        self._H2Oreference: float = np.nan
 
         # self.settings = settings.dropna().copy()
 
@@ -177,13 +178,25 @@ class h2o_processor(Raman_processor):
         self.results = pd.Series(
             {
                 data: np.nan
-                for data in ["SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR"]
+                for data in [
+                    "SiArea",
+                    "H2Oarea",
+                    "rWS",
+                    "noise",
+                    "Si_SNR",
+                    "H2O_SNR",
+                    "H2O",
+                ]
             }
         )
 
         self._interference_sample: Optional[Raman_processor] = None
 
         self.set_spectrum_processing()
+
+    @property
+    def H2Oreference(self):
+        return self._H2Oreference
 
     @property
     def settings(self):

@@ -85,7 +85,7 @@ class Interference_frame(ttk.Frame):
         self.make_vertical_divider(self, col=2)
 
         for child in self.winfo_children():
-            child.grid_configure(padx=5, pady=3)
+            # child.grid_configure(padx=3, pady=3)
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=padding, pady=padding)
 
@@ -165,7 +165,7 @@ class Interference_frame(ttk.Frame):
             variables=variables,
             bir_amount=5,
             min_regions=2,
-            width="7c",
+            width="8c",
         )
         baseline_interpolation.grid(row=3, column=0, columnspan=2, sticky="nesw")
 

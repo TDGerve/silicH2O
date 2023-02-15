@@ -40,7 +40,7 @@ class Baseline_correction_frame(ttk.Frame):
         variables["baseline"] = self.baseline_variables
 
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, minsize="7c")
+        self.columnconfigure(1, minsize="8c")
 
         self.rowconfigure(0, weight=1)
 
@@ -53,7 +53,7 @@ class Baseline_correction_frame(ttk.Frame):
         self.populate_settings_frame(self.settings_frame)
 
         for child in self.winfo_children():
-            child.grid_configure(padx=5, pady=3)
+            # child.grid_configure(padx=5, pady=3)
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=padding, pady=padding)
 
@@ -82,6 +82,11 @@ class Baseline_correction_frame(ttk.Frame):
 
         self.make_vertical_divider(parent, col=0)
         self.make_horizontal_dividers(parent, rows=[2, 4, 6], col=1)
+
+        for child in self.winfo_children():
+            child.grid_configure(padx=5, pady=3)
+            for grandchild in child.winfo_children():
+                grandchild.grid_configure(padx=padding, pady=padding)
 
     def reset_baseline_widgets(self, bir_amount):
         widget = self.settings_frame.nametowidget("baseline")

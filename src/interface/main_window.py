@@ -10,7 +10,7 @@ from .infobar import Infobar
 from .menus import Menubar
 from .sample_navigation import Sample_navigation
 from .screens import Computer_screen
-from .tabs import Baseline_correction_frame, Interference_frame, Interpolation_frame
+from .windows import Baseline_correction_frame, Interference_frame, Interpolation_frame
 
 _main_folder = pathlib.Path(__file__).parents[1]
 _theme_file = _main_folder / "theme/breeze.tcl"
@@ -29,12 +29,20 @@ on_display_message = bl.signal("display message")
 
 
 class Main_window(tk.Tk):
-    def __init__(self, title: str, variables: Dict[str, Any], widgets: Dict[str, Any]):
+    def __init__(
+        self,
+        title: str,
+        variables: Dict[str, Any],
+        widgets: Dict[str, Any],
+    ):
 
         super().__init__()
         self.screen = self.get_screen_info()
 
         self.title(title)
+
+        self.variables = variables
+        self.widgets = widgets
 
         self.set_theme()
         self.set_geometry()

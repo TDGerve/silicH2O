@@ -21,7 +21,7 @@ on_export_all = bl.signal("export all")
 on_display_message = bl.signal("display message")
 
 
-class io_menu:
+class IO_menu:
     def __init__(self, parent):
         self.parent = parent
 

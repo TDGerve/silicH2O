@@ -1,11 +1,13 @@
 import tkinter as tk
 
-from .io_menu import *
-from .settings_menu import *
+from .calibration_menu import Calibration_menu
+from .io_menu import IO_menu
+from .settings_menu import Settings_menu
 
 
 class Menubar:
     def __init__(self, menubar):
 
-        io_menu(parent=menubar)
-        settings_menu(parent=menubar)
+        IO_menu(parent=menubar)
+        Settings_menu(parent=menubar)
+        Calibration_menu(parent=menubar)

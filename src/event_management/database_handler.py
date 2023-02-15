@@ -18,7 +18,8 @@ from ..app_configuration import (
     set_glass_settings,
     set_interference_settings,
 )
-from ..interface import Gui, GUI_state
+
+# from ..interface import Gui
 from ..spectral_processing import Database_controller
 
 temp_folder = pathlib.Path(__file__).parents[1] / "temp"
@@ -31,6 +32,9 @@ class Database_listener:
     on_new_project = bl.signal("new project")
     on_load_interference = bl.signal("load interference")
     on_interference_added = bl.signal("show interference")
+
+    on_activate_widgets = bl.signal("activate_widgets")
+    on_clear_gui_variables = bl.signal("clear variables")
 
     on_samples_removed = bl.signal("samples removed")
 
@@ -51,12 +55,13 @@ class Database_listener:
 
     on_plot_change = bl.signal("refresh plot")
     on_display_message = bl.signal("display message")
+    on_update_gui_variables = bl.signal("update gui variables")
 
     on_Ctrl_s = bl.signal("ctrl+s")
 
-    def __init__(self, database_controller: Database_controller, gui: Gui):
+    def __init__(self, database_controller: Database_controller):
         self.database_controller = database_controller
-        self.gui = gui
+        # self.gui = gui
 
         self.subscribe_to_signals()
 
@@ -106,7 +111,8 @@ class Database_listener:
         self.database_controller.remove_samples(index)
 
         names = list(self.database_controller.names)
-        self.gui.update_variables(sample_navigation={"samplelist": names})
+        # self.gui.update_variables(sample_navigation={"samplelist": names})
+        self.on_update_gui_variables.send(sample_navigation={"samplelist": names})
 
     def remove_data(self, names: List[str]):
 
@@ -127,11 +133,13 @@ class Database_listener:
 
         self.database_controller.read_files(files, names=names)
 
-        self.gui.update_variables(sample_navigation={"samplelist": total_names})
+        # self.gui.update_variables(sample_navigation={"samplelist": total_names})
+        self.on_update_gui_variables.send(sample_navigation={"samplelist": total_names})
+        self.on_activate_widgets.send()
 
-        if self.gui.state == GUI_state.DISABLED:
-            self.gui.activate_widgets()
-            self.gui.set_state(GUI_state.ACTIVE)
+        # if self.gui.state == GUI_state.DISABLED:
+        #     self.gui.activate_widgets()
+        #     self.gui.set_state(GUI_state.ACTIVE)
 
     def load_interference(self, *args):
         try:
@@ -149,7 +157,8 @@ class Database_listener:
 
         self.clean_temp_files()
         self.database_controller.__init__()
-        self.gui.clear_variables()
+        # self.gui.clear_variables()
+        self.on_clear_gui_variables.send()
         self.on_clear_plot.send("new project")
 
     def save_project(self, *args, filepath: Optional[str] = None):
@@ -337,11 +346,13 @@ class Database_listener:
             )
 
         self.database_controller.set_project(filepath=filepath)
-        self.gui.update_variables(sample_navigation={"samplelist": names})
+        # self.gui.update_variables(sample_navigation={"samplelist": names})
+        self.on_update_gui_variables.send(sample_navigation={"samplelist": names})
+        self.on_activate_widgets.send()
 
-        if self.gui.state == GUI_state.DISABLED:
-            self.gui.activate_widgets()
-            self.gui.set_state(GUI_state.ACTIVE)
+        # if self.gui.state == GUI_state.DISABLED:
+        #     self.gui.activate_widgets()
+        #     self.gui.set_state(GUI_state.ACTIVE)
 
     def save_sample(self, *args):
 

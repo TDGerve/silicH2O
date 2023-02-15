@@ -19,7 +19,7 @@ def baseline_multiindex(bir_amount: int):
     return pd.MultiIndex.from_tuples(index)
 
 
-results_columns = ("SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR")
+results_columns = ("SiArea", "H2Oarea", "rWS", "noise", "Si_SNR", "H2O_SNR", "H2O")
 
 
 class Settings_DF(pd.DataFrame):

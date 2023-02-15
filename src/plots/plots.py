@@ -176,6 +176,7 @@ class Single_plot:
 
         self.colors = getattr(pl.colors, app_configuration.gui["plot_theme"])
 
+        self.scale = screen.scaling
         width, height = [
             size * screen.scaling / screen.dpi for size in screen.resolution
         ]
@@ -188,8 +189,8 @@ class Single_plot:
 
         self.ax.set_ylim(0, 1e-2)
 
-        self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel(ylabel)
+        self.fig.supxlabel(xlabel)
+        self.fig.supylabel(ylabel)
 
     def setup_ax(self, limits: Tuple[int, int], title: str = None):
 

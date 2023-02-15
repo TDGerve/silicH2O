@@ -65,7 +65,7 @@ class Interpolation_frame(ttk.Frame):
         )
 
         for child in self.winfo_children():
-            child.grid_configure(padx=5, pady=3)
+            # child.grid_configure(padx=3, pady=3)
             for grandchild in child.winfo_children():
                 grandchild.grid_configure(padx=padding, pady=padding)
 
@@ -142,7 +142,7 @@ class Interpolation_frame(ttk.Frame):
             variables=variables,
             bir_amount=5,
             min_regions=1,
-            width="7c",
+            width="8c",
         )
         baseline_interpolation.grid(row=0, column=0, columnspan=2, sticky="nesw")
 

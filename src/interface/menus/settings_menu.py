@@ -26,7 +26,7 @@ on_restore_default_settings = bl.signal("restore default settings")
 on_display_message = bl.signal("display message")
 
 
-class settings_menu:
+class Settings_menu:
     def __init__(self, parent):
 
         menu = tk.Menu(parent)

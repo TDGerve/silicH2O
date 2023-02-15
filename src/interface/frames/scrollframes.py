@@ -63,6 +63,7 @@ class ScrollFrame(tk.Frame):
         height = event.height
         width = event.width
         self.canvas.config(height=height, width=width)
+        self.set_header_widths()
         self.inner_frame.unbind("<Configure>")
         self.inner_frame.bind(
             "<Configure>", self.onFrameConfigure
@@ -70,6 +71,8 @@ class ScrollFrame(tk.Frame):
 
     def onFrameConfigure(self, event):
         """Reset the scroll region to encompass the inner frame"""
+        if event:
+            self.canvas.config(width=event.width)
         self.canvas.configure(
             scrollregion=self.canvas.bbox("all")
         )  # whenever the size of the frame changes, alter the scroll region respectively.
@@ -108,13 +111,19 @@ class ScrollFrame(tk.Frame):
         else:
             self.canvas.unbind_all("<MouseWheel>")
 
-    def get_column_widths(self):
+    def get_column_widths(self, frame: tk.Frame):
         widths = []
-        for column in range(self.inner_frame.grid_size()[0]):
-            widths.append(self.inner_frame.grid_bbox(column, 0)[2])
+        for column in range(frame.grid_size()[0]):
+            widths.append(frame.grid_bbox(column, 0)[2])
         return widths
 
     def set_header_widths(self):
-        column_widths = self.get_column_widths()
-        for i, width in enumerate(column_widths):
+        inner_widths = self.get_column_widths(self.inner_frame)
+        header_widths = self.get_column_widths(self.headers)
+        # column_widths = self.get_column_widths()
+        for i, (header_width, inner_width) in enumerate(
+            zip(header_widths, inner_widths)
+        ):
+            width = max(header_width, inner_width)
             self.headers.columnconfigure(i, minsize=width)
+            self.inner_frame.columnconfigure(i, minsize=width)

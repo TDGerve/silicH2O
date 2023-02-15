@@ -9,7 +9,7 @@ from .event_management import (
     Plot_listener,
 )
 from .interface import App_interface
-from .spectral_processing import Database_controller
+from .spectral_processing import Calibration_processor, Database_controller
 
 on_clean_temp_files = bl.signal("clean temp files")
 
@@ -18,10 +18,14 @@ class Raman_app:
     def __init__(self, title):
 
         self.samples = Database_controller()
+        self.calibration = Calibration_processor()
         self.gui = App_interface(title=title)
 
-        self.calulcation_listener = Calculation_listener(self.samples, self.gui)
-        self.database_listener = Database_listener(self.samples, self.gui)
+        self.calulcation_listener = Calculation_listener(
+            self.samples,
+            self.calibration,
+        )
+        self.database_listener = Database_listener(self.samples)
         self.plot_listener = Plot_listener(self.gui.plots)
         self.gui_listener = Gui_listener(self.gui)
 

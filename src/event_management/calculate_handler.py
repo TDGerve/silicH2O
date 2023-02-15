@@ -5,7 +5,7 @@ import blinker as bl
 
 from .. import app_configuration
 from ..interface.GUIS import Gui
-from ..spectral_processing import Database_controller
+from ..spectral_processing import Calibration_processor, Database_controller
 
 
 class Calculation_listener:
@@ -27,20 +27,29 @@ class Calculation_listener:
     on_subtract_interference = bl.signal("subtract interference")
 
     on_set_processing = bl.signal("set processing")
+    on_set_H2Oreference = bl.signal("set H2O reference")
+    on_set_calibration_std = bl.signal("set calibration std")
 
     on_add_bir = bl.signal("add bir")
     on_delete_bir = bl.signal("delete bir")
 
     on_display_message = bl.signal("display message")
+    on_update_gui_variables = bl.signal("update gui variables")
 
     on_change_bir_widgets = bl.signal("change bir widgets")
 
     copied_birs = None
     bir_amount: int = 10
 
-    def __init__(self, database_controller: Database_controller, gui: Gui):
+    def __init__(
+        self,
+        database_controller: Database_controller,
+        calibration: Calibration_processor,
+        # gui: Gui,
+    ):
         self.database_controller = database_controller
-        self.gui = gui
+        self.calibration = calibration
+        # self.gui = gui
 
         self.subscribe_to_signals()
 
@@ -89,10 +98,26 @@ class Calculation_listener:
         new_bir_amount = self._calculate_bir_amount()
         self.update_bir_widgets(new_bir_amount)
 
-        self.gui.update_variables(**settings)
+        # self.gui.update_variables(**settings)
+        self.on_update_gui_variables.send(**settings)
         self.update_gui_results()
 
         self.refresh_plots()
+
+    def set_reference_H2O(self, *args, sample_index: int, H2O: float):
+        # if sample_name is not None:
+        #     sample_idx = self.database_controller.names.index(sample_name)
+        #     sample = self.database_controller.get_sample(sample_idx)
+        # else:
+        #     sample = self.sample
+
+        # sample._H2Oreference = H2O
+        self.calibration.H2Oreference.iloc[sample_index] = H2O
+
+    def set_calibration_std(self, *args, sample_index: int, use: bool):
+        self.calibration.use.iloc[sample_index] = not self.calibration.use.iloc[
+            sample_index
+        ]
 
     def get_sample_settings(self):  # move #CH
 
@@ -212,7 +237,8 @@ class Calculation_listener:
             self.sample.sample.signal.get(type) is None
         ):
             value = False
-            self.gui.update_variables(**{group: {"use": value}})
+            # self.gui.update_variables(**{group: {"use": value}})
+            self.on_update_gui_variables.send(**{group: {"use": value}})
         else:
             self.sample.set_spectrum_processing(types=[type], values=[value])
 
@@ -250,7 +276,8 @@ class Calculation_listener:
             return
 
         results = self.get_sample_results()
-        self.gui.update_variables(**results)
+        self.on_update_gui_variables.send(**results)
+        # self.gui.update_variables(**results)
 
     def get_sample_results(self):  # move #CH
 
@@ -272,7 +299,8 @@ class Calculation_listener:
     def update_from_plot(self, *args, **settings):
 
         self.change_settings(**settings)
-        self.gui.update_variables(**settings)
+        self.on_update_gui_variables.send(**settings)
+        # self.gui.update_variables(**settings)
         self.update_gui_results()
 
         # self.refresh_plots("settings change")

@@ -1,7 +1,6 @@
-import asyncio
 import pathlib
 import warnings as w
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import blinker as bl
 import numpy as np
@@ -26,8 +25,9 @@ class Database_controller:
         self.names: np.ndarray = np.array([], dtype=str)
         self.spectra: np.ndarray = np.array([], dtype=h2o_processor)
 
-        self.settings: pd.DataFrame = Settings_DF()
+        self.current_sample_index: Optional[int] = None
 
+        self.settings: pd.DataFrame = Settings_DF()
         self.baseline_regions: pd.DataFrame = Baseline_DF(bir_amount=5)
         self.interpolation_regions: pd.DataFrame = Baseline_DF(bir_amount=1)
 
@@ -39,7 +39,7 @@ class Database_controller:
 
         self.results: pd.DataFrame = Results_DF()
 
-        self.current_sample_index: Optional[int] = None
+        self.calculate_H2O: Optional[Callable] = None
 
         self.project = None
 
@@ -60,6 +60,10 @@ class Database_controller:
     @sample_saved.setter
     def sample_saved(self):
         print("attribute is read only")
+
+    @property
+    def H2Oreference(self):
+        return pd.Series({sample.name: sample.H2Oreference for sample in self.spectra})
 
     def get_sample(self, index: int) -> h2o_processor:
 

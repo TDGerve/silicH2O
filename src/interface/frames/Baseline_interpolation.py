@@ -60,10 +60,14 @@ class Baseline_interpolation_frame(ttk.Frame):
             background_color=background_color,
         )
         self.scrollframe.grid(row=1, column=0, columnspan=2, sticky="nesw")
-        for k, name in zip(range(3), ["No.", "From", "to"]):
+
+        header_labels = ["No.", "From", "to"]
+
+        for k, name in enumerate(header_labels):
             tk.Label(
                 self.scrollframe.headers, text=name, font=(_font, _fontsize, "italic")
             ).grid(row=0, column=k, sticky=("nsw"))
+
         self.make_bir_widgets(bir_amount=bir_amount, state=tk.DISABLED)
 
     def make_bir_widgets(self, bir_amount: int, state=tk.NORMAL):
@@ -115,7 +119,7 @@ class Baseline_interpolation_frame(ttk.Frame):
 
         self.make_delete_add_buttons(parent, start_column=3)
         for i in (3, 4):
-            parent.columnconfigure(i, minsize="0.7c")
+            parent.columnconfigure(i, minsize="0.6c")
 
     def make_delete_add_buttons(
         self, parent, start_column: int, width=2, state=tk.NORMAL

@@ -3,9 +3,16 @@ from typing import Any, Dict
 
 import blinker as bl
 
-from ..plots import Baseline_correction_plot, Interpolation_plot, Plot, Subtraction_plot
+from ..plots import (
+    Baseline_correction_plot,
+    Calibration_plot,
+    Interpolation_plot,
+    Plot,
+    Subtraction_plot,
+)
 from .GUIS import GUI_state
 from .main_window import Main_window
+from .windows import Calibration_window
 
 on_plots_initialised = bl.signal("plots initialised")
 
@@ -19,7 +26,7 @@ class App_interface:
         self.variables: Dict[str, Any] = {}
         self.widgets: Dict[str, Any] = {}
         # rRot
-        self.window: tk.Tk = Main_window(
+        self.window: Main_window = Main_window(
             title=title, variables=self.variables, widgets=self.widgets
         )
 
@@ -80,6 +87,17 @@ class App_interface:
                 except AttributeError:
                     for i in widget:
                         i.configure(state=tk.NORMAL)
+
+    def calibration_window_popup(self):
+        calibration = Calibration_window(
+            parent=self.window,
+            title="Calibration",
+            widgets=self.widgets,
+            variables=self.variables,
+        )
+        self.plots["calibration"] = Calibration_plot(self.window.screen)
+        self.set_plot_background_color(plot=self.plots["calibration"])
+        calibration.draw_plot(self.plots["calibration"])
 
     def create_plots(self):
         self.plots["baseline"] = Baseline_correction_plot(self.window.screen)
