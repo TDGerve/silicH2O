@@ -29,6 +29,11 @@ class Calculation_listener:
     on_set_processing = bl.signal("set processing")
     on_set_H2Oreference = bl.signal("set H2O reference")
     on_set_calibration_std = bl.signal("set calibration std")
+    on_get_calibration_info = bl.signal("get calibration info")
+
+    on_import_calibration_project = bl.signal("project calibration")
+    on_import_calibration_file = bl.signal("file calibration")
+    on_reset_calibration_standards = bl.signal("reset calibration standards")
 
     on_add_bir = bl.signal("add bir")
     on_delete_bir = bl.signal("delete bir")
@@ -104,6 +109,26 @@ class Calculation_listener:
 
         self.refresh_plots()
 
+    def import_calibration_project(self, *args):
+        self.calibration.calibrate_with_project(
+            database_controller=self.database_controller
+        )
+
+        self.send_calibration_info()
+
+    def import_calibration_file(self, *args):
+        self.on_display_message(message="import calibration from file")
+
+    def send_calibration_info(self, *args):
+        sample_amount = len(self.calibration._H2OSi)
+        sample_info = self.calibration.get_sampleinfo_gui()
+        calibration_params = self.calibration.get_calibration_parameters_gui()
+
+        self.on_reset_calibration_standards.send(sample_amount=sample_amount)
+        self.on_update_gui_variables.send(
+            **{"calibration": sample_info, "calibration_statistics": calibration_params}
+        )
+
     def set_reference_H2O(self, *args, sample_index: int, H2O: float):
         # if sample_name is not None:
         #     sample_idx = self.database_controller.names.index(sample_name)
@@ -112,7 +137,8 @@ class Calculation_listener:
         #     sample = self.sample
 
         # sample._H2Oreference = H2O
-        self.calibration.H2Oreference.iloc[sample_index] = H2O
+        self.calibration.set_H2Oreference(sample_index=sample_index, H2O=H2O)
+        self.database_controller.get_sample(sample_index)._H2Oreference = H2O
 
     def set_calibration_std(self, *args, sample_index: int, use: bool):
         self.calibration.use.iloc[sample_index] = not self.calibration.use.iloc[
@@ -344,6 +370,11 @@ class Calculation_listener:
         self.on_subtract_interference.connect(self.subtract_interference)
 
         self.on_set_processing.connect(self.set_spectrum_processing)
+
+        self.on_import_calibration_project.connect(self.import_calibration_project)
+        self.on_import_calibration_file.connect(self.import_calibration_file)
+        self.on_get_calibration_info.connect(self.send_calibration_info)
+        self.on_set_H2Oreference.connect(self.set_reference_H2O)
 
         self.on_add_bir.connect(self.add_bir)
         self.on_delete_bir.connect(self.delete_bir)

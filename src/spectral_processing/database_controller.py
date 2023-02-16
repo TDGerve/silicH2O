@@ -138,6 +138,8 @@ class Database_controller:
                 ),
             )
 
+            self.spectra[idx].calculate_results()
+
     def add_interference(
         self, file: str, name: Optional[str] = None, settings: Optional[Dict] = None
     ):

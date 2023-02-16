@@ -179,16 +179,16 @@ class Main_window(tk.Tk):
 
         app_configuration.gui["current_tab"] = "baseline"
 
-    def reset_baseline_widgets(self, bir_amount):
+    # def reset_baseline_widgets(self, bir_amount):
 
-        target = app_configuration.gui["current_tab"]
+    #     target = app_configuration.gui["current_tab"]
 
-        frames = ("tabs", target)
-        widget = self.nametowidget("main_frame")
-        for frame in frames:
-            widget = widget.nametowidget(frame)
+    #     frames = ("tabs", target)
+    #     widget = self.nametowidget("main_frame")
+    #     for frame in frames:
+    #         widget = widget.nametowidget(frame)
 
-        widget.reset_baseline_widgets(bir_amount)
+    #     widget.reset_baseline_widgets(bir_amount)
 
     def on_tab_change(self, event):
         """

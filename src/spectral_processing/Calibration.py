@@ -15,21 +15,22 @@ class Calibration_processor:
     on_display_message = bl.signal("display message")
 
     def __init__(self):
-        self._H2OSi = None
-        self._H2Oreference = None
-        self.use = None
-
-        self.initialised = False
+        self._H2OSi = pd.Series(dtype=float)
+        self._H2Oreference = pd.Series(dtype=float)
+        self.use = pd.Series(dtype=bool)
 
         self._calibration: Optional[stat.LinregressResult] = None
 
-    def calibrate_with_project(self, database_controller: Database_controller):
-        self._database_controller = database_controller
-        self._H2OSi = self._database_controller["H2OSi"]
-        self._H2Oreference = self._database_controller.H2Oreference
-        self.use = pd.Series(False, index=self.H2OSi.index)
+    @property
+    def initialised(self):
+        return len(self._H2OSi) > 0
 
-        self.initialised = True
+    def calibrate_with_project(self, database_controller: Database_controller):
+        database_controller.save_results()
+        self._database_controller = database_controller
+        self._H2OSi = self._database_controller.results["rWS"]
+        self._H2Oreference = self._database_controller.H2Oreference.copy()
+        self.use = pd.Series(False, index=self._H2OSi.index)
 
     def import_calibration(
         self, H2OSi: pd.Series, H2Oreference: pd.Series, use: pd.Series
@@ -37,8 +38,6 @@ class Calibration_processor:
         self._H2OSi = H2OSi.copy()
         self._H2Oreference = H2Oreference.copy()
         self.use = use.copy()
-
-        self.initialised = True
 
     @property
     def H2OSi(self) -> pd.Series:
@@ -94,14 +93,19 @@ class Calibration_processor:
         except AttributeError:
             return 0, 0
 
+    def set_H2Oreference(self, sample_index, H2O):
+        self._H2Oreference.iloc[sample_index] = H2O
+
     def set_use_sample(self, sample_name: str, use: bool) -> None:
         if self.H2Oreference[sample_name] == np.nan:
-            return self.on_display_message(message="No H2O set!")
+            return self.on_display_message.send(message="No H2O set!")
         self.use[sample_name] = use
 
     def calibrate(self) -> None:
         if sum(self.use) < 2:
-            return self.on_display_message(message="Not enough samples in calibration!")
+            return self.on_display_message.send(
+                message="Not enough samples in calibration!"
+            )
 
         self._calibration = stat.linregress(self.H2OSi, self.H2Oreference)
 
@@ -119,14 +123,19 @@ class Calibration_processor:
 
         return calibration_line
 
-    def get_gui_variables(self) -> Dict:
+    def get_sampleinfo_gui(self) -> Dict:
         return {
             **{
                 f"samplename_{i:02d}": f"{name[:15]:<17}"
-                for i, name in enumerate(self.H2OSi.index)
+                for i, name in enumerate(self._H2OSi.index)
             },
-            **{f"h2oSi_{i:02d}": h2oSi for i, h2oSi in enumerate(self.H2OSi)},
-            **{f"h2o_{i:02d}": h2o for i, h2o in enumerate(self.H2Oreference)},
+            **{
+                f"h2oSi_{i:02d}": f"{h2oSi: .2f}" for i, h2oSi in enumerate(self._H2OSi)
+            },
+            **{
+                f"h2o_{i:02d}": f"{h2o: .2f}"
+                for i, h2o in enumerate(self._H2Oreference)
+            },
             **{f"use_{i:02d}": use for i, use in enumerate(self.use)},
         }
 

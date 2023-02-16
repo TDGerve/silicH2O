@@ -32,8 +32,8 @@ class Raman_app:
     def run(self) -> None:
 
         on_clean_temp_files.send()
-        self.gui.window.protocol("WM_DELETE_WINDOW", self.close)
-        self.gui.window.mainloop()
+        self.gui.main_window.protocol("WM_DELETE_WINDOW", self.close)
+        self.gui.main_window.mainloop()
 
     def close(self):
         """

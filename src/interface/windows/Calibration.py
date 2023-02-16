@@ -1,6 +1,7 @@
 import tkinter as tk
 from functools import partial
 from tkinter import ttk
+from typing import Any, Dict
 
 import blinker as bl
 import numpy as np
@@ -17,51 +18,63 @@ _fontsize_head = _fontsize + 2
 on_set_H2Oreference = bl.signal("set H2O reference")
 on_set_calibration_std = bl.signal("set calibration std")
 
+on_import_calibration_project = bl.signal("project calibration")
+on_import_calibration_file = bl.signal("file calibration")
+on_get_calibration_info = bl.signal("get calibration info")
+
 
 class Calibration_window(tk.Toplevel):
-    def __init__(self, parent, title, widgets, variables):
+    def __init__(
+        self,
+        parent,
+        title: str,
+        name: str,
+        widgets: Dict[str, Any],
+        variables: Dict[str, Any],
+    ):
 
-        super().__init__(master=parent)
-        self.title = title
+        super().__init__(master=parent, name=name)
+        self.title(title)
 
         self.widgets = {}
         self.variables = {}
 
+        self.statistics_variables = {}
+
         widgets["calibration"] = self.widgets
         variables["calibration"] = self.variables
+        variables["calibration_statistics"] = self.statistics_variables
 
-        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
         self.columnconfigure(1, weight=1)
-
-        self.scrollframe = None
-
-        self.make_sample_frame(parent=self, row=0, col=0, rowspan=2)
 
         self.plot_frame = ttk.Frame(self, name="plot")
         self.plot_frame.grid(row=0, column=1, sticky="new")
 
+        # self.scrollframe = None
+        self.make_sample_scrollframe(parent=self, row=0, col=0, rowspan=2)
         self.make_results_frame(parent=self, row=0, col=2)
 
         for child in self.winfo_children():
             child.grid_configure(padx=10, pady=10)
 
         self.make_menu()
-        # self.attributes("-topmost", True)
+        # self.bind(
 
-    def make_results_frame(self, parent, row, col):
+        self.set_keybindings()
+        # always on top
+        self.attributes("-topmost", True)
+        # not resizeable
+        self.resizable(0, 0)
+        # ask for calibration data
+        parent.after_idle(on_get_calibration_info.send)
 
-        frame = ttk.Frame(self, name="results")
-        frame.grid(row=row, column=col, sticky="nesw")
-
-        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(row=0, column=0, sticky=("new"))
-        self.make_statistics_frame(parent=frame, row=1, col=0, variables=self.variables)
-        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(row=2, column=0, sticky=("new"))
-        self.make_io_frame(parent=frame, row=3, col=0)
-
-        frame.rowconfigure(3, weight=1)
-
-        for child in frame.winfo_children():
-            child.grid_configure(pady=5)
+    def set_keybindings(self):
+        self.bind(
+            "<Return>",
+            lambda event: self.focus(),
+        )
+        self.bind("<Control-s>", lambda event: print("save calibration"))  # CH
 
     def make_menu(self):
 
@@ -72,10 +85,29 @@ class Calibration_window(tk.Toplevel):
         menu = tk.Menu()
         menubar.add_cascade(menu=menu, label="Import")
 
-        menu.add_command(label="current project")
-        menu.add_command(label="from file")
+        menu.add_command(
+            label="current project", command=on_import_calibration_project.send
+        )
+        menu.add_command(label="from file", command=on_import_calibration_file.send)
 
-    def make_sample_frame(self, parent, row: int, col: int, rowspan: int):
+    def make_results_frame(self, parent, row, col):
+
+        frame = ttk.Frame(self, name="results")
+        frame.grid(row=row, column=col, sticky="nesw")
+
+        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(row=0, column=0, sticky=("new"))
+        self.make_statistics_frame(
+            parent=frame, row=1, col=0, variables=self.statistics_variables
+        )
+        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(row=2, column=0, sticky=("new"))
+        self.make_io_frame(parent=frame, row=3, col=0)
+
+        frame.rowconfigure(3, weight=1)
+
+        for child in frame.winfo_children():
+            child.grid_configure(pady=5)
+
+    def make_sample_scrollframe(self, parent, row: int, col: int, rowspan: int):
         background_color = app_configuration.background_color
 
         self.scrollframe = ScrollFrame(
@@ -107,7 +139,7 @@ class Calibration_window(tk.Toplevel):
         frame.grid(row=row, column=col, sticky="new")
 
         names = ["save", "save as ...", "use"]
-        commands = [
+        commands = [  # CH
             lambda: print("do something"),
             lambda: print("do something"),
             lambda: print("do something"),
@@ -161,6 +193,9 @@ class Calibration_window(tk.Toplevel):
 
     def make_sample_widgets(self, sample_amount, state=tk.NORMAL):
 
+        self.variables.clear()
+        self.widgets.clear()
+
         parent = self.scrollframe.inner_frame
 
         for widget in parent.winfo_children():
@@ -169,8 +204,8 @@ class Calibration_window(tk.Toplevel):
         for i in range(sample_amount):
 
             label_var = tk.StringVar(value=f"{'':<17}")
-            H2OSi_var = tk.DoubleVar()
-            h2o_var = tk.DoubleVar()
+            H2OSi_var = tk.StringVar()
+            h2o_var = tk.StringVar()
             use_var = tk.BooleanVar()
 
             label = ttk.Label(
