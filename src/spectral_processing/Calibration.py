@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Tuple
 
 import blinker as bl
 import numpy as np
@@ -55,32 +55,44 @@ class Calibration_processor:
         return self._calibration
 
     @property
-    def get_calibration_parameters(self):
-        return {
-            "intercept": self.calibration.intercept,
-            "slope": self.calibration.slope,
-        }
+    def coefficients(self) -> Tuple[float, float]:
+        try:
+            return self.calibration.intercept, self.calibration.slope
+        except AttributeError:
+            return 0, 0
 
     @property
     def RMSE(self) -> float:
-        np.sqrt(
-            met.mean_squared_error(self.H2Oreference, self._calculate_H2O(self.H2OSi))
-        )
+        try:
+            np.sqrt(
+                met.mean_squared_error(
+                    self.H2Oreference, self._calculate_H2O(self.H2OSi)
+                )
+            )
+        except AttributeError:
+            return 0
 
     @property
     def R2(self) -> float:
-        return self.calibration.rvalue**2
+        try:
+            return self.calibration.rvalue**2
+        except AttributeError:
+            return 0
 
     @property
     def p_value(self) -> float:
-        return self.calibration.pvalue
+        try:
+            return self.calibration.pvalue
+        except AttributeError:
+            return 0
 
     @property
-    def errors_coefficient(self) -> Dict:
-        return {
-            "intercept": self.calibration.intercept_stderr,
-            "slope": self.calibration.stderr,
-        }
+    def errors_coefficient(self) -> Tuple[float, float]:
+        try:
+            return self.calibration.intercept_stderr, self.calibration.stderr
+
+        except AttributeError:
+            return 0, 0
 
     def set_use_sample(self, sample_name: str, use: bool) -> None:
         if self.H2Oreference[sample_name] == np.nan:
@@ -116,4 +128,13 @@ class Calibration_processor:
             **{f"h2oSi_{i:02d}": h2oSi for i, h2oSi in enumerate(self.H2OSi)},
             **{f"h2o_{i:02d}": h2o for i, h2o in enumerate(self.H2Oreference)},
             **{f"use_{i:02d}": use for i, use in enumerate(self.use)},
+        }
+
+    def get_calibration_parameters_gui(self) -> Dict:
+        return {
+            "R2": f"{self.R2: .2f}",
+            "RMSE": f"{self.RMSE: .2f}",
+            "p_value": f"{self.p_value:.2e}",
+            "intercept": f"{self.coefficients[0]: .2f} \u00B1 {self.errors_coefficient[0]: .2f}",
+            "slope": f"{self.coefficients[1]: .2f} \u00B1 {self.errors_coefficient[1]: .2f}",
         }

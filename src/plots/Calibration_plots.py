@@ -1,3 +1,5 @@
+from typing import Callable
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -24,11 +26,11 @@ class Calibration_plot(Single_plot):
     def plot_samples(self, H2OSi, H2Oref):
         self.calibration_stds = self.ax.plot(H2OSi, H2Oref, "D", mec="k", zorder=10)
 
-    def plot_calibrationline(self, intercept: float, slope: float):
-        calibration = lambda H2OSi: intercept + H2OSi * slope
+    def plot_calibrationline(self, calibration_line: Callable):
+
         xmin, xmax = self.ax.get_xlim()
         x = np.linspace(xmin, xmax, 2)
 
         self.lines["calibration"] = self.ax.plot(
-            x, calibration(x), "--", color="darkgrey"
+            x, calibration_line(x), "--", color="darkgrey"
         )

@@ -37,10 +37,43 @@ class Calibration_window(tk.Toplevel):
 
         self.make_sample_frame(parent=self, row=0, col=0, rowspan=2)
 
+        self.plot_frame = ttk.Frame(self, name="plot")
+        self.plot_frame.grid(row=0, column=1, sticky="new")
+
+        self.make_results_frame(parent=self, row=0, col=2)
+
         for child in self.winfo_children():
             child.grid_configure(padx=10, pady=10)
 
-        self.attributes("-topmost", True)
+        self.make_menu()
+        # self.attributes("-topmost", True)
+
+    def make_results_frame(self, parent, row, col):
+
+        frame = ttk.Frame(self, name="results")
+        frame.grid(row=row, column=col, sticky="nesw")
+
+        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(row=0, column=0, sticky=("new"))
+        self.make_statistics_frame(parent=frame, row=1, col=0, variables=self.variables)
+        ttk.Separator(frame, orient=tk.HORIZONTAL).grid(row=2, column=0, sticky=("new"))
+        self.make_io_frame(parent=frame, row=3, col=0)
+
+        frame.rowconfigure(3, weight=1)
+
+        for child in frame.winfo_children():
+            child.grid_configure(pady=5)
+
+    def make_menu(self):
+
+        menubar = tk.Menu(self, name="menus")
+        self["menu"] = menubar
+        self.option_add("*tearOff", False)
+
+        menu = tk.Menu()
+        menubar.add_cascade(menu=menu, label="Import")
+
+        menu.add_command(label="current project")
+        menu.add_command(label="from file")
 
     def make_sample_frame(self, parent, row: int, col: int, rowspan: int):
         background_color = app_configuration.background_color
@@ -62,25 +95,67 @@ class Calibration_window(tk.Toplevel):
 
         for k, name in enumerate(header_labels):
             tk.Label(
-                self.scrollframe.headers, text=name, font=(_font, _fontsize_head)
+                self.scrollframe.headers,
+                text=name,
+                font=(_font, _fontsize_head, "bold"),
             ).grid(row=0, column=k, sticky=("nsw"))
 
         self.make_sample_widgets(sample_amount=20, state=tk.DISABLED)
 
     def make_io_frame(self, parent: tk.Frame, row: int, col: int):
-        ...
+        frame = ttk.Frame(parent)
+        frame.grid(row=row, column=col, sticky="new")
 
-    def make_results_frame(self, parent: tk.Frame, row: int, col: int):
-        ...
+        names = ["save", "save as ...", "use"]
+        commands = [
+            lambda: print("do something"),
+            lambda: print("do something"),
+            lambda: print("do something"),
+        ]
+
+        for i, (name, command) in enumerate(zip(names, commands)):
+            button = ttk.Button(frame, text=name, command=command)
+            button.grid(row=i, column=0, sticky="new")
+
+        for child in frame.winfo_children():
+            child.grid_configure(padx=10, pady=5)
+
+    def make_statistics_frame(self, parent: tk.Frame, row: int, col: int, variables):
+
+        frame = ttk.Frame(parent)
+        frame.grid(row=row, column=col, sticky="new")
+
+        var_names = ["R2", "RMSE", "p_value", "intercept", "slope"]
+        var_labels = ["R\u00B2", "RMSE", "p-value", "intercept", "slope"]
+
+        for i, (name, label) in enumerate(zip(var_names, var_labels)):
+            var = tk.StringVar()
+
+            label = ttk.Label(
+                frame, anchor="w", text=label, font=(_font, _fontsize_head, "italic")
+            )
+            value = ttk.Label(
+                frame, anchor="w", textvariable=var, font=(_font, _fontsize_head)
+            )
+
+            label.grid(row=i, column=0, sticky="new")
+            value.grid(row=i, column=1, sticky="new")
+
+            variables[name] = var
+
+        frame.columnconfigure(1, minsize="5c")
+
+        for child in frame.winfo_children():
+            child.grid_configure(padx=10, pady=10)
 
     def draw_plot(self, plot):
 
-        plot_frame = ttk.Frame(self, name="plot")
-        plot_frame.grid(row=0, column=1, sticky="nesw")
-        plot_frame.grid_configure(padx=10, pady=10)
+        # plot_frame = ttk.Frame(self, name="plot")
+        # plot_frame.grid(row=0, column=1, sticky="nesw")
+        # plot_frame.grid_configure(padx=10, pady=10)
 
         fig = plot.fig
-        self.canvas = FigureCanvasTkAgg(fig, plot_frame)
+        self.canvas = FigureCanvasTkAgg(fig, self.plot_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0, sticky=("nesw"))
 
