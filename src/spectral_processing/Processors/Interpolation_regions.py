@@ -15,22 +15,22 @@ class Interpolation_regions:
 
     @property
     def amount(self) -> int:
-        return len(self._regions) // 2
+        return len(self._regions.dropna()) // 2
 
     @property
     def dictionary(self) -> Dict:
         return {
             f"bir_{idx:02d}": int(value)
-            for idx, value in enumerate(self._regions.values)
+            for idx, value in enumerate(self._regions.dropna().values)
         }
 
     @property
     def series(self) -> pd.Series:
-        return self._regions
+        return self._regions.dropna()
 
     @property
     def nested_array(self) -> npt.NDArray:
-        return np.reshape(self._regions.values, (self.amount, 2))
+        return np.reshape(self._regions.dropna().values, (self.amount, 2))
 
     def set(self, **kwargs):
         for bir, new_value in kwargs.items():

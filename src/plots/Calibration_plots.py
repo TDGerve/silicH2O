@@ -27,6 +27,7 @@ class Calibration_plot(Single_plot):
             xytext=(-10, 12),
             textcoords="offset points",
             bbox=dict(boxstyle="round", fc="w"),
+            zorder=100,
         )
         self.annotation.set_visible(False)
 
@@ -39,6 +40,19 @@ class Calibration_plot(Single_plot):
 
     def clear_figure(self):
         ...
+
+    def display_name(self, name):
+        if self.name is None:
+            self.name = self.ax.text(
+                0.03,
+                0.97,
+                name,
+                transform=self.ax.transAxes,
+                fontsize="x-large",
+                fontweight="semibold",
+            )
+        else:
+            self.name.set_text(name)
 
     def draw_plot(self, **kwargs):
         H2OSi, H2Oref = kwargs.pop("standards")
@@ -70,7 +84,14 @@ class Calibration_plot(Single_plot):
 
     def plot_calibrationline(self, calibration_line: Optional[Callable]):
 
-        xmin, xmax = self.ax.get_xlim()
+        plot = self.calibration_stds
+
+        x_total = plot.get_xdata()
+        try:
+            xmin, xmax = min(x_total), max(x_total)
+        except ValueError:
+            return
+
         x = np.linspace(xmin, xmax, 2)
         y = calibration_line(x)
 
@@ -96,7 +117,7 @@ class Calibration_plot(Single_plot):
         x, y = self.calibration_stds.get_data()
 
         self.annotation.xy = (x[ind["ind"][0]], y[ind["ind"][0]])
-        text = "{}".format(", ".join([self.names[n] for n in ind["ind"]]))
+        text = "{}".format(", ".join([self.names[n] for n in ind["ind"]]))[:10]
 
         self.annotation.set_text(text)
 

@@ -37,7 +37,9 @@ class Calibration_processor:
         database_controller.save_results()
         self._database_controller = database_controller
         self._H2OSi = self._database_controller.results["rWS"]
-        self._H2Oreference = self._database_controller.H2Oreference.copy()
+        self._H2Oreference = pd.Series(
+            np.nan, index=self._H2OSi.index, name="H2Oreference"
+        )
         self.use = pd.Series(False, index=self._H2OSi.index, name="use")
 
     def import_calibration(

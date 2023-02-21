@@ -62,12 +62,12 @@ class Database_controller:
     def sample_saved(self):
         print("attribute is read only")
 
-    @property
-    def H2Oreference(self):
-        # pd.Series(
-        #     {sample.name: sample.H2Oreference for sample in self.spectra}, name="H2Oref"
-        # )
-        return self.settings[("calibration", "H2Oreference")]
+    # @property
+    # def H2Oreference(self):
+    #     # pd.Series(
+    #     #     {sample.name: sample.H2Oreference for sample in self.spectra}, name="H2Oref"
+    #     # )
+    #     return self.settings[("calibration", "H2Oreference")]
 
     def set_calibration(self, name: str, calibration: Callable):
         self.calibration = name

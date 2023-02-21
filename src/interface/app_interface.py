@@ -104,7 +104,7 @@ class App_interface:
     def change_title(self, title: Optional[str]):
         default = "Silic-H2O by Thomas van Gerve"
         if title is not None:
-            self.main_window.title(f"{default} : {title}")
+            self.main_window.title(f"{default} - Project: {title}")
             return
 
         self.main_window.title(default)

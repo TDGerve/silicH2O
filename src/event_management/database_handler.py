@@ -64,6 +64,7 @@ class Database_listener:
     on_plot_change = bl.signal("refresh plot")
     on_display_message = bl.signal("display message")
     on_update_gui_variables = bl.signal("update gui variables")
+    on_change_title = bl.signal("change_title")
 
     on_Ctrl_s = bl.signal("ctrl+s")
 
@@ -171,6 +172,7 @@ class Database_listener:
         self.clean_temp_files()
         self.database_controller.__init__()
         self.calibration.__init__()
+        self.on_change_title.send()
         # self.gui.clear_variables()
         self.on_clear_gui_variables.send()
         self.on_clear_plot.send("new project")
@@ -191,14 +193,21 @@ class Database_listener:
                 return
 
         self.save_project_data(filepath=filepath, name=name)
+        self.on_change_title.send(title=name)
         self.on_display_message.send(message="saved project")
 
         self.database_controller.set_project(filepath=filepath)
 
-    def save_calibration_as(self, *args, name: Optional[str] = None):
+    def save_calibration_as(
+        self, *args, name: Optional[str] = None, import_as_project=False
+    ):
 
         if name is None:
             name = self.calibration.name
+
+        if name is None:
+            on_display_message.send(message="Save calibration as ... first!")
+            return
 
         self.on_display_message.send(message="saving calibration...", duration=None)
 
@@ -209,9 +218,17 @@ class Database_listener:
             filepath = calibration_folder / "projects" / f"{name}.h2o"
             self.save_project_data(filepath=filepath, name=name)
 
-        self.on_display_message.send(message="saved calibration")
+            if self.database_controller.project != filepath:
+                import_as_project = messagebox.askquestion(
+                    message="Open calibration as project?"
+                )
 
+        self.on_display_message.send(message="saved calibration")
         self.calibration.name = name
+
+        if import_as_project:
+            self.on_change_title.send(title=name)
+            self.database_controller.set_project(filepath=filepath)
 
     def _make_project_folders(self, name: str, base_folder=temp_folder) -> Dict:
 
@@ -423,7 +440,7 @@ class Database_listener:
         on_display_message.send(message="loading project...", duration=None)
 
         filepath = pathlib.Path(filepath)
-        name = filepath.stem
+        projectname = filepath.stem
 
         # temp_path = temp_folder / name
         # temp_datapath = temp_path / "data"
@@ -431,7 +448,7 @@ class Database_listener:
 
         # paths = self._make_project_folders(name)
 
-        paths = self.move_project_files(filepath=filepath, name=name)
+        paths = self.move_project_files(filepath=filepath, name=projectname)
 
         setting_files = glob.glob(f"{paths['project']}\\*.parquet")
         setting_files.extend(glob.glob(f"{paths['project']}\\*.csv"))  # DELETE
@@ -454,9 +471,9 @@ class Database_listener:
             try:
                 settings_dict[name] = pd.read_parquet(str(setting))
             except pa.ArrowInvalid:
-                header = [[0, 1], "infer"][name == "settings"]  # DELETE
+                # header = [[0, 1], "infer"][name == "settings"]  # DELETE
                 settings_dict[name] = pd.read_csv(
-                    str(setting), index_col=[0], header=header
+                    str(setting), index_col=[0], header=[0, 1]
                 )
 
         interference_settings_dict = {}
@@ -470,7 +487,8 @@ class Database_listener:
         calibration_filepath = self.read_calibration_settings(
             projectpath=paths["project"]
         )
-        self.read_calibration_file(filepath=calibration_filepath, update_gui=False)
+        if calibration_filepath is not None:
+            self.read_calibration_file(filepath=calibration_filepath, update_gui=False)
         # with open(paths["project"] / "calibration.json", "r") as f:
         #     calibration = json.load(f)
         #     if name := calibration.get("name", None):
@@ -494,6 +512,7 @@ class Database_listener:
             )
 
         self.database_controller.set_project(filepath=filepath)
+        self.on_change_title.send(title=projectname)
         # self.gui.update_variables(sample_navigation={"samplelist": names})
         self.on_update_gui_variables.send(sample_navigation={"samplelist": names})
         self.on_activate_widgets.send()

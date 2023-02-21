@@ -40,8 +40,5 @@
         "boundary_right": 1020,
         "smoothing": 1,
         "spectrum": "baseline_corrected"
-    },
-    "calibration": {
-        "H2Oreference": NaN
     }
 }

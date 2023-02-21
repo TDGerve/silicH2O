@@ -48,6 +48,9 @@ class Double_plot:
             # ax.set_yticks([])
             ax.set_ylim(0, 1e-2)
 
+        # Disconnect key bindings
+        self.fig.canvas.mpl_disconnect(self.fig.canvas.manager.key_press_handler_id)
+
     def setup_ax0(self, title: str, limits: Tuple[int, int]):
 
         ax = self.axs[0]
@@ -239,8 +242,6 @@ class Single_plot:
                 0.97,
                 name,
                 transform=self.ax.transAxes,
-                fontsize="x-large",
-                fontweight="semibold",
             )
         else:
             self.name.set_text(name)

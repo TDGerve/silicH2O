@@ -85,3 +85,4 @@ class Gui_listener:
         self.on_activate_widgets.connect(self.activate_widgets)
 
         self.on_calibration_window.connect(self.calibration_window_popup)
+        self.on_change_title.connect(self.change_title)

@@ -7,6 +7,7 @@ import blinker as bl
 on_import_calibration_project = bl.signal("project calibration")
 on_read_calibration_file = bl.signal("read calibration file")
 on_save_calibration_as = bl.signal("save calibration as")
+on_calibration_plot_change = bl.signal("refresh calibration plot")
 
 calibration_folder = pathlib.Path(__file__).parents[3] / "calibration"
 
@@ -52,6 +53,7 @@ class Calibration_menubar(tk.Menu):
             return
 
         on_save_calibration_as.send(name=f)
+        on_calibration_plot_change.send()
 
     def save_calibration(self):
         on_save_calibration_as.send()

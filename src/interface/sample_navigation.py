@@ -49,6 +49,7 @@ class Sample_navigation(ttk.Frame):
                 app_configuration.gui["font"]["family"],
                 app_configuration.gui["font"]["size"],
             ),
+            activestyle=tk.DOTBOX,
         )
         listbox.grid(column=0, row=0, columnspan=2, rowspan=1, sticky=("nesw"))
 
@@ -60,11 +61,27 @@ class Sample_navigation(ttk.Frame):
             "<<ListboxSelect>>",
             lambda event: self.change_sample(listbox.curselection()),
         )
+        # Arrow keys are bound in the main window
+        listbox.bind("<Up>", lambda event: "break")
+        listbox.bind("<Down>", lambda event: "break")
+        listbox.bind("<Enter>", lambda event: self.bind_arrows)
+        listbox.bind("<Leave>", lambda event: self.unbind_arrows)
+
+    def bind_arrows(self):
+        listbox = self.nametowidget("sample_list")
+        listbox.bind("<Up>", lambda event: self.previous_sample)
+        listbox.bind("<Down>", lambda event: self.next_sample)
+
+    def unbind_arrows(self):
+        listbox = self.nametowidget("sample_list")
+        listbox.bind("<Up>", lambda event: "break")
+        listbox.bind("<Down>", lambda event: "break")
 
     def select_sample(self, selection):
         listbox = self.nametowidget("sample_list")
 
         listbox.selection_set(selection)
+        listbox.activate(selection)
         listbox.see(selection)
 
     def make_scrollbar(self):
