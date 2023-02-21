@@ -5,9 +5,11 @@ from .io_menu import IO_menu
 from .settings_menu import Settings_menu
 
 
-class Menubar:
-    def __init__(self, menubar):
+class Menubar(tk.Menu):
+    def __init__(self, parent, name):
 
-        IO_menu(parent=menubar)
-        Settings_menu(parent=menubar)
-        Calibration_menu(parent=menubar)
+        super().__init__(parent, name=name)
+
+        IO_menu(parent=self)
+        Settings_menu(parent=self)
+        Calibration_menu(parent=self)

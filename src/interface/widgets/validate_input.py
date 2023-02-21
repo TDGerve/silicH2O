@@ -41,7 +41,7 @@ def validate_numerical_input(
 
         valid = False
         new_value = None
-        widget.after_idle(lambda: widget.config(validate="focus"))
+        widget.after_idle(lambda: widget.config(validate="focusout"))
 
     return valid, new_value
 

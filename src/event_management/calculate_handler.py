@@ -27,13 +27,13 @@ class Calculation_listener:
     on_subtract_interference = bl.signal("subtract interference")
 
     on_set_processing = bl.signal("set processing")
-    on_set_H2Oreference = bl.signal("set H2O reference")
-    on_set_calibration_std = bl.signal("set calibration std")
-    on_get_calibration_info = bl.signal("get calibration info")
+    # on_set_H2Oreference = bl.signal("set H2O reference")
+    # on_set_calibration_std = bl.signal("set calibration std")
+    # on_get_calibration_info = bl.signal("get calibration info")
 
-    on_import_calibration_project = bl.signal("project calibration")
-    on_import_calibration_file = bl.signal("file calibration")
-    on_reset_calibration_standards = bl.signal("reset calibration standards")
+    # on_import_calibration_project = bl.signal("project calibration")
+    # on_import_calibration_file = bl.signal("file calibration")
+    # on_reset_calibration_standards = bl.signal("reset calibration standards")
 
     on_add_bir = bl.signal("add bir")
     on_delete_bir = bl.signal("delete bir")
@@ -49,11 +49,11 @@ class Calculation_listener:
     def __init__(
         self,
         database_controller: Database_controller,
-        calibration: Calibration_processor,
+        # calibration: Calibration_processor,
         # gui: Gui,
     ):
         self.database_controller = database_controller
-        self.calibration = calibration
+        # self.calibration = calibration
         # self.gui = gui
 
         self.subscribe_to_signals()
@@ -109,41 +109,41 @@ class Calculation_listener:
 
         self.refresh_plots()
 
-    def import_calibration_project(self, *args):
-        self.calibration.calibrate_with_project(
-            database_controller=self.database_controller
-        )
+    # def import_calibration_project(self, *args):
+    #     self.calibration.calibrate_with_project(
+    #         database_controller=self.database_controller
+    #     )
 
-        self.send_calibration_info()
+    #     self.send_calibration_info()
 
-    def import_calibration_file(self, *args):
-        self.on_display_message(message="import calibration from file")
+    # def import_calibration_file(self, *args):
+    #     self.on_display_message(message="import calibration from file")
 
-    def send_calibration_info(self, *args):
-        sample_amount = len(self.calibration._H2OSi)
-        sample_info = self.calibration.get_sampleinfo_gui()
-        calibration_params = self.calibration.get_calibration_parameters_gui()
+    # def send_calibration_info(self, *args):
+    #     sample_amount = len(self.calibration._H2OSi)
+    #     sample_info = self.calibration.get_sampleinfo_gui()
+    #     calibration_params = self.calibration.get_calibration_parameters_gui()
 
-        self.on_reset_calibration_standards.send(sample_amount=sample_amount)
-        self.on_update_gui_variables.send(
-            **{"calibration": sample_info, "calibration_statistics": calibration_params}
-        )
+    #     self.on_reset_calibration_standards.send(sample_amount=sample_amount)
+    #     self.on_update_gui_variables.send(
+    #         **{"calibration": sample_info, "calibration_statistics": calibration_params}
+    #     )
 
-    def set_reference_H2O(self, *args, sample_index: int, H2O: float):
-        # if sample_name is not None:
-        #     sample_idx = self.database_controller.names.index(sample_name)
-        #     sample = self.database_controller.get_sample(sample_idx)
-        # else:
-        #     sample = self.sample
+    # def set_reference_H2O(self, *args, sample_index: int, H2O: float):
+    #     # if sample_name is not None:
+    #     #     sample_idx = self.database_controller.names.index(sample_name)
+    #     #     sample = self.database_controller.get_sample(sample_idx)
+    #     # else:
+    #     #     sample = self.sample
 
-        # sample._H2Oreference = H2O
-        self.calibration.set_H2Oreference(sample_index=sample_index, H2O=H2O)
-        self.database_controller.get_sample(sample_index)._H2Oreference = H2O
+    #     # sample._H2Oreference = H2O
+    #     self.calibration.set_H2Oreference(sample_index=sample_index, H2O=H2O)
+    #     self.database_controller.get_sample(sample_index)._H2Oreference = H2O
 
-    def set_calibration_std(self, *args, sample_index: int, use: bool):
-        self.calibration.use.iloc[sample_index] = not self.calibration.use.iloc[
-            sample_index
-        ]
+    # def set_calibration_std(self, *args, sample_index: int, use: bool):
+    #     self.calibration.use.iloc[sample_index] = not self.calibration.use.iloc[
+    #         sample_index
+    #     ]
 
     def get_sample_settings(self):  # move #CH
 
@@ -320,7 +320,9 @@ class Calculation_listener:
         names = ["noise", "Si_SNR", "H2O_SNR"]
         signal = {name: round(value, 2) for name, value in zip(names, all_results[3:])}
 
-        return {"areas": areas, "signal": signal}
+        H2O = {"H2O_wt": self.database_controller.calculate_H2O(areas["H2OSi"])}
+
+        return {"areas": areas, "signal": signal, "H2O_wt": H2O}
 
     def update_from_plot(self, *args, **settings):
 
@@ -329,7 +331,7 @@ class Calculation_listener:
         # self.gui.update_variables(**settings)
         self.update_gui_results()
 
-        # self.refresh_plots("settings change")
+        self.refresh_plots("settings change")
 
     def update_from_widgets(self, *args, **kwargs):
 
@@ -345,9 +347,9 @@ class Calculation_listener:
             return
         self.on_plot_change.send(message, **plotdata)
 
-    def get_sample_plotdata(self) -> Dict:  # move #CH
+    def get_sample_plotdata(self) -> Dict:
 
-        return self.sample.get_plotdata()
+        return {"plot": self.current_tab, "plotdata": self.sample.get_plotdata()}
 
     def reset_sample(self, *args):
 
@@ -371,10 +373,10 @@ class Calculation_listener:
 
         self.on_set_processing.connect(self.set_spectrum_processing)
 
-        self.on_import_calibration_project.connect(self.import_calibration_project)
-        self.on_import_calibration_file.connect(self.import_calibration_file)
-        self.on_get_calibration_info.connect(self.send_calibration_info)
-        self.on_set_H2Oreference.connect(self.set_reference_H2O)
+        # self.on_import_calibration_project.connect(self.import_calibration_project)
+        # self.on_import_calibration_file.connect(self.import_calibration_file)
+        # self.on_get_calibration_info.connect(self.send_calibration_info)
+        # self.on_set_H2Oreference.connect(self.set_reference_H2O)
 
         self.on_add_bir.connect(self.add_bir)
         self.on_delete_bir.connect(self.delete_bir)

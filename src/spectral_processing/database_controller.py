@@ -39,7 +39,8 @@ class Database_controller:
 
         self.results: pd.DataFrame = Results_DF()
 
-        self.calculate_H2O: Optional[Callable] = None
+        self.calibration: Optional[str] = None
+        self.calculate_H2O: Callable = lambda *args, **kwargs: None
 
         self.project = None
 
@@ -63,7 +64,18 @@ class Database_controller:
 
     @property
     def H2Oreference(self):
-        return pd.Series({sample.name: sample.H2Oreference for sample in self.spectra})
+        # pd.Series(
+        #     {sample.name: sample.H2Oreference for sample in self.spectra}, name="H2Oref"
+        # )
+        return self.settings[("calibration", "H2Oreference")]
+
+    def set_calibration(self, name: str, calibration: Callable):
+        self.calibration = name
+        self.calculate_H2O = calibration
+
+    def reset_calibration(self):
+        self.calibration = None
+        self.calculate_H2O = lambda *args, **kwargs: None
 
     def get_sample(self, index: int) -> h2o_processor:
 
@@ -276,6 +288,11 @@ class Database_controller:
 
         self.results.loc[name] = sample.results.copy()
 
+        # Not a great way to save H2O, would be better to do that inside the sample processor
+        self.results.loc[name, "H2O"] = self.calculate_H2O(
+            self.results.loc[name, "rWS"]
+        )
+
     def save_all_samples(self) -> None:
 
         for sample_idx in range(self.results.shape[0]):
@@ -349,9 +366,11 @@ class Database_controller:
         self.save_results()
 
         try:
-            pd.concat([self.settings, self.results], axis=1).to_csv(
-                folder / f"{name}.csv"
+            results = pd.concat([self.settings, self.results], axis=1).dropna(
+                axis=1, how="all"
             )
+
+            results.to_csv(folder / f"{name}.csv")
         except PermissionError:
             on_display_message.send(message=f"{name}.csv is open!", duration=10)
             return

@@ -38,12 +38,11 @@ class drag_polygons:
         """
         calback method for left mouseclick events
         """
-
+        self.mouse_location = event.xdata
         if (event.button == 1) and (event.inaxes == self.ax):
             object_id = self.find_neighbor_object(event)
             if object_id:
                 self.dragging = object_id
-                self.mouse_location = event.xdata
 
     def on_motion(self, event):
         """
@@ -76,6 +75,7 @@ class drag_polygons:
         else:
             self.set_new_borders(current_polygon, x_new, x_min, x_max)
 
+        # current_polygon.figure.canvas.draw_idle()
         self.mouse_location = x_new
         self.send_bir_change(poly_id)
 

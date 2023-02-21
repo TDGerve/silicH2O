@@ -16,10 +16,18 @@ class Calibration_processor:
 
     def __init__(self):
         self._H2OSi = pd.Series(dtype=float)
-        self._H2Oreference = pd.Series(dtype=float)
-        self.use = pd.Series(dtype=bool)
+        self._H2Oreference = pd.Series(dtype=float, name="H2Oref")
+        self.use = pd.Series(dtype=bool, name="use")
 
         self._calibration: Optional[stat.LinregressResult] = None
+        self.name: Optional[str] = None
+        self.use_calibration = False
+
+        self._database_controller = None
+
+    @property
+    def names(self):
+        return list(self._H2OSi.index)
 
     @property
     def initialised(self):
@@ -30,22 +38,37 @@ class Calibration_processor:
         self._database_controller = database_controller
         self._H2OSi = self._database_controller.results["rWS"]
         self._H2Oreference = self._database_controller.H2Oreference.copy()
-        self.use = pd.Series(False, index=self._H2OSi.index)
+        self.use = pd.Series(False, index=self._H2OSi.index, name="use")
 
     def import_calibration(
-        self, H2OSi: pd.Series, H2Oreference: pd.Series, use: pd.Series
+        self, name: str, H2OSi: pd.Series, H2Oreference: pd.Series, use: pd.Series
     ):
-        self._H2OSi = H2OSi.copy()
-        self._H2Oreference = H2Oreference.copy()
-        self.use = use.copy()
+        self.import_calibration_data(
+            H2OSi=H2OSi.copy(), H2Oreference=H2Oreference.copy(), use=use.copy()
+        )
+
+        self.name = name
+
+    def import_calibration_data(self, **kwargs):
+        data = {
+            "H2OSi": "_H2OSi",
+            "H2Oreference": "_H2Oreference",
+            "use": "use",
+            "name": "name",
+        }
+        for name, attr in data.items():
+            vals = kwargs.pop(name, None)
+            if vals is None:
+                continue
+            setattr(self, attr, vals)
 
     @property
     def H2OSi(self) -> pd.Series:
-        return self._H2OSi[self.use]
+        return self._H2OSi[self.use].dropna()
 
     @property
     def H2Oreference(self) -> pd.Series:
-        return self._H2Oreference[self.use]
+        return self._H2Oreference[self.use].dropna()
 
     @property
     def calibration(self) -> LinregressResult:
@@ -61,15 +84,16 @@ class Calibration_processor:
             return 0, 0
 
     @property
-    def RMSE(self) -> float:
+    def SEE(self) -> float:
         try:
-            np.sqrt(
+            SEE = np.sqrt(
                 met.mean_squared_error(
                     self.H2Oreference, self._calculate_H2O(self.H2OSi)
                 )
             )
-        except AttributeError:
-            return 0
+        except (TypeError, ValueError):
+            SEE = 0
+        return SEE
 
     @property
     def R2(self) -> float:
@@ -102,7 +126,7 @@ class Calibration_processor:
         self.use[sample_name] = use
 
     def calibrate(self) -> None:
-        if sum(self.use) < 2:
+        if len(self.H2OSi) < 2:
             return self.on_display_message.send(
                 message="Not enough samples in calibration!"
             )
@@ -110,18 +134,24 @@ class Calibration_processor:
         self._calibration = stat.linregress(self.H2OSi, self.H2Oreference)
 
     def _calculate_H2O(self, H2OSi):
-        return self.calibration.intercept + H2OSi * self.calibration.slope
+        if self._calibration is None:
+            return None
 
-    def get_calibration_line(self, name: str) -> Callable:
+        return np.round(self.calibration.intercept + H2OSi * self.calibration.slope, 3)
 
-        intercept, slope = self.calibration_parameters.values()
+    # def get_calibration_line(self) -> Callable:
 
-        def calibration_line(H2OSi):
-            return intercept + H2OSi * slope
+    #     if self._calibration is None:
+    #         return None
 
-        calibration_line.__name__ = name
+    #     intercept, slope = self.coefficients
 
-        return calibration_line
+    #     def calibration_line(H2OSi):
+    #         return intercept + H2OSi * slope
+
+    #     calibration_line.__name__ = "" if not self.name else self.name
+
+    #     return calibration_line
 
     def get_sampleinfo_gui(self) -> Dict:
         return {
@@ -142,8 +172,16 @@ class Calibration_processor:
     def get_calibration_parameters_gui(self) -> Dict:
         return {
             "R2": f"{self.R2: .2f}",
-            "RMSE": f"{self.RMSE: .2f}",
+            "SEE": f"{self.SEE: .2f}",
             "p_value": f"{self.p_value:.2e}",
             "intercept": f"{self.coefficients[0]: .2f} \u00B1 {self.errors_coefficient[0]: .2f}",
             "slope": f"{self.coefficients[1]: .2f} \u00B1 {self.errors_coefficient[1]: .2f}",
+            "use_calibration": self.use_calibration,
+        }
+
+    def get_plotdata(self) -> Dict:
+        return {
+            "standards": (self.H2OSi, self.H2Oreference),
+            "calibration_line": self._calculate_H2O,
+            "name": self.name,
         }

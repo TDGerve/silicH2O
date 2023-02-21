@@ -28,7 +28,7 @@ _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
-padding = 2
+padding = 1
 
 
 class Interference_frame(ttk.Frame):
@@ -84,10 +84,10 @@ class Interference_frame(ttk.Frame):
         self.make_horizontal_dividers(self, rows=[1, 3, 5], col=3)
         self.make_vertical_divider(self, col=2)
 
-        for child in self.winfo_children():
-            # child.grid_configure(padx=3, pady=3)
-            for grandchild in child.winfo_children():
-                grandchild.grid_configure(padx=padding, pady=padding)
+        # for child in self.winfo_children():
+        #     # child.grid_configure(padx=3, pady=3)
+        #     for grandchild in child.winfo_children():
+        # grandchild.grid_configure(padx=padding, pady=padding)
 
     def reset_baseline_widgets(self, bir_amount):
         widget = self.nametowidget("interference").nametowidget("baseline")
@@ -169,6 +169,9 @@ class Interference_frame(ttk.Frame):
         )
         baseline_interpolation.grid(row=3, column=0, columnspan=2, sticky="nesw")
 
+        for child in frame.winfo_children():
+            child.grid_configure(padx=padding, pady=padding)
+
     def make_deconvolution_frame(
         self, name, parent, widgets, variables, row: int, col: int
     ):
@@ -240,6 +243,9 @@ class Interference_frame(ttk.Frame):
 
         for i in range(2):
             frame.columnconfigure(i, weight=1)
+
+        for child in frame.winfo_children():
+            child.grid_configure(padx=padding, pady=padding)
 
     def make_subtraction_frame(
         self, parent, name, widgets, variables, row: int, col: int
@@ -357,6 +363,9 @@ class Interference_frame(ttk.Frame):
         self.make_use_checkbutton(
             parent=frame, variables=variables, widgets=widgets, row=5, col=1
         )
+
+        for child in frame.winfo_children():
+            child.grid_configure(padx=padding, pady=padding)
 
     def make_use_checkbutton(self, parent, variables, widgets, row, col):
         var = tk.BooleanVar(value=False)

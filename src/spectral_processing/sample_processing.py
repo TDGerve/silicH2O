@@ -135,7 +135,7 @@ class Raman_processor:
         """
 
         return {
-            "sample_name": self.name,
+            "name": self.name,
             "x": self.sample.x,
             "spectra": self.get_plot_spectra(),
             "birs": self.baseline.interpolation_regions.nested_array,  # self.get_birs(),
@@ -194,9 +194,9 @@ class h2o_processor(Raman_processor):
 
         self.set_spectrum_processing()
 
-    @property
-    def H2Oreference(self):
-        return self._H2Oreference
+    # @property
+    # def H2Oreference(self):
+    #     return self._H2Oreference
 
     @property
     def settings(self):

@@ -183,7 +183,9 @@ class Single_plot:
 
         pl.plot_layout(scaling=screen.scaling, colors=self.colors)
 
-        self.fig, self.ax = plt.subplots(figsize=(width, height))
+        self.fig, self.ax = plt.subplots(
+            figsize=(width, height), constrained_layout=True
+        )
         self.lines = {}
         self.name = None
 
@@ -230,13 +232,18 @@ class Single_plot:
             except KeyError:
                 pass
 
-    def display_name(self, sample_name):
+    def display_name(self, name):
         if self.name is None:
             self.name = self.ax.text(
-                0.01, 0.98, sample_name, transform=self.ax.transAxes
+                0.03,
+                0.97,
+                name,
+                transform=self.ax.transAxes,
+                fontsize="x-large",
+                fontweight="semibold",
             )
         else:
-            self.name.set_text(sample_name)
+            self.name.set_text(name)
 
     def draw_plot(self):
         self.fig.canvas.draw_idle()

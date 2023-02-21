@@ -33,7 +33,7 @@ def make_label_widgets(
     row, column = start_indeces
 
     for i, (name, label) in enumerate(zip(names, labels)):
-        text_label = ttk.Label(parent, text=label, width=7, font=(_font, _fontsize))
+        text_label = ttk.Label(parent, text=label, width=5, font=(_font, _fontsize))
         text_label.grid(row=i + 1, column=column, sticky="esw")
 
         var = tk.StringVar(name=name)

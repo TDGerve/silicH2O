@@ -66,7 +66,7 @@ class App_interface:
                 try:
                     widget = self.widgets[name][var_name]
 
-                    widget.focus_set()
+                    # widget.focus_set()
                     widget.delete(0, tk.END)
                     widget.insert(0, f"{value}")
 
@@ -77,7 +77,7 @@ class App_interface:
                 except TypeError:
                     variable.set(str(value))
 
-                self.main_window.focus_set()
+                # self.main_window.focus_set()
 
     def activate_widgets(self) -> None:
         for frame in self.widgets.values():

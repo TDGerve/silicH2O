@@ -4,6 +4,7 @@ import blinker as bl
 
 from .event_management import (
     Calculation_listener,
+    Calibration_listener,
     Database_listener,
     Gui_listener,
     Plot_listener,
@@ -21,11 +22,16 @@ class Raman_app:
         self.calibration = Calibration_processor()
         self.gui = App_interface(title=title)
 
-        self.calulcation_listener = Calculation_listener(
-            self.samples,
-            self.calibration,
+        self.database_listener = Database_listener(
+            database_controller=self.samples, calibration=self.calibration
         )
-        self.database_listener = Database_listener(self.samples)
+        self.calulcation_listener = Calculation_listener(
+            database_controller=self.samples
+        )
+        self.calibration_listener = Calibration_listener(
+            database_controller=self.samples, calibration=self.calibration
+        )
+
         self.plot_listener = Plot_listener(self.gui.plots)
         self.gui_listener = Gui_listener(self.gui)
 

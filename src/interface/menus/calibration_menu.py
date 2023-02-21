@@ -1,8 +1,9 @@
 import glob
 import os
+import pathlib
 import tkinter as tk
 import webbrowser
-from tkinter import filedialog, simpledialog, ttk
+from tkinter import filedialog, messagebox, simpledialog, ttk
 from typing import List
 
 import blinker as bl
@@ -24,8 +25,11 @@ on_restore_default_settings = bl.signal("restore default settings")
 
 
 on_display_message = bl.signal("display message")
-
+on_import_calibration_project = bl.signal("project calibration")
 on_calibration_window = bl.signal("calibration window")
+on_read_calibration_file = bl.signal("read calibration file")
+
+calibration_folder = pathlib.Path(__file__).parents[2] / "calibration"
 
 
 class Calibration_menu:
@@ -38,7 +42,41 @@ class Calibration_menu:
         )
 
         menu.add_command(label="calibrate", command=self.calibration_window_popup)
-        menu.add_command(label="import as project")
+        menu.add_command(
+            label="import calibration as project", command=self.import_project
+        )
 
     def calibration_window_popup(self):
         on_calibration_window.send()
+
+    def import_project(self):
+        result = messagebox.askokcancel(
+            title="confirm",
+            message="Unsaved progress will be lost.\nAre you sure?",
+            icon="question",
+        )
+        if not result:
+            return
+
+        try:
+            project = filedialog.askopenfilename(
+                initialdir=calibration_folder / "projects",
+                filetypes=[("SilicH2O project", "*.h2o")],
+            )
+
+        except AttributeError:
+            print("Opening files cancelled by user")
+            return
+
+        if len(project) == 0:
+            return
+
+        name = pathlib.Path(project).stem
+
+        on_load_project.send("menu", filepath=project)
+        on_import_calibration_project.send(update_gui=False)
+
+        calibration_file = calibration_folder / f"{name}.cH2O"
+        on_read_calibration_file.send(
+            filepath=calibration_file, which=["H2Oreference", "use"], update_gui=False
+        )

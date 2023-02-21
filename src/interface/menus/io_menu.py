@@ -104,7 +104,6 @@ class IO_menu:
 
     def load_project(self):
 
-        on_display_message.send(message="loading project...", duration=None)
         try:
             project = filedialog.askopenfilename(
                 initialdir=os.getcwd(), filetypes=[("SilicH2O project", "*.h2o")]
@@ -118,16 +117,12 @@ class IO_menu:
 
         on_load_project.send("menu", filepath=project)
 
-        on_display_message.send(message="project loaded!")
-
         if self.export_enabled:
             return
 
         self.activate_menus()
 
     def export_results(self):
-
-        on_display_message.send(message="exporting results...", duration=None)
 
         try:
             f = filedialog.asksaveasfilename(
@@ -138,7 +133,6 @@ class IO_menu:
             return
 
         on_export_results.send("menu", filepath=f)
-        on_display_message.send(message="exporting complete")
 
     def export_sample(self):
 

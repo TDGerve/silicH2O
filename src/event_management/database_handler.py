@@ -1,10 +1,11 @@
 import glob
+import json
 import os
 import pathlib
 import shutil
 import tarfile
 import time
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from typing import Dict, List, Optional
 
 import blinker as bl
@@ -20,9 +21,12 @@ from ..app_configuration import (
 )
 
 # from ..interface import Gui
-from ..spectral_processing import Database_controller
+from ..spectral_processing import Calibration_processor, Database_controller
+
+on_display_message = bl.signal("display message")
 
 temp_folder = pathlib.Path(__file__).parents[1] / "temp"
+calibration_folder = pathlib.Path(__file__).parents[1] / "calibration"
 
 
 class Database_listener:
@@ -50,6 +54,10 @@ class Database_listener:
     on_export_sample = bl.signal("export sample")
     on_export_all = bl.signal("export all")
 
+    on_save_calibration_as = bl.signal("save calibration as")
+    on_read_calibration_file = bl.signal("read calibration file")
+    on_import_calibration_file = bl.signal("import calibration file")
+
     on_clean_temp_files = bl.signal("clean temp files")
     on_clear_plot = bl.signal("clear plot")
 
@@ -59,8 +67,13 @@ class Database_listener:
 
     on_Ctrl_s = bl.signal("ctrl+s")
 
-    def __init__(self, database_controller: Database_controller):
+    def __init__(
+        self,
+        database_controller: Database_controller,
+        calibration: Calibration_processor,
+    ):
         self.database_controller = database_controller
+        self.calibration = calibration
         # self.gui = gui
 
         self.subscribe_to_signals()
@@ -157,6 +170,7 @@ class Database_listener:
 
         self.clean_temp_files()
         self.database_controller.__init__()
+        self.calibration.__init__()
         # self.gui.clear_variables()
         self.on_clear_gui_variables.send()
         self.on_clear_plot.send("new project")
@@ -181,9 +195,27 @@ class Database_listener:
 
         self.database_controller.set_project(filepath=filepath)
 
-    def _make_project_folders(self, name: str) -> Dict:
+    def save_calibration_as(self, *args, name: Optional[str] = None):
 
-        paths = {"project": temp_folder / name}
+        if name is None:
+            name = self.calibration.name
+
+        self.on_display_message.send(message="saving calibration...", duration=None)
+
+        self.save_calibration_data(name=name)
+
+        if self.calibration._database_controller:
+
+            filepath = calibration_folder / "projects" / f"{name}.h2o"
+            self.save_project_data(filepath=filepath, name=name)
+
+        self.on_display_message.send(message="saved calibration")
+
+        self.calibration.name = name
+
+    def _make_project_folders(self, name: str, base_folder=temp_folder) -> Dict:
+
+        paths = {"project": base_folder / name}
         paths["data"] = paths["project"] / "data"
         paths["processed"] = paths["data"] / "processed"
         paths["interference"] = paths["data"] / "interference"
@@ -195,9 +227,107 @@ class Database_listener:
 
         return paths
 
+    def save_calibration_data(self, *args, name: Optional[str] = None):
+
+        if name is None:
+            name = self.calibration.name
+
+        data_file = calibration_folder / f"{name}.cH2O"
+        # coefficients_file = calibration_folder / "coefficients.json"
+
+        calibration_data = pd.concat(
+            [
+                self.calibration._H2OSi.rename("H2OSi"),
+                self.calibration._H2Oreference.rename("H2Oreference"),
+                self.calibration.use.rename("use"),
+            ],
+            axis=1,
+        )
+        calibration_data.to_parquet(data_file)
+
+        # calibration_coefficients = {
+        #     name: val
+        #     for name, val in zip(("intercept", "slope"), self.calibration.coefficients)
+        # }
+
+        # with open(coefficients_file, "w", encoding="utf-8") as f:
+        #     json.dump(calibration_coefficients, f, ensure_ascii=False, indent=4)
+
+        # files = (data_file, coefficients_file)
+        # with tarfile.open(calibration_folder / f"{name}.ch2o", mode="w") as tar:
+        #     for file in files:
+        #         # Add file to tar
+        #         tar.add(file)
+
+        # Delete file
+        # for file in files:
+        #     os.unlink(file)
+
+    # def read_calibration_file(self, *args, filepath: str, **kwargs):
+
+    #     file = pathlib.Path(filepath)
+    #     if not file.is_file():
+    #         messagebox.showwarning(
+    #             title="Silic-H2O", message="Calibration file not found!"
+    #         )
+    #         return
+
+    #     name = file.stem
+    #     calibration = pd.read_parquet(filepath)
+
+    #     self.on_import_calibration_file.send(
+    #         name=name,
+    #         H2OSi=calibration["H2OSi"].copy(),
+    #         H2Oreference=calibration["H2Oreference"].copy(),
+    #         use=calibration["use"].copy(),
+    #         **kwargs,
+    #     )
+
+    def read_calibration_file(
+        self, *args, filepath: str, which: Optional[List[str]] = None, update_gui=True
+    ):
+
+        filepath = pathlib.Path(filepath)
+        calibration_data, name = self.open_calibration_file(filepath=filepath)
+        data = calibration_data.to_dict(orient="series")
+        data["name"] = name
+
+        if which is not None:
+            data = {name: vals for name, vals in data.items() if name in which}
+
+        self.on_import_calibration_file.send(update_gui=update_gui, **data)
+
+    def open_calibration_file(self, filepath: pathlib.Path):
+
+        name = filepath.stem
+
+        if not filepath.is_file():
+            messagebox.showwarning(
+                title="Silic-H2O", message="Calibration file not found!"
+            )
+            return
+        calibration_data = pd.read_parquet(calibration_folder / f"{name}.cH2O")
+        return calibration_data, name
+
+    def read_calibration_settings(self, projectpath: pathlib.Path):
+
+        with open(projectpath / "calibration.json", "r") as f:
+            calibration = json.load(f)
+            if name := calibration.get("name", None):
+                calibration_filepath = calibration_folder / f"{name}.cH2O"
+                return calibration_filepath
+
+    def save_calibration_to_project(self, projectpath):
+
+        with open(projectpath / "calibration.json", "w") as f:
+            data = {"name": self.calibration.name}
+            json.dump(data, f, ensure_ascii=False, indent=4, allow_nan=True)
+
     def save_project_data(self, filepath: pathlib.Path, name: str):
 
         paths = self._make_project_folders(name)
+
+        self.save_calibration_to_project(paths["project"])
 
         has_interference = False
 
@@ -249,6 +379,8 @@ class Database_listener:
 
     def export_results(self, *args, filepath: str):
 
+        on_display_message.send(message="exporting results...", duration=None)
+
         filepath = pathlib.Path(filepath)
         name = filepath.stem
         folder = filepath.parents[0]
@@ -265,6 +397,7 @@ class Database_listener:
         #     temp_interferencepath.mkdir(parents=True, exist_ok=True)
 
         paths = self._make_project_folders(name)
+        to_path = paths["project"]
 
         with tarfile.open(str(filepath), "r") as tar:
 
@@ -276,16 +409,18 @@ class Database_listener:
                 if len(suffix) == 0:
                     continue
 
-                name = path.stem
+                # name = path.stem
 
-                to_path = paths["project"] / path
+                tar.extract(info, path=to_path)
+                # shutil.move(str(path), to_path)
 
-                tar.extract(info)
-                shutil.move(str(path), to_path)
+        return paths
 
     def load_project(self, *args, filepath: str):
 
         self.on_clear_plot.send("new project")
+
+        on_display_message.send(message="loading project...", duration=None)
 
         filepath = pathlib.Path(filepath)
         name = filepath.stem
@@ -294,9 +429,9 @@ class Database_listener:
         # temp_datapath = temp_path / "data"
         # temp_interferencepath = temp_datapath / "interference"
 
-        paths = self._make_project_folders(name)
+        # paths = self._make_project_folders(name)
 
-        self.move_project_files(filepath=filepath, name=name)
+        paths = self.move_project_files(filepath=filepath, name=name)
 
         setting_files = glob.glob(f"{paths['project']}\\*.parquet")
         setting_files.extend(glob.glob(f"{paths['project']}\\*.csv"))  # DELETE
@@ -330,14 +465,27 @@ class Database_listener:
             interference_settings_dict[name] = pd.read_parquet(str(setting))
 
         self.database_controller.__init__()
+        # Add calibration
+
+        calibration_filepath = self.read_calibration_settings(
+            projectpath=paths["project"]
+        )
+        self.read_calibration_file(filepath=calibration_filepath, update_gui=False)
+        # with open(paths["project"] / "calibration.json", "r") as f:
+        #     calibration = json.load(f)
+        #     if name := calibration.get("name", None):
+        #         self.read_calibration_file(
+        #             filepath=calibration_folder / f"{name}.cH2O", update_gui=False
+        # )
+        # Read samples
         self.database_controller.read_files(
             spectrum_files, names=names, settings=settings_dict
         )
-
+        # Read processed spectra
         self.database_controller.add_processed_spectra(
             files=processed_files, names=processed_names
         )
-
+        # Read interference
         for file, name in zip(interference_files, interference_names):
             self.database_controller.add_interference(
                 file=file,
@@ -353,6 +501,8 @@ class Database_listener:
         # if self.gui.state == GUI_state.DISABLED:
         #     self.gui.activate_widgets()
         #     self.gui.set_state(GUI_state.ACTIVE)
+
+        on_display_message.send(message="project loaded!")
 
     def save_sample(self, *args):
 
@@ -372,17 +522,18 @@ class Database_listener:
     def clean_temp_files(self, *args):
 
         # delete temporary files
-        for root, dirs, files in os.walk(temp_folder):
+        for folder in (temp_folder, calibration_folder / "temp"):
+            for root, dirs, files in os.walk(folder):
 
-            for f in files:
-                os.unlink(os.path.join(root, f))
+                for f in files:
+                    os.unlink(os.path.join(root, f))
 
-            for d in dirs:
-                try:
-                    shutil.rmtree(os.path.join(root, d))
-                except PermissionError:
-                    time.sleep(0.5)
-                    shutil.rmtree(os.path.join(root, d))
+                for d in dirs:
+                    try:
+                        shutil.rmtree(os.path.join(root, d))
+                    except PermissionError:
+                        time.sleep(0.5)
+                        shutil.rmtree(os.path.join(root, d))
 
     def export_sample(self, *args, filepath: str):
         filepath = pathlib.Path(filepath)
@@ -413,6 +564,9 @@ class Database_listener:
         self.on_save_project.connect(self.save_project)
         self.on_save_sample.connect(self.save_sample)
         self.on_save_all.connect(self.save_all_samples)
+
+        self.on_save_calibration_as.connect(self.save_calibration_as)
+        self.on_read_calibration_file.connect(self.read_calibration_file)
 
         self.on_Ctrl_s.connect(self.save_samples_to_project)
 

@@ -124,9 +124,10 @@ class Main_window(tk.Tk):
     def create_menus(self):
 
         self.option_add("*tearOff", False)
-        menubar = tk.Menu(self, name="menus")
+        # menubar = tk.Menu(self, name="menus")
+        menubar = Menubar(self, name="menus")
         self["menu"] = menubar
-        Menubar(menubar=menubar)
+        # Menubar(menubar=menubar)
 
     def create_navigation_frame(self, variables: Dict, widgets: Dict):
         # Create the two main frames
@@ -215,7 +216,3 @@ class Main_window(tk.Tk):
         # main_frame = self.nametowidget("main_frame")
         infobar = Infobar(frame, variables, widgets)
         infobar.grid(column=col, row=row, sticky=("nesw"))
-
-    def on_return(self, *event):
-
-        self.focus_set()
