@@ -118,7 +118,11 @@ class Database_controller:
         }
 
     def read_files(
-        self, files: List, names: List[str], settings: Optional[Dict] = None
+        self,
+        files: List,
+        names: List[str],
+        settings: Optional[Dict] = None,
+        calculate_results=True,
     ) -> None:
 
         old_files = len(self.files)
@@ -149,8 +153,8 @@ class Database_controller:
                     interpolation_regions=self.interpolation_regions.loc[name].copy(),
                 ),
             )
-
-            self.spectra[idx].calculate_results()
+            if calculate_results:
+                self.spectra[idx].calculate_results()
 
     def add_interference(
         self, file: str, name: Optional[str] = None, settings: Optional[Dict] = None

@@ -1,8 +1,10 @@
+import pathlib
 import tkinter as tk
 from tkinter import ttk
 
 import blinker as bl
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
+from PIL import Image, ImageTk
 
 from ... import app_configuration
 
@@ -14,6 +16,8 @@ on_mouse_movement = bl.signal("mouse moved")
 class vertical_toolbar(NavigationToolbar2Tk):
     def __init__(self, canvas, window):
         super().__init__(canvas, window, pack_toolbar=False)
+
+        self.change_icons()
 
     # override _Button() to re-pack the toolbar button in vertical direction
     def _Button(self, text, image_file, toggle, command):
@@ -42,3 +46,24 @@ class vertical_toolbar(NavigationToolbar2Tk):
             else:
                 return s
         return f"X:{'-': >6} Y:{'-':>6}"
+
+    def change_icons(self):
+        names = [
+            "Home",
+            "Zoom",
+            "Save",
+            "Back",
+            "Forward",
+            "Pan",
+        ]
+        for name in names:
+            button = self._buttons[name]
+            width, height = button.winfo_reqheight(), button.winfo_reqheight()
+            image = Image.open(
+                str(pathlib.Path(__file__).parents[0] / "icons" / f"{name}.png")
+            )
+            image = image.resize((int(width * 0.8), int(height * 0.8)))
+            image = ImageTk.PhotoImage(image)
+
+            button.config(image=image)
+            button.image = image

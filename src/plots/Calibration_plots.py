@@ -2,6 +2,7 @@ from typing import Callable, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.transforms import Bbox
 
 from .. import app_configuration
 from ..interface.screens import Screen
@@ -18,6 +19,7 @@ class Calibration_plot(Single_plot):
         )
 
         self.ax.grid(axis="both", visible=True)
+
         self.fig.set_size_inches(w=8 * self.scale, h=7 * self.scale)
         self.fig.supylabel("ref.\nH$_2$O (wt.%)", rotation=0, ma="center")
 
@@ -28,8 +30,10 @@ class Calibration_plot(Single_plot):
             textcoords="offset points",
             bbox=dict(boxstyle="round", fc="w"),
             zorder=100,
+            annotation_clip=True,
         )
         self.annotation.set_visible(False)
+        self.annotation.set_clip_on(True)
 
         self.calibration_stds = None
         self.names = []
@@ -117,9 +121,12 @@ class Calibration_plot(Single_plot):
         x, y = self.calibration_stds.get_data()
 
         self.annotation.xy = (x[ind["ind"][0]], y[ind["ind"][0]])
-        text = "{}".format(", ".join([self.names[n] for n in ind["ind"]]))[:10]
+        text = "{}".format(", ".join([self.names[n] for n in ind["ind"]]))
 
         self.annotation.set_text(text)
+
+        clip_box = Bbox([[0, 0], [1, 1]]).transformed(self.ax.transAxes)
+        self.annotation.set_clip_box(clip_box)
 
     def hover(self, event):
         if not self.calibration_stds:

@@ -13,8 +13,8 @@ class Calculation_listener:
     on_sample_change = bl.signal("sample change")
     on_settings_change = bl.signal("settings change")
 
-    on_Ctrl_c = bl.signal("copy birs")
-    on_Ctrl_v = bl.signal("paste birs")
+    on_Ctrl_q = bl.signal("copy birs")
+    on_Ctrl_w = bl.signal("paste birs")
     on_Ctrl_z = bl.signal("ctrl+z")
 
     on_plot_change = bl.signal("refresh plot")
@@ -167,7 +167,7 @@ class Calculation_listener:
         except AttributeError:
             return
         if store:
-            self.copied_birs = birs
+            self.copied_birs = birs.copy()
             return
         return birs
 
@@ -175,30 +175,40 @@ class Calculation_listener:
         if (self.copied_birs is None) & (birs is None):
             return
         if birs is None:
-            birs = self.copied_birs
+            birs = self.copied_birs.copy()
 
         new_bir_amount = len(birs.keys()) - 1
+        diff = new_bir_amount - self.bir_amount
         self.update_bir_widgets(new_bir_amount)
+        # Remove or add birs as needed
+        # if diff > 0:
+        #     for _ in range(diff):
+        #         self.add_bir(index=0, display=False)
+        if diff < 0:
+            for _ in range(abs(diff)):
+                self.delete_bir(index=1, display=False)
 
         self.update_from_plot(**{self.current_tab: birs})
-        self.refresh_plots("settings change")
         self.on_display_message.send(message=message)
 
-    def add_bir(self, *args, index: int):
+    def add_bir(self, *args, index: int, display=True):
         self.database_controller.change_birs(
             action="add", index=index, tab=self.current_tab
         )
 
-        self.bir_amount_changed = True
+        if not display:
+            return
+
         birs = self.copy_birs(store=False, message="")
         self.paste_birs(birs=birs, message="")
 
-    def delete_bir(self, *args, index: int):
+    def delete_bir(self, *args, index: int, display=True):
         self.database_controller.change_birs(
             action="remove", index=index, tab=self.current_tab
         )
 
-        self.bir_amount_changed = True
+        if not display:
+            return
         birs = self.copy_birs(store=False, message="")
         self.paste_birs(birs=birs, message="")
 
@@ -381,8 +391,8 @@ class Calculation_listener:
         self.on_add_bir.connect(self.add_bir)
         self.on_delete_bir.connect(self.delete_bir)
 
-        self.on_Ctrl_c.connect(self.copy_birs)
-        self.on_Ctrl_v.connect(self.paste_birs)
+        self.on_Ctrl_q.connect(self.copy_birs)
+        self.on_Ctrl_w.connect(self.paste_birs)
         self.on_Ctrl_z.connect(self.reset_sample)
 
         self.on_reset_sample.connect(self.reset_sample)

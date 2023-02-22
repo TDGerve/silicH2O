@@ -18,8 +18,8 @@ _theme_file = _main_folder / "theme/breeze.tcl"
 _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
 
-on_Ctrl_c = bl.signal("copy birs")
-on_Ctrl_v = bl.signal("paste birs")
+on_Ctrl_q = bl.signal("copy birs")
+on_Ctrl_w = bl.signal("paste birs")
 on_Ctrl_s = bl.signal("ctrl+s")
 on_Ctrl_z = bl.signal("ctrl+z")
 on_delete = bl.signal("delete")
@@ -64,10 +64,20 @@ class Main_window(tk.Tk):
             "<Return>",
             lambda event: self.focus(),
         )
-        self.bind("<Up>", lambda event: self.sample_navigation.previous_sample())
-        self.bind("<Down>", lambda event: self.sample_navigation.next_sample())
-        self.bind("<Control-c>", lambda event: on_Ctrl_c.send())
-        self.bind("<Control-v>", lambda event: on_Ctrl_v.send())
+        self.bind(
+            "<Up>",
+            lambda event: self.sample_navigation.previous_sample()
+            if event.widget != self.sample_navigation.nametowidget("sample_list")
+            else None,
+        )
+        self.bind(
+            "<Down>",
+            lambda event: self.sample_navigation.next_sample()
+            if event.widget != self.sample_navigation.nametowidget("sample_list")
+            else None,
+        )
+        self.bind("<Control-q>", lambda event: on_Ctrl_q.send())
+        self.bind("<Control-w>", lambda event: on_Ctrl_w.send())
         self.bind("<Control-s>", lambda event: on_Ctrl_s.send())
         self.bind("<Control-z>", lambda event: on_Ctrl_z.send())
         self.bind("<Delete>", lambda event: on_delete.send())

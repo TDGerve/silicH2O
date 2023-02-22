@@ -497,12 +497,14 @@ class Database_listener:
         # )
         # Read samples
         self.database_controller.read_files(
-            spectrum_files, names=names, settings=settings_dict
+            spectrum_files, names=names, settings=settings_dict, calculate_results=False
         )
         # Read processed spectra
         self.database_controller.add_processed_spectra(
             files=processed_files, names=processed_names
         )
+        # Initialise results
+        self.database_controller.save_results()
         # Read interference
         for file, name in zip(interference_files, interference_names):
             self.database_controller.add_interference(

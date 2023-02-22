@@ -61,21 +61,6 @@ class Sample_navigation(ttk.Frame):
             "<<ListboxSelect>>",
             lambda event: self.change_sample(listbox.curselection()),
         )
-        # Arrow keys are bound in the main window
-        listbox.bind("<Up>", lambda event: "break")
-        listbox.bind("<Down>", lambda event: "break")
-        listbox.bind("<Enter>", lambda event: self.bind_arrows)
-        listbox.bind("<Leave>", lambda event: self.unbind_arrows)
-
-    def bind_arrows(self):
-        listbox = self.nametowidget("sample_list")
-        listbox.bind("<Up>", lambda event: self.previous_sample)
-        listbox.bind("<Down>", lambda event: self.next_sample)
-
-    def unbind_arrows(self):
-        listbox = self.nametowidget("sample_list")
-        listbox.bind("<Up>", lambda event: "break")
-        listbox.bind("<Down>", lambda event: "break")
 
     def select_sample(self, selection):
         listbox = self.nametowidget("sample_list")
@@ -110,14 +95,17 @@ class Sample_navigation(ttk.Frame):
         self.make_button("delete", self.remove_samples, [2, 0])
 
     def next_sample(self):
+
         listbox = self.nametowidget("sample_list")
 
         current = listbox.curselection()
+
         if not current:  # See if selection exists
             return
         current = current[0]  # Grab actucal number
         total = listbox.size()
         new = current + 1
+
         if current < (total - 1):
             listbox.select_clear(current)
             self.select_sample(new)
@@ -129,6 +117,7 @@ class Sample_navigation(ttk.Frame):
         if not current:
             return
         new = current - 1
+
         if current > 0:
             listbox.select_clear(current)
             self.select_sample(new)
