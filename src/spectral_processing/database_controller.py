@@ -287,10 +287,11 @@ class Database_controller:
             self.interpolation_regions, sample.interpolation.regions.series
         )
 
-        if sample.interference_sample:
+        if sample.interference_sample is not None:
             self.save_interference()
 
         self.results.loc[name] = sample.results.copy()
+        self.results.loc[name, "H2O"] = self.calculate_H2O(sample.results["rWS"])
 
         # Not a great way to save H2O, would be better to do that inside the sample processor
         self.results.loc[name, "H2O"] = self.calculate_H2O(
@@ -363,6 +364,7 @@ class Database_controller:
             name = sample.name
             sample.calculate_results()
             self.results.loc[name] = sample.results.copy()
+            self.results.loc[name, "H2O"] = self.calculate_H2O(sample.results["rWS"])
 
     def export_results(
         self, folder: pathlib.Path, name: str, incl_settings: bool = True

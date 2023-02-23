@@ -28,7 +28,7 @@ _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
-padding = 1
+padding = 2
 
 
 class Interference_frame(ttk.Frame):
@@ -171,6 +171,8 @@ class Interference_frame(ttk.Frame):
 
         for child in frame.winfo_children():
             child.grid_configure(padx=padding, pady=padding)
+            for grandchild in child.winfo_children():
+                grandchild.grid_configure(padx=padding, pady=padding)
 
     def make_deconvolution_frame(
         self, name, parent, widgets, variables, row: int, col: int

@@ -21,9 +21,9 @@
         "smoothing": 0.5
     },
     "deconvolution": {
-        "fit_window": 6.0,
-        "max_iterations": 5.0,
-        "peak_height": 15.0,
-        "residuals_threshold": 10.0
+        "peak_height": 20,
+        "fit_window": 4,
+        "residuals_threshold": 10,
+        "max_iterations": 5
     }
 }

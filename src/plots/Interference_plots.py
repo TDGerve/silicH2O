@@ -33,7 +33,8 @@ class Subtraction_plot(Double_plot):
             self.plot_birs(birs)
             self.plot_peaks(peaks)
             self.plot_lines_axis(1, **interference)
-
+            if "deconvoluted" not in interference["spectra"].keys():
+                self.clear_lines(self.lines["ax1"], keys=["deconvoluted"])
         else:
             self.clear_interference()
 

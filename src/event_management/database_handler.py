@@ -437,8 +437,6 @@ class Database_listener:
 
         self.on_clear_plot.send("new project")
 
-        on_display_message.send(message="loading project...", duration=None)
-
         filepath = pathlib.Path(filepath)
         projectname = filepath.stem
 
@@ -522,8 +520,6 @@ class Database_listener:
         # if self.gui.state == GUI_state.DISABLED:
         #     self.gui.activate_widgets()
         #     self.gui.set_state(GUI_state.ACTIVE)
-
-        on_display_message.send(message="project loaded!")
 
     def save_sample(self, *args):
 

@@ -109,42 +109,6 @@ class Calculation_listener:
 
         self.refresh_plots()
 
-    # def import_calibration_project(self, *args):
-    #     self.calibration.calibrate_with_project(
-    #         database_controller=self.database_controller
-    #     )
-
-    #     self.send_calibration_info()
-
-    # def import_calibration_file(self, *args):
-    #     self.on_display_message(message="import calibration from file")
-
-    # def send_calibration_info(self, *args):
-    #     sample_amount = len(self.calibration._H2OSi)
-    #     sample_info = self.calibration.get_sampleinfo_gui()
-    #     calibration_params = self.calibration.get_calibration_parameters_gui()
-
-    #     self.on_reset_calibration_standards.send(sample_amount=sample_amount)
-    #     self.on_update_gui_variables.send(
-    #         **{"calibration": sample_info, "calibration_statistics": calibration_params}
-    #     )
-
-    # def set_reference_H2O(self, *args, sample_index: int, H2O: float):
-    #     # if sample_name is not None:
-    #     #     sample_idx = self.database_controller.names.index(sample_name)
-    #     #     sample = self.database_controller.get_sample(sample_idx)
-    #     # else:
-    #     #     sample = self.sample
-
-    #     # sample._H2Oreference = H2O
-    #     self.calibration.set_H2Oreference(sample_index=sample_index, H2O=H2O)
-    #     self.database_controller.get_sample(sample_index)._H2Oreference = H2O
-
-    # def set_calibration_std(self, *args, sample_index: int, use: bool):
-    #     self.calibration.use.iloc[sample_index] = not self.calibration.use.iloc[
-    #         sample_index
-    #     ]
-
     def get_sample_settings(self):  # move #CH
 
         sample = self.sample
@@ -283,7 +247,7 @@ class Calculation_listener:
     def deconvolve_interference(self, *args):
         self.on_display_message.send(message="deconvolving ...", duration=None)
         # with redirect_stdout(Message_processor()):
-        sample = self.current_sample
+        sample = self.sample
         interference = sample.interference_sample
         if interference is None:
             return

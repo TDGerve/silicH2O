@@ -17,7 +17,7 @@ _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]
 _fontsize_head = _fontsize
 
-padding = 1
+padding = 2
 
 
 class Baseline_correction_frame(ttk.Frame):
