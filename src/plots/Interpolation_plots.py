@@ -33,6 +33,9 @@ class Interpolation_plot(Single_plot):
 
         super().draw_plot()
 
+    def get_ax_limits(self):
+        return super()._get_ax_limits(ax_xlim=(0, 4000))
+
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
     ):

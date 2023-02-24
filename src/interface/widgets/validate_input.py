@@ -81,7 +81,7 @@ def validate_widget_input(
     return valid
 
 
-def invalid_widget_input(self, old_value: str, name, widgets, variables):
+def invalid_widget_input(self, name, widgets, variables):
 
     variable = variables[name]
     old_value = variable.get()

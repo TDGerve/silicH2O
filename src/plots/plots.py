@@ -120,11 +120,11 @@ class Double_plot:
                 ax.relim()
                 # Construct a new tuple for replacement
                 alist = []
-                for x in self.fig.canvas.toolbar._nav_stack._elements[0][name]:
+                for x in nav_stack[0][name]:
                     alist.append(x)
                 alist[0] = limits
                 # Replace in the stack
-                self.fig.canvas.toolbar._nav_stack._elements[0][name] = tuple(alist)
+                nav_stack[0][name] = tuple(alist)
 
     def get_ax_limits(self):
         ...
@@ -138,7 +138,9 @@ class Double_plot:
             y_max = 0
 
             for line in lines.values():
-                x_data = line[0].get_xdata()
+                x_data = np.array(line[0].get_xdata())
+                if len(x_data) < 1:
+                    continue
                 data_limits = (limits[0] < x_data) & (x_data < limits[1])
                 y_data = line[0].get_ydata()[data_limits]
                 y_max = max(y_max, max(y_data))
@@ -176,7 +178,10 @@ class Double_plot:
         #     self.clear_lines(lines, keys=list(line_surplus))
 
         for (name, y), color in zip(spectra.items(), colors):
-            ymax.append(y[(xmin < x) & (x < xmax)].max())
+            x_window = (xmin < x) & (x < xmax)
+            if len(x_window) > 1:
+                ymax.append(y[x_window].max())
+
             try:
                 if np.array_equal(lines[name][0].get_ydata(), y):
                     continue
@@ -287,8 +292,45 @@ class Single_plot:
 
     def draw_plot(self):
         self.fig.canvas.draw_idle()
-        self.fig.canvas.toolbar.update()
-        self.fig.canvas.toolbar.push_current()
+        self.reset_home
+
+    def reset_home(self):
+        nav_stack = self.fig.canvas.toolbar._nav_stack._elements
+        if len(nav_stack) < 1:
+            return
+            # Get the first key in the navigation stack
+        ax_name = list(nav_stack[0].keys())[0]
+        ax_limits = self.get_ax_limits()
+
+        self.ax.relim()
+        # Construct a new tuple for replacement
+        alist = []
+        for x in nav_stack[0][ax_name]:
+            alist.append(x)
+        alist[0] = ax_limits
+        # Replace in the stack
+        nav_stack[0][ax_name] = tuple(alist)
+
+    def get_ax_limits(self):
+        ...
+
+    def _get_ax_limits(self, ax_xlim: Tuple[int, int]):
+        ax_limits = (*ax_xlim, 0, 0)
+
+        for line in self.lines.values():
+
+            y_max = 0
+
+            x_data = np.array(line[0].get_xdata())
+            if len(x_data) < 1:
+                continue
+            data_limits = (ax_limits[0] < x_data) & (x_data < ax_limits[1])
+            y_data = line[0].get_ydata()[data_limits]
+            y_max = max(y_max, max(y_data))
+
+            ax_limits[3] = y_max
+
+        return ax_limits
 
     def plot_lines(
         self,
