@@ -36,8 +36,8 @@
     },
     "interference": {
         "use": false,
-        "boundary_left": 700,
-        "boundary_right": 1020,
+        "boundary_left": 750,
+        "boundary_right": 910,
         "smoothing": 1,
         "spectrum": "baseline_corrected"
     }

@@ -1,4 +1,5 @@
-from typing import Dict, Optional
+from functools import partial
+from typing import Dict, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -45,7 +46,10 @@ class Subtraction_plot(Double_plot):
         self.plot_subtraction_region(**kwargs)
         self.plot_interpolation(*kwargs.get("interpolated_interval"))
 
-        self.fig.canvas.draw_idle()
+        super().draw_plot()
+
+    def get_ax_limits(self):
+        return super()._get_ax_limits(ax1_xlim=(0, 4000), ax2_xlim=(0, 4000))
 
     def plot_lines_axis(
         self, ax_id: int, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs

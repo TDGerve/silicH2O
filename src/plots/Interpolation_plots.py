@@ -31,7 +31,7 @@ class Interpolation_plot(Single_plot):
             x=itp_x, y=itp_y, interpolation_regions=interpolation_regions
         )
 
-        self.fig.canvas.draw_idle()
+        super().draw_plot()
 
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs

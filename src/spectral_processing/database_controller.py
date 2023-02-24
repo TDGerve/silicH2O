@@ -288,7 +288,7 @@ class Database_controller:
         )
 
         if sample.interference_sample is not None:
-            self.save_interference()
+            self.save_interference(idx=idx)
 
         self.results.loc[name] = sample.results.copy()
         self.results.loc[name, "H2O"] = self.calculate_H2O(sample.results["rWS"])
@@ -301,7 +301,7 @@ class Database_controller:
     def save_all_samples(self) -> None:
 
         for sample_idx in range(self.results.shape[0]):
-            self.save_sample(sample_idx)
+            self.save_sample(idx=sample_idx)
 
     def reset_sample(self, tab: str) -> None:
 

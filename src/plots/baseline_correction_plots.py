@@ -1,5 +1,6 @@
+from functools import partial
 from itertools import product
-from typing import Dict
+from typing import Dict, Tuple
 
 import blinker as bl
 import numpy as np
@@ -35,7 +36,10 @@ class Baseline_correction_plot(Double_plot):
         self.plot_lines(**kwargs)
         self.plot_birs(birs)
 
-        self.fig.canvas.draw_idle()
+        super().draw_plot()
+
+    def get_ax_limits(self):
+        return super()._get_ax_limits(ax1_xlim=(100, 1400), ax2_xlim=(2000, 4000))
 
     def plot_lines(self, x: np.ndarray, spectra: Dict[str, np.ndarray], **kwargs):
 

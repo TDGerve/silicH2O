@@ -107,6 +107,45 @@ class Double_plot:
 
     def draw_plot(self):
         self.fig.canvas.draw_idle()
+        self.reset_home()
+        # self.fig.canvas.toolbar.push_current()
+
+    def reset_home(self):
+        nav_stack = self.fig.canvas.toolbar._nav_stack._elements
+        if len(nav_stack) > 0:
+            # Get the first key in the navigation stack
+            axs_names = list(nav_stack[0].keys())
+            axs_limits = self.get_ax_limits()
+            for name, ax, limits in zip(axs_names, self.axs, axs_limits):
+                ax.relim()
+                # Construct a new tuple for replacement
+                alist = []
+                for x in self.fig.canvas.toolbar._nav_stack._elements[0][name]:
+                    alist.append(x)
+                alist[0] = limits
+                # Replace in the stack
+                self.fig.canvas.toolbar._nav_stack._elements[0][name] = tuple(alist)
+
+    def get_ax_limits(self):
+        ...
+
+    def _get_ax_limits(self, ax1_xlim: Tuple[int, int], ax2_xlim: Tuple[int, int]):
+        axs_limits = [[*ax1_xlim, 0, 0], [*ax2_xlim, 0, 0]]
+        for i, (limits, lines) in enumerate(
+            zip((ax1_xlim, ax2_xlim), self.lines.values())
+        ):
+
+            y_max = 0
+
+            for line in lines.values():
+                x_data = line[0].get_xdata()
+                data_limits = (limits[0] < x_data) & (x_data < limits[1])
+                y_data = line[0].get_ydata()[data_limits]
+                y_max = max(y_max, max(y_data))
+
+            axs_limits[i][3] = y_max
+
+        return axs_limits
 
     def plot_lines(
         self, x: np.ndarray, spectra: Dict[str, np.ndarray], *args, **kwargs
@@ -248,6 +287,8 @@ class Single_plot:
 
     def draw_plot(self):
         self.fig.canvas.draw_idle()
+        self.fig.canvas.toolbar.update()
+        self.fig.canvas.toolbar.push_current()
 
     def plot_lines(
         self,
