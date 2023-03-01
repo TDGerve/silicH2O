@@ -4,8 +4,6 @@ from typing import Dict, List, Optional, Union
 import blinker as bl
 import numpy as np
 
-from ... import app_configuration
-
 on_settings_change = bl.signal("settings change")
 
 

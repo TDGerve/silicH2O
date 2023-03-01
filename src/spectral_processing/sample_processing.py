@@ -6,7 +6,6 @@ import numpy.typing as npt
 import pandas as pd
 import ramCOH as ram
 
-from .. import app_configuration
 from .Processors import (
     Baseline_processor,
     Deconvolution_processor,

@@ -1,11 +1,9 @@
-from contextlib import redirect_stdout
 from typing import Dict, Optional
 
 import blinker as bl
 
 from .. import app_configuration
-from ..interface.GUIS import Gui
-from ..spectral_processing import Calibration_processor, Database_controller
+from ..spectral_processing import Database_controller
 
 
 class Calculation_listener:

@@ -15,7 +15,7 @@ from .spectral_processing import Calibration_processor, Database_controller
 on_clean_temp_files = bl.signal("clean temp files")
 
 
-class Raman_app:
+class silicH2O:
     def __init__(self, title):
 
         self.samples = Database_controller()
@@ -68,9 +68,3 @@ class Raman_app:
     #             except PermissionError:
     #                 time.sleep(0.5)
     #                 shutil.rmtree(os.path.join(root, d))
-
-
-def run_raman_app():
-
-    app = Raman_app()
-    app.run()

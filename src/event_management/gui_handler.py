@@ -1,8 +1,7 @@
-from typing import Dict, List, Optional
+from typing import Optional
 
 import blinker as bl
 
-from .. import app_configuration
 from ..interface import App_interface, GUI_state
 
 

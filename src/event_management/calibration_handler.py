@@ -1,14 +1,18 @@
+import os
 import pathlib
-import tarfile
-from typing import Dict
+import sys
 
 import blinker as bl
-import numpy as np
-import pandas as pd
 
 from ..spectral_processing import Calibration_processor, Database_controller
 
-calibration_folder = pathlib.Path(__file__).parents[1] / "calibrations"
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
+    calibration_folder = EXE_LOCATION.parents[0] / "calibration"
+
+else:
+
+    calibration_folder = pathlib.Path(__file__).parents[1] / "calibration"
 
 
 class Calibration_listener:

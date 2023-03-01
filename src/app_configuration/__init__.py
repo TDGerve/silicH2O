@@ -1,5 +1,8 @@
 import json
+import os
+import pathlib
 import shutil
+import sys
 from itertools import product
 from typing import Dict, List, Tuple
 
@@ -8,6 +11,13 @@ import numpy.typing as npt
 import pandas as pd
 
 from ..Dataframes import Baseline_DF
+
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
+    config_path = EXE_LOCATION.parents[0] / "configuration"
+
+else:
+    config_path = __path__[0]
 
 
 def make_bir_series(birs: Dict[str, Tuple[int, int]]):
@@ -20,7 +30,7 @@ def make_bir_series(birs: Dict[str, Tuple[int, int]]):
 
 
 def get_settings_from_json(type: str):
-    with open(f"{__path__[0]}/{type}_settings.json") as f:
+    with open(f"{config_path}/{type}_settings.json") as f:
         process = json.load(f)
 
     names = process.keys()
@@ -29,13 +39,13 @@ def get_settings_from_json(type: str):
 
 
 # GUI SETTINGS
-with open(f"{__path__[0]}/gui_settings.json") as f:
+with open(f"{config_path}/gui_settings.json") as f:
     gui = json.load(f)
 gui["background_color"] = None
 gui["current_tab"] = "baseline"
 
 # GENERAL SETTINGS
-with open(f"{__path__[0]}/general_settings.json") as f:
+with open(f"{config_path}/general_settings.json") as f:
     general = json.load(f)
 # data_processing["processing_settings"] = get_settings_from_json("processing_settings")
 
@@ -100,7 +110,7 @@ def set_glass_settings(
         "interference": settings["interference"].to_dict(),
     }
 
-    with open(f"{__path__[0]}/glass_settings.json", "w", encoding="utf-8") as f:
+    with open(f"{config_path}/glass_settings.json", "w", encoding="utf-8") as f:
         json.dump(settings, f, ensure_ascii=False, indent=4)
 
 
@@ -119,14 +129,14 @@ def set_interference_settings(baseline_interpolation_regions: Dict, settings: Di
         "deconvolution": settings["deconvolution"].to_dict(),
     }
 
-    with open(f"{__path__[0]}/interference_settings.json", "w", encoding="utf-8") as f:
+    with open(f"{config_path}/interference_settings.json", "w", encoding="utf-8") as f:
         json.dump(settings, f, ensure_ascii=False, indent=4)
 
 
 def reset_default_settings(type: str):
     if type not in ("glass", "interference"):
         raise ValueError(f"{type} not recognised as type")
-    basepath = __path__[0]
+    basepath = config_path
     shutil.copyfile(
         src=f"{basepath}/{type}_settings_default.json",
         dst=f"{basepath}/{type}_settings.json",

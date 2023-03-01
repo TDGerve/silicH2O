@@ -1,12 +1,9 @@
 from typing import Callable, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.transforms import Bbox
 
-from .. import app_configuration
 from ..interface.screens import Screen
-from . import plot_layout as pl
 from .plots import Single_plot
 
 

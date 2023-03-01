@@ -4,7 +4,6 @@ import blinker as bl
 import numpy as np
 
 from .. import app_configuration
-from ..interface import Gui
 from ..plots import Plot
 
 

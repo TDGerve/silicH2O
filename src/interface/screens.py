@@ -1,5 +1,5 @@
-from typing import Tuple, Union, Protocol
 import sys
+from typing import Protocol, Tuple, Union
 
 
 class Screen(Protocol):
@@ -25,24 +25,28 @@ class Computer_screen:
         return self._resolution_x, self._resolution_y
 
     def get_scaling(self):
-        if sys.platform == "win":
+        if "win" in sys.platform:
+
+            scaling = 1
+
             # For windows
-            import ctypes
-            from PySide6 import QtGui
+            # import ctypes
 
-            # Set dpi scaling awareness
-            try:  # Windows 8.1 and later
-                ctypes.windll.shcore.SetProcessDpiAwareness(2)
-            except Exception as e:
-                pass
-            try:  # Before Windows 8.1
-                ctypes.windll.user32.SetProcessDPIAware()
-            except:  # Windows 8 or before
-                pass
+            # from PySide6 import QtGui
 
-            # Get scaling factor
-            screen = QtGui.QGuiApplication().primaryScreen()
-            scaling = screen.devicePixelRatio()
+            # # Set dpi scaling awareness
+            # try:  # Windows 8.1 and later
+            #     ctypes.windll.shcore.SetProcessDpiAwareness(2)
+            # except Exception as e:
+            #     pass
+            # try:  # Before Windows 8.1
+            #     ctypes.windll.user32.SetProcessDPIAware()
+            # except:  # Windows 8 or before
+            #     pass
+
+            # # Get scaling factor
+            # screen = QtGui.QGuiApplication().primaryScreen()
+            # scaling = screen.devicePixelRatio()
 
         else:
             # dpi scaling awareness does not seem to be available for other platforms

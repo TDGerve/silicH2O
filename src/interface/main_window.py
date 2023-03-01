@@ -1,4 +1,6 @@
+import os
 import pathlib
+import sys
 import tkinter as tk
 from tkinter import ttk
 from typing import Any, Dict
@@ -12,8 +14,12 @@ from .sample_navigation import Sample_navigation
 from .screens import Computer_screen
 from .windows import Baseline_correction_frame, Interference_frame, Interpolation_frame
 
-_main_folder = pathlib.Path(__file__).parents[1]
-_theme_file = _main_folder / "theme/breeze.tcl"
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
+    _theme_file = EXE_LOCATION / "theme/breeze.tcl"
+else:
+    _main_folder = pathlib.Path(__file__).parents[1]
+    _theme_file = _main_folder / "theme/breeze.tcl"
 
 _font = app_configuration.gui["font"]["family"]
 _fontsize = app_configuration.gui["font"]["size"]

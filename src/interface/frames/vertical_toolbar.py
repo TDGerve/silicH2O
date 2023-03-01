@@ -1,4 +1,6 @@
+import os
 import pathlib
+import sys
 import tkinter as tk
 from tkinter import ttk
 
@@ -11,6 +13,13 @@ from ... import app_configuration
 _font = app_configuration.gui["font"]["family"]
 
 on_mouse_movement = bl.signal("mouse moved")
+
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))
+    icons_folder = EXE_LOCATION / "theme/icons"
+
+else:
+    icons_folder = pathlib.Path(__file__).parents[2] / "theme/icons"
 
 
 class vertical_toolbar(NavigationToolbar2Tk):
@@ -59,9 +68,7 @@ class vertical_toolbar(NavigationToolbar2Tk):
         for name in names:
             button = self._buttons[name]
             width, height = button.winfo_reqheight(), button.winfo_reqheight()
-            image = Image.open(
-                str(pathlib.Path(__file__).parents[0] / "icons" / f"{name}.png")
-            )
+            image = Image.open(str(icons_folder / f"{name}.png"))
             image = image.resize((int(width * 0.8), int(height * 0.8)))
             image = ImageTk.PhotoImage(image)
 
