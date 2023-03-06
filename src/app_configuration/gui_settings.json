@@ -1,0 +1,18 @@
+{
+    "theme": "Breeze",
+    "plot_theme": "rainbow",
+    "geometry": {
+        "size": [
+            1200,
+            1000
+        ],
+        "size_min": [
+            600,
+            400
+        ]
+    },
+    "font": {
+        "family": "DejaVu Sans",
+        "size": 10
+    }
+}

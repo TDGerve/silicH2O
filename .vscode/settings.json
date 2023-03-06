@@ -1,0 +1,9 @@
+{
+    "python.analysis.typeCheckingMode": "off",
+    "workbench.colorCustomizations": {
+        "titleBar.activeBackground": "#1e4c57"
+    },
+    "esbonio.sphinx.confDir": ""
+    
+}
+
