@@ -118,7 +118,7 @@ class Main_window(tk.Tk):
 
         self.minsize(*app_configuration.gui["geometry"]["size_min"])
         resolution_str = (
-            f"{int(width * 0.85)}x{int(height * 0.85)}+{int(width * 0.15 * 0.5)}+0"
+            f"{int(width * 0.9)}x{int(height * 0.9)}+{int(width * 0.1 * 0.5)}+0"
         )
 
         self.geometry(resolution_str)

@@ -6,8 +6,8 @@ import blinker as bl
 
 from .. import app_configuration
 
-_font = app_configuration.gui["font"]["family"]
-_fontsize = app_configuration.gui["font"]["size"]
+# _font = app_configuration.gui["font"]["family"]
+# _fontsize = app_configuration.gui["font"]["size"]
 
 on_save_sample = bl.signal("save sample")
 on_reset_sample = bl.signal("reset sample")

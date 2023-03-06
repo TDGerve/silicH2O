@@ -30,23 +30,23 @@ class Computer_screen:
             scaling = 1
 
             # For windows
-            # import ctypes
+            import ctypes
 
-            # from PySide6 import QtGui
+            from PySide2 import QtGui
 
-            # # Set dpi scaling awareness
-            # try:  # Windows 8.1 and later
-            #     ctypes.windll.shcore.SetProcessDpiAwareness(2)
-            # except Exception as e:
-            #     pass
-            # try:  # Before Windows 8.1
-            #     ctypes.windll.user32.SetProcessDPIAware()
-            # except:  # Windows 8 or before
-            #     pass
+            # Set dpi scaling awareness
+            try:  # Windows 8.1 and later
+                ctypes.windll.shcore.SetProcessDpiAwareness(2)
+            except Exception as e:
+                pass
+            try:  # Before Windows 8.1
+                ctypes.windll.user32.SetProcessDPIAware()
+            except:  # Windows 8 or before
+                pass
 
-            # # Get scaling factor
-            # screen = QtGui.QGuiApplication().primaryScreen()
-            # scaling = screen.devicePixelRatio()
+            # Get scaling factor
+            screen = QtGui.QGuiApplication().primaryScreen()
+            scaling = screen.devicePixelRatio()
 
         else:
             # dpi scaling awareness does not seem to be available for other platforms

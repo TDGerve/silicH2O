@@ -158,7 +158,7 @@ class h2o_processor(Raman_processor):
 
         # self.settings = settings.dropna().copy()
 
-        self.sample = ram.H2O(x, y)
+        self.sample = ram.Glass(x, y)
 
         self.baseline = Baseline_processor(
             sample=self.sample,

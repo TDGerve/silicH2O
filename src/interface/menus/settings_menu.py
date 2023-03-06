@@ -1,13 +1,15 @@
-import glob
-import os
+# import glob
+# import os
 import tkinter as tk
 import webbrowser
-from tkinter import filedialog, simpledialog, ttk
-from typing import List
 
 import blinker as bl
 
-from ... import app_configuration
+# from tkinter import filedialog, simpledialog, ttk
+# from typing import List
+
+
+# from ... import app_configuration
 
 on_new_project = bl.signal("new project")
 on_load_project = bl.signal("load project")
@@ -68,34 +70,3 @@ class Settings_menu:
 
     def current_interference_as_default(self, *args):
         on_set_default_interference_settings.send()
-
-
-# def help(self, parent):
-#     def link(event):
-#         webbrowser.open_new(
-#             event.widget.cget("text")
-#         )
-
-#     popup = tk.Toplevel(parent)
-#     popup.title("Help")
-#     help_string = "For documentation, issues or assistance:"
-#     github_link = "https://github.com/TDGerve/silic-H2O"
-
-#     font = (self.font, "14")
-#     ttk.Label(popup, text=help_string, font=font, anchor="center").pack()
-
-#     github = ttk.Label(
-#         popup,
-#         text=github_link,
-#         foreground="blue",
-#         cursor="hand2",
-#         font=font,
-#         anchor="center",
-#     )
-#     github.pack()
-#     github.bind("<Button-1>", link)
-
-#     for child in popup.winfo_children():
-#         child.grid_configure(padx=50, pady=10)
-
-#     popup.attributes("-topmost", True)

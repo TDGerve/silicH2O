@@ -29,11 +29,6 @@ class Plot_listener:
         *args,
         plot: str,
         plotdata: Dict,
-        # sample_name: str,
-        # x: np.ndarray,
-        # spectra: Dict[str, np.ndarray],
-        # baseline_spectrum: str,
-        # birs: List[int],
         **kwargs,
     ):
 

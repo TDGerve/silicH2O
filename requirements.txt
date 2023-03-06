@@ -1,0 +1,13 @@
+tkinter
+ramCOH
+numpy
+pandas
+blinker
+pyarrow
+Pillow
+matplotlib
+scipy
+scikit-learn
+pyinstaller
+PySide2
+PyQt5

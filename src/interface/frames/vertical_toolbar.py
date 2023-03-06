@@ -2,15 +2,10 @@ import os
 import pathlib
 import sys
 import tkinter as tk
-from tkinter import ttk
 
 import blinker as bl
 from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk
 from PIL import Image, ImageTk
-
-from ... import app_configuration
-
-_font = app_configuration.gui["font"]["family"]
 
 on_mouse_movement = bl.signal("mouse moved")
 

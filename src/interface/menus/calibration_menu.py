@@ -1,14 +1,10 @@
-import glob
 import os
 import pathlib
+import sys
 import tkinter as tk
-import webbrowser
-from tkinter import filedialog, messagebox, simpledialog, ttk
-from typing import List
+from tkinter import filedialog, messagebox
 
 import blinker as bl
-
-from ... import app_configuration
 
 on_new_project = bl.signal("new project")
 on_load_project = bl.signal("load project")
@@ -29,7 +25,12 @@ on_import_calibration_project = bl.signal("project calibration")
 on_calibration_window = bl.signal("calibration window")
 on_read_calibration_file = bl.signal("read calibration file")
 
-calibration_folder = pathlib.Path(__file__).parents[2] / "calibration"
+
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
+    calibration_folder = EXE_LOCATION.parents[0] / "calibration"
+else:
+    calibration_folder = pathlib.Path(__file__).parents[2] / "calibration"
 
 
 class Calibration_menu:

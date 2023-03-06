@@ -1,5 +1,7 @@
 import glob
 import os
+import pathlib
+import sys
 import tkinter as tk
 from tkinter import filedialog, simpledialog
 from typing import List
@@ -19,6 +21,12 @@ on_export_all = bl.signal("export all")
 
 
 on_display_message = bl.signal("display message")
+
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
+    init_dir = EXE_LOCATION.parents[1]
+else:
+    init_dir = os.getcwd()
 
 
 class IO_menu:
@@ -79,7 +87,7 @@ class IO_menu:
         on_display_message.send(message="adding directory...", duration=None)
 
         try:
-            dirname = tk.filedialog.askdirectory(initialdir=os.getcwd())
+            dirname = tk.filedialog.askdirectory(initialdir=init_dir)
         except AttributeError:
             print("Opening files cancelled by user")
             return
@@ -94,7 +102,7 @@ class IO_menu:
 
         try:
             files = filedialog.askopenfilenames(
-                initialdir=os.getcwd(), filetypes=[("txt files", "*.txt")]
+                initialdir=init_dir, filetypes=[("txt files", "*.txt")]
             )
         except AttributeError:
             print("Opening files cancelled by user")
@@ -152,7 +160,7 @@ class IO_menu:
 
     def export_all(self):
         try:
-            dir = filedialog.askdirectory(initialdir=os.getcwd())
+            dir = filedialog.askdirectory(initialdir=init_dir)
         except AttributeError:
             print("Saving file cancelled by user")
             return

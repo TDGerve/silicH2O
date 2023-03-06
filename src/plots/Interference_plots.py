@@ -1,5 +1,5 @@
-from functools import partial
-from typing import Dict, Tuple
+# from functools import partial
+from typing import Dict  # , Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -101,7 +101,11 @@ class Subtraction_plot(Double_plot):
 
         self.fig.canvas.draw_idle()
 
-    def plot_peaks(self, peaks, plot_width=16, num=200):
+    def plot_peaks(self, peaks, plot_width=16, spacing=0.5):
+
+        if peaks is None:
+            return
+
         ax = self.axs[1]
 
         peak_surplus = len(self.peak_curves) - len(peaks)
@@ -111,9 +115,12 @@ class Subtraction_plot(Double_plot):
 
         for i, peak in enumerate(peaks):
             half_width = peak["width"] * plot_width
+            start = peak["center"] - half_width
+            stop = peak["center"] + half_width
+            num = int((stop - start) // spacing)
             x_new = np.linspace(
-                start=peak["center"] - half_width,
-                stop=peak["center"] + half_width,
+                start=start,
+                stop=stop,
                 num=num,
             )
             y_new = GaussLorentz(x_new, **peak)

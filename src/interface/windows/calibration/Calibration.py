@@ -1,4 +1,4 @@
-import pathlib
+# import pathlib
 import tkinter as tk
 from functools import partial
 from tkinter import ttk
