@@ -1,0 +1,44 @@
+{
+    "baseline": {
+        "baseline_interpolation_regions": {
+            "0": [
+                200,
+                300
+            ],
+            "1": [
+                635,
+                645
+            ],
+            "2": [
+                800,
+                810
+            ],
+            "3": [
+                1220,
+                2200
+            ],
+            "4": [
+                3850,
+                4000
+            ]
+        },
+        "smoothing": 1
+    },
+    "interpolation": {
+        "use": false,
+        "smoothing": 1,
+        "baseline_interpolation_regions": {
+            "0": [
+                780,
+                900
+            ]
+        }
+    },
+    "interference": {
+        "use": false,
+        "boundary_left": 750,
+        "boundary_right": 910,
+        "smoothing": 1,
+        "spectrum": "baseline_corrected"
+    }
+}

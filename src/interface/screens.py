@@ -1,5 +1,5 @@
-from typing import Tuple, Union, Protocol
 import sys
+from typing import Protocol, Tuple, Union
 
 
 class Screen(Protocol):
@@ -25,10 +25,14 @@ class Computer_screen:
         return self._resolution_x, self._resolution_y
 
     def get_scaling(self):
-        if sys.platform == "win":
+        if "win" in sys.platform:
+
+            scaling = 1
+
             # For windows
             import ctypes
-            from PySide6 import QtGui
+
+            from PySide2 import QtGui
 
             # Set dpi scaling awareness
             try:  # Windows 8.1 and later

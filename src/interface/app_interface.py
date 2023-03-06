@@ -1,11 +1,19 @@
 import tkinter as tk
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import blinker as bl
 
-from ..plots import Baseline_correction_plot, Plot
+from .. import app_configuration
+from ..plots import (
+    Baseline_correction_plot,
+    Calibration_plot,
+    Interpolation_plot,
+    Plot,
+    Subtraction_plot,
+)
 from .GUIS import GUI_state
 from .main_window import Main_window
+from .windows import Calibration_window
 
 on_plots_initialised = bl.signal("plots initialised")
 
@@ -19,7 +27,7 @@ class App_interface:
         self.variables: Dict[str, Any] = {}
         self.widgets: Dict[str, Any] = {}
         # rRot
-        self.window: tk.Tk = Main_window(
+        self.main_window: Main_window = Main_window(
             title=title, variables=self.variables, widgets=self.widgets
         )
 
@@ -33,18 +41,23 @@ class App_interface:
     def clear_variables(self):
         for group, variables in self.variables.items():
             for name, var in variables.items():
-                var.set("")
+                try:
+                    var.set("")
+                except tk.TclError:
+                    var.set(False)
 
                 try:
                     widget = self.widgets[group][name]
                     widget.delete(0, tk.END)
                     widget.insert(0, "")
-                except KeyError:
+                except (KeyError, AttributeError):
                     pass
 
     def update_variables(self, **kwargs) -> None:
         for name, values in kwargs.items():
             if name not in self.variables.keys():
+                return
+            if values is None:
                 return
 
             for var_name, value in values.items():
@@ -52,41 +65,19 @@ class App_interface:
 
                 try:
                     widget = self.widgets[name][var_name]
-                    widget.focus_set()
+
+                    # widget.focus_set()
                     widget.delete(0, tk.END)
                     widget.insert(0, f"{value}")
-                except KeyError:
+
+                except (KeyError, AttributeError):
                     pass
+                try:
+                    variable.set(value)
+                except TypeError:
+                    variable.set(str(value))
 
-                variable.set(value)
-
-            # if name == "birs":
-
-            #     for index, value in values.items():
-
-            #         widget = self.widgets["birs"][int(index)]
-            #         # Hack to make sure, validation is triggered for the bir widets
-            #         widget.focus_set()
-            #         widget.delete(0, tk.END)
-            #         widget.insert(0, f"{int(value)}")
-
-            #         variable = self.variables["birs"][int(index)]
-            #         variable.set(int(value))
-
-            # else:
-            #     for variable, value in zip(self.variables[name], values):
-            #         variable.set(value)
-
-            #         widget_name = str(variable).split(".")[-1]
-            #         for widget in self.widgets[name]:
-            #             if not str(widget).split(".")[-1] == widget_name:
-            #                 continue
-            #             widget.focus_set()
-            #             widget.delete(0, tk.END)
-            #             widget.insert(0, f"{value}")
-            #             break
-
-            self.window.focus()
+                # self.main_window.focus_set()
 
     def activate_widgets(self) -> None:
         for frame in self.widgets.values():
@@ -98,18 +89,58 @@ class App_interface:
                     for i in widget:
                         i.configure(state=tk.NORMAL)
 
+    def calibration_window_popup(self):
+        calibration = Calibration_window(
+            parent=self.main_window,
+            title="Calibration",
+            name="calibration",
+            widgets=self.widgets,
+            variables=self.variables,
+        )
+        self.plots["calibration"] = Calibration_plot(self.main_window.screen)
+        self.set_plot_background_color(plot=self.plots["calibration"])
+        calibration.draw_plot(self.plots["calibration"])
+
+    def change_title(self, title: Optional[str]):
+        default = "Silic-H2O by Thomas van Gerve"
+        if title is not None:
+            self.main_window.title(f"{default}  -  Project: {title}")
+            return
+
+        self.main_window.title(default)
+
+    def reset_calibration_widgets(self, sample_amount: int):
+
+        calibration_window = self.main_window.nametowidget("calibration")
+        calibration_window.make_sample_widgets(sample_amount=sample_amount)
+
+    def reset_baseline_widgets(self, bir_amount):
+
+        target = app_configuration.gui["current_tab"]
+
+        frames = ("tabs", target)
+        widget = self.main_window.nametowidget("main_frame")
+        for frame in frames:
+            widget = widget.nametowidget(frame)
+
+        widget.reset_baseline_widgets(bir_amount)
+
     def create_plots(self):
-        self.plots["baseline_correction"] = Baseline_correction_plot(self.window.screen)
+        self.plots["baseline"] = Baseline_correction_plot(self.main_window.screen)
+        self.plots["interpolation"] = Interpolation_plot(self.main_window.screen)
+        self.plots["interference"] = Subtraction_plot(self.main_window.screen)
         self.add_plots()
 
     def add_plots(self):
 
         for name, plot in self.plots.items():
-            frame = self.window.tabs.nametowidget(name)
+            frame = self.main_window.tabs.nametowidget(name)
             self.set_plot_background_color(plot)
             frame.draw_plot(plot)
 
     def set_plot_background_color(self, plot: Plot):
         # calculate background color to something matplotlib understands
-        background_color = tuple((c / 2**16 for c in self.window.background_color))
+        background_color = tuple(
+            (c / 2**16 for c in self.main_window.background_color)
+        )
         plot.fig.patch.set_facecolor(background_color)

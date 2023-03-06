@@ -1,8 +1,10 @@
+from functools import partial
 from itertools import product
-from typing import Dict
+from typing import Dict, Tuple
 
 import blinker as bl
 import numpy as np
+import numpy.typing as npt
 
 from ..interface.screens import Screen
 from .plot_interaction import construct_polygon_coordinates, drag_polygons
@@ -16,45 +18,67 @@ class Baseline_correction_plot(Double_plot):
 
         super().__init__(screen, xlabel="Raman shift cm$^{-1}$", ylabel="Counts")
 
-        self.setup_ax1(
+        self.setup_ax0(
             title="Silicate region",
             limits=(100, 1400),
         )
-        self.setup_ax2(title="H$_2$O region", limits=(2000, 4000))
+        self.setup_ax1(title="H$_2$O region", limits=(2000, 4000))
 
         self.birs = []
+        self.plot_interactions = []
         self.mouse_connections = []
+        self.plot_interactions = []
 
-    def plot_lines(
-        self, x: np.ndarray, spectra: Dict[str, np.ndarray], baseline_spectrum: str
-    ):
+    def draw_plot(self, **kwargs):
 
-        for key in spectra.keys():
-            if key not in [
-                baseline_spectrum,
-                "baseline",
-                "baseline_corrected",
-            ]:
+        birs = kwargs.pop("birs")
+
+        self.plot_lines(**kwargs)
+        self.plot_birs(birs)
+
+        super().draw_plot()
+
+    def get_ax_limits(self):
+        return super()._get_ax_limits(ax1_xlim=(100, 1400), ax2_xlim=(2000, 4000))
+
+    def plot_lines(self, x: np.ndarray, spectra: Dict[str, np.ndarray], **kwargs):
+
+        plot_items = ("baseline_corrected", "baseline", "baseline_spectrum")
+
+        keys = list(spectra.keys())
+        for key in keys:
+            if key not in plot_items:
                 _ = spectra.pop(key)
 
         return super().plot_lines(x, spectra)
 
-    def clear_birs(self):
-        for bir in self.birs:
-            bir.remove()
-        self.birs = []
+    def clear_birs(self, amount=None):
+        if amount is None:
+            amount = len(self.birs)
+        for _ in range(amount):
+            self.birs[0].remove()
+            self.birs.remove(self.birs[0])
+        self.fig.canvas.draw_idle()
 
     def clear_figure(self):
         self.clear_birs()
         super().clear_figure()
 
-    def plot_birs(self, birs):
+    def plot_birs(self, birs: npt.NDArray, connect_mouse=False):
+
         if not self.birs:
             connect_mouse = True
-        else:
-            connect_mouse = False
 
-        birs = np.reshape(list(birs.values()), (5, 2))
+        if len(self.birs) // 2 != len(birs):
+            self.clear_birs()
+            connect_mouse = True
+
+        # bir_values = list(birs.values())
+        # birs = np.reshape(bir_values, (len(bir_values) // 2, 2))
+
+        # bir_surplus = (len(self.birs) / 2) - len(birs)
+        # if bir_surplus > 0:
+        #     self.clear_birs(amount=bir_surplus)
 
         for i, (ax, (left_boundary, right_boundary)) in enumerate(
             product(self.axs, birs)
@@ -75,7 +99,7 @@ class Baseline_correction_plot(Double_plot):
                     ax.axvspan(
                         left_boundary,
                         right_boundary,
-                        alpha=0.3,
+                        alpha=0.5,
                         color="lightgray",
                         edgecolor=None,
                     )
@@ -85,17 +109,35 @@ class Baseline_correction_plot(Double_plot):
             self.connect_mouse_events()
 
     def connect_mouse_events(self):
-        drag_ax1 = drag_polygons(
-            ax=self.axs[0],
-            polygons=self.birs[:5],  # drag_polygons=[1, 2]
-        )
-        drag_ax2 = drag_polygons(
-            ax=self.axs[1],
-            polygons=self.birs[5:],  # drag_polygons=[1, 2]
-        )
-        self.mouse_connections += [drag_ax1, drag_ax2]
 
-        for ax in [drag_ax1, drag_ax2]:
-            self.fig.canvas.mpl_connect("button_press_event", ax.on_click)
-            self.fig.canvas.mpl_connect("button_release_event", ax.on_release)
-            self.fig.canvas.mpl_connect("motion_notify_event", ax.on_motion)
+        # disconnect previously existing connections
+        for connection in self.mouse_connections:
+
+            self.fig.canvas.mpl_disconnect(connection)
+
+        self.mouse_connections = []
+
+        bir_amount = len(self.birs) // 2
+
+        drag_ax0 = drag_polygons(
+            ax=self.axs[0],
+            polygons=self.birs[:bir_amount],
+            identifier="baseline",
+        )
+        drag_ax1 = drag_polygons(
+            ax=self.axs[1],
+            polygons=self.birs[bir_amount:],
+            identifier="baseline",
+        )
+
+        self.plot_interactions = [drag_ax0, drag_ax1]
+
+        events = ("button_press_event", "button_release_event", "motion_notify_event")
+        actions = ("on_click", "on_release", "on_motion")
+
+        # connect mouse events
+        for event, action in zip(events, actions):
+            for ax in self.plot_interactions:
+                self.mouse_connections.append(
+                    self.fig.canvas.mpl_connect(event, getattr(ax, action))
+                )

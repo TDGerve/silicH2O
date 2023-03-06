@@ -1,0 +1,33 @@
+{
+    "baseline": {
+        "baseline_interpolation_regions": {
+            "0": [
+                160,
+                190
+            ],
+            "1": [
+                360,
+                380
+            ],
+            "2": [
+                470,
+                500
+            ],
+            "3": [
+                660,
+                700
+            ],
+            "4": [
+                1100,
+                4000
+            ]
+        },
+        "smoothing": 0.5
+    },
+    "deconvolution": {
+        "peak_height": 20,
+        "fit_window": 4,
+        "residuals_threshold": 10,
+        "max_iterations": 5
+    }
+}

@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 import blinker as bl
 import numpy as np
 
-from ..interface import Gui
+from .. import app_configuration
 from ..plots import Plot
 
 
@@ -11,56 +11,43 @@ class Plot_listener:
 
     on_plot_change = bl.signal("refresh plot")
     on_clear_plot = bl.signal("clear plot")
-    on_plots_initialised = bl.signal("plots initialised")
-    on_mouse_movement = bl.signal("mouse moved")
+    # on_plots_initialised = bl.signal("plots initialised")
 
-    on_display_message = bl.signal("display message")
+    # on_plot_calibration = bl.signal("plot calibration")
 
-    def __init__(self, plots: Dict[str, Plot], gui: Gui):
+    def __init__(self, plots: Dict[str, Plot]):
         self.plots = plots
-        self.gui = gui
 
         self.subscribe_to_signals()
+
+    @property
+    def current_tab(self):
+        return app_configuration.gui["current_tab"]
 
     def plot_sample(
         self,
         *args,
-        sample_name: str,
-        x: np.ndarray,
-        spectra: Dict[str, np.ndarray],
-        baseline_spectrum: str,
-        birs: List[int],
+        plot: str,
+        plotdata: Dict,
         **kwargs,
     ):
 
-        for name, plot in self.plots.items():
-            plot.display_name(sample_name)
-            plot.plot_lines(x, spectra, baseline_spectrum=baseline_spectrum)
-            if name == "baseline_correction":
+        plot = self.plots[plot]
 
-                plot.plot_birs(birs)
+        sample_name = plotdata.pop("name", None)
+        if sample_name:
+            plot.display_name(sample_name)
+        plot.draw_plot(**plotdata)
+
+    # def plot_calibration(self, *args, **kwargs):
+    #     plot = self.plots["calibration"]
+    #     plot.draw_plot(**kwargs)
 
     def clear_plot(self, *args):
         for plot in self.plots.values():
             plot.clear_figure()
 
-    def send_plot_coordinates(self, *args, **kwargs):
-        # print(kwargs)
-        self.gui.update_variables(**kwargs)
-
-    def display_message(self, *args, message: str, duration: Optional[int] = 2):
-
-        message = f"{message:>50}"
-        kwargs = {"infobar": {"info": message}}
-        self.gui.update_variables(**kwargs)
-        if duration is None:
-            return
-        self.gui.window.after(
-            int(duration * 1e3), lambda: self.gui.update_variables(infobar={"info": ""})
-        )
-
     def subscribe_to_signals(self):
         self.on_plot_change.connect(self.plot_sample)
-        self.on_mouse_movement.connect(self.send_plot_coordinates)
+        # self.on_plot_calibration.connect(self.plot_calibration)
         self.on_clear_plot.connect(self.clear_plot)
-        self.on_display_message.connect(self.display_message)
