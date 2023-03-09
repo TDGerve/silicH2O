@@ -1,14 +1,13 @@
-import sys
+import matplotlib as mpl
 
-from .Baseline_correction_plots import *
+from .baseline_correction_plots import *
 from .Calibration_plots import *
 from .Interference_plots import *
 from .Interpolation_plots import *
 from .plot_interaction import *
 from .plots import *
 
-if sys.platform != "win":
-    import matplotlib as mpl
-
-    mpl.use("TkAgg")
-    from matplotlib import pyplot as plt
+# Set Tk as the backend
+mpl.use("TkAgg")
+# import pyplot again
+from matplotlib import pyplot as plt
