@@ -1,3 +1,6 @@
+myst_parser
+nbsphinx
+sphinx-rtd-theme
 tk
 ramCOH
 numpy
