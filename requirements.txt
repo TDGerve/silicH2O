@@ -1,4 +1,4 @@
-tkinter
+tk
 ramCOH
 numpy
 pandas
