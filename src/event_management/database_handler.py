@@ -142,8 +142,8 @@ class Database_listener:
         temp_datapath = temp_path / "data"
 
         for name in names:
-            filepath = temp_datapath / f"{name}.sp"
-            filepath.unlink()
+            for file in temp_datapath.rglob(f"{name}.npz"):
+                file.unlink()
 
     def add_samples(self, *args, files: List[str], name_delimiter: str) -> None:
 
@@ -445,6 +445,7 @@ class Database_listener:
 
         self.on_clear_plot.send("new project")
 
+        self.clean_temp_files()
         filepath = pathlib.Path(filepath)
         projectname = filepath.stem
 
@@ -457,10 +458,10 @@ class Database_listener:
         paths = self.move_project_files(filepath=filepath, name=projectname)
 
         setting_files = glob.glob(f"{paths['project']}\\*.parquet")
-        setting_files.extend(glob.glob(f"{paths['project']}\\*.csv"))  # DELETE
+        # setting_files.extend(glob.glob(f"{paths['project']}\\*.csv"))  # DELETE
 
-        spectrum_files = glob.glob(f"{paths['data']}\\*.sp")  # DELETE
-        spectrum_files.extend(glob.glob(f"{paths['data']}\\*.npz"))
+        # spectrum_files = glob.glob(f"{paths['data']}\\*.sp")  # DELETE
+        spectrum_files = glob.glob(f"{paths['data']}\\*.npz")
 
         interference_files = glob.glob(f"{paths['interference']}\\*.npz")
         interference_setting_files = glob.glob(f"{paths['interference']}\\*.parquet")

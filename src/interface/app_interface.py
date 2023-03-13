@@ -11,7 +11,7 @@ from ..plots import (
     Plot,
     Subtraction_plot,
 )
-from .GUIS import GUI_state
+from .GUIs import GUI_state
 from .main_window import Main_window
 from .windows import Calibration_window
 
