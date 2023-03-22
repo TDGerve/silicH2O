@@ -412,6 +412,8 @@ class Database_listener:
 
         self.database_controller.export_results(folder=folder, name=name)
 
+        on_display_message.send(message="results exported!")
+
     def move_project_files(self, filepath, name):
 
         # temp_path = temp_folder / name

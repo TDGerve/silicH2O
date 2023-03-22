@@ -112,7 +112,7 @@ class IO_menu:
 
     def load_project(self):
 
-        on_display_message.send(message="loading project...", duration=None)
+        on_display_message.send(message="loading project...", duration=5)
 
         try:
             project = filedialog.askopenfilename(

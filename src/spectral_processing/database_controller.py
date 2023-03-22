@@ -335,7 +335,7 @@ class Database_controller:
 
     def remove_samples(self, index: List[int]) -> None:
 
-        current_sample = self.files[self.current_sample_index]
+        # current_sample = self.files[self.current_sample_index]
         remove_samples = self.names[index]
 
         data = [self.spectra, self.files, self.names]
