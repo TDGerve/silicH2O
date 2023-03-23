@@ -187,7 +187,7 @@ class Database_listener:
 
     def save_project(self, *args, filepath: Optional[str] = None):
 
-        self.on_display_message.send(message="saving project...", duration=None)
+        self.on_display_message.send(message="saving project...", duration=5)
 
         if filepath is not None:
             filepath = pathlib.Path(filepath)
@@ -217,7 +217,7 @@ class Database_listener:
             on_display_message.send(message="Save calibration as ... first!")
             return
 
-        self.on_display_message.send(message="saving calibration...", duration=None)
+        self.on_display_message.send(message="saving calibration...", duration=5)
 
         self.save_calibration_data(name=name)
 
@@ -404,7 +404,7 @@ class Database_listener:
 
     def export_results(self, *args, filepath: str):
 
-        on_display_message.send(message="exporting results...", duration=None)
+        on_display_message.send(message="exporting results...", duration=5)
 
         filepath = pathlib.Path(filepath)
         name = filepath.stem
