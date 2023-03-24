@@ -30,7 +30,11 @@ else:
 
 
 class IO_menu:
+
+    on_activate_menus = bl.signal("activate menus")
+
     def __init__(self, parent):
+
         self.parent = parent
 
         menu = tk.Menu(parent, name="io_menu")
@@ -57,6 +61,8 @@ class IO_menu:
             "save project as",
         ]:
             menu.entryconfigure(item, state=tk.DISABLED)
+
+        self.subscribe_to_signals()
 
         self.export_enabled = False
 
@@ -127,9 +133,6 @@ class IO_menu:
 
         on_load_project.send("menu", filepath=project)
 
-        if self.export_enabled:
-            return
-
         self.activate_menus()
 
         on_display_message.send(message="project loaded!")
@@ -181,7 +184,10 @@ class IO_menu:
 
         on_save_project.send("menu", filepath=f)
 
-    def activate_menus(self):
+    def activate_menus(self, *args):
+
+        if self.export_enabled:
+            return
 
         menu = self.parent.nametowidget("io_menu")
 
@@ -195,3 +201,7 @@ class IO_menu:
 
             menu.entryconfigure(item, state=tk.NORMAL)
         self.export_enabled = True
+
+    def subscribe_to_signals(self):
+
+        self.on_activate_menus.connect(self.activate_menus)

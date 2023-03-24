@@ -25,6 +25,8 @@ on_import_calibration_project = bl.signal("project calibration")
 on_calibration_window = bl.signal("calibration window")
 on_read_calibration_file = bl.signal("read calibration file")
 
+on_activate_menus = bl.signal("activate menus")
+
 
 if getattr(sys, "frozen", False):
     EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
@@ -81,3 +83,5 @@ class Calibration_menu:
         on_read_calibration_file.send(
             filepath=calibration_file, which=["H2Oreference", "use"], update_gui=False
         )
+
+        on_activate_menus.send()
