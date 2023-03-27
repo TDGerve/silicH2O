@@ -104,6 +104,8 @@ class Subtraction_plot(Double_plot):
     def plot_peaks(self, peaks, plot_width=16, spacing=0.5):
 
         if peaks is None:
+            self.clear_plot_elements(self.peak_curves)
+            self.clear_plot_elements(self.peak_centers)
             return
 
         ax = self.axs[1]
