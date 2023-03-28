@@ -140,7 +140,9 @@ class Database_controller:
                     x = f["x"]
                     y = f["y"]
             except ValueError:
-                spectrum = pd.read_csv(file, delimiter="\t|,", header=None)
+                spectrum = pd.read_csv(
+                    file, delimiter="\t|,", header=None, engine="python"
+                )
                 x, y = [spectrum.iloc[:, col].to_numpy() for col in spectrum]
                 # x, y = np.genfromtxt(file, unpack=True)
 
@@ -186,7 +188,7 @@ class Database_controller:
                 y = f["y"]
         except ValueError:
             # x, y = np.genfromtxt(file, unpack=True)
-            spectrum = pd.read_csv(file, delimiter="\t|,", header=None)
+            spectrum = pd.read_csv(file, delimiter="\t|,", header=None, engine="python")
             x, y = [spectrum.iloc[:, col].to_numpy() for col in spectrum]
 
         current_sample.set_interference(

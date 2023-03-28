@@ -6,9 +6,10 @@
 .. include:: ./substitutions.rst
 
 
-==============================
+
+=====================
 |silich2o| quickstart
-==============================
+=====================
 
 .. toctree::
    :maxdepth: 2
@@ -21,19 +22,22 @@
    support
    license
 
-About
------
-texttext
+=============
+In a nutshell
+=============
 
-Installation
-------------
-texttext
+|silich2o| is an open-source software programme that uniformises and streamlines post-processing of silicate glass Raman spectra by providing an
+interactive graphical user-interface. It can be used to: 
+
+   * interactively baseline correct Raman spectra  
+   * remove unwanted peaks through interpolation and unmixing  
+   * set up |h2o| calibrations with reference materials  
+   * quantify |h2o| contents of unknown samples.
 
 
+.. Indices and tables
+.. ------------------
 
-Indices and tables
-------------------
 
-
-* :ref:`genindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`search`

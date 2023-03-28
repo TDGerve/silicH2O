@@ -13,4 +13,4 @@ scipy
 scikit-learn
 pyinstaller
 PySide2
-PyQt5
+PyQt5pip
