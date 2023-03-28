@@ -35,9 +35,8 @@ interactive graphical user-interface. It can be used to:
    * quantify |h2o| contents of unknown samples.
 
 
-.. Indices and tables
-.. ------------------
+.. figure:: /images/gui_1.png
+    :alt: main gui
+    :width: 800
 
-
-.. * :ref:`genindex`
-.. * :ref:`search`
+    Main user interface of |silich2o|
