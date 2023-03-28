@@ -1,5 +1,7 @@
 .. |h2o| replace:: H\ :sub:`2`\O
 
+.. |silich2o| replace:: SilicH\ :sub:`2`\O
+
 =============
 In a nutshell
 =============
