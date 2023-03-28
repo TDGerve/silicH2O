@@ -22,11 +22,11 @@ File associations
 Currently, |silich2o| only supports text files (e.g. txt or csv) for importing raw spectra. Text files should contain no headers and have separate columns for Raman shifts (first) and signal intensity (second).
 Characters separating the columns can be whitespaces (any number) or commas.
 
-Once spectra are imported, they can be stored together in :ref:`project files<menus>` with `.h2o` extensions. These files are containers with all spectral data and processing settings 
+Once spectra are imported, they can be stored together in :ref:`project files<menus_main>` with `.h2o` extensions. These files are containers with all spectral data and processing settings 
 and can be exchanged and shared between users, encouraging transparent and reproducible data processing.
 
 Calibration data are stored in `.cH2O` files, which can be assigned to any project. By default these files are stored in the `.\\calibration` folder at the top level of the |silich2o| folder.
-When saving a new calibration, calibration spectra are also saved as projects in the `.\\calibration\\projects` folder. These projects can later be imported from the :ref:`Calibration menu<menus>`
+When saving a new calibration, calibration spectra are also saved as projects in the `.\\calibration\\projects` folder. These projects can later be imported from the :ref:`Calibration menu<menu_main_calibration>`
 to make changes or review the data.
 
 
@@ -55,6 +55,7 @@ The user interface has six main components:
         displays information messages and X-Y plot coordinates and has buttons for saving and resetting samples.
 
     
+.. _menus_main:
 
 menus
 *****
@@ -70,6 +71,8 @@ menus
     :header-rows: 1
 
 Default settings are stored in `.json` files in the `.\\configuration` folder, all settings can also be manually adjusted there.
+
+.. _menu_main_calibration:
 
 .. csv-table:: 
     :file: tables/calibration_menu.csv
@@ -105,7 +108,7 @@ See :ref:`baseline correction<tutorial 1: baseline correction>`, :ref:`interpola
 On the righ-hand side there are several tools for plot navigation:
 
 .. figure:: /images/plot_buttons.png
-    :alt: main gui
+    :alt: plot navigation buttons
     :width: 400
 
 
@@ -117,6 +120,21 @@ info bar
 ********
 X-Y plot coordinates of the mouse location are displayed on the right and occasional information messages on the left. The `reset sample` button resets the current 
 sample to the last saved state and `save sample` and `save all` respectively save the current sample and all samples.
+
+Calibration
+-----------
+
+.. figure:: /images/calibration.png
+    :alt: calibration window
+    :width: 800
+
+.. _menus_calibration:
+
+menus
+*****
+
+
+
 
 Keyboard shortcuts
 ------------------
