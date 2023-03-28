@@ -1,0 +1,3 @@
+Calibration,
+calibrate,open the calibration window where existing calibrations can be linked to the active project or the active project can be used to set up a new calibration
+Import calibration as project,import an existing calibration as a project to make changes or inspect the data.

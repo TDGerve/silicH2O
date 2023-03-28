@@ -1,12 +1,12 @@
-
+.. include:: ./substitutions.rst
 =====
 About
 =====
 
 
-How to cite SilicH\ :sub:`2`\O
+How to cite |silich2o|
 ------------------------------
-Please reference the SilicH\ :sub:`2`\O paper published in XXX with mention of the SilicH\ :sub:`2`\O release version if you have used it in your research.
+Please reference the |silich2o| paper published in XXX with mention of the |silich2o| release version if you have used it in your research.
 
 
 

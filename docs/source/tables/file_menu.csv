@@ -1,0 +1,10 @@
+File,
+new . . .,start a new project
+load project,import a project from an .h2o file
+add spectra,import spectra from text files and add them to the current project
+add directory,import all spectra from a directory and add them to the current project
+export results,export results and settings in separate .csv files
+export sample,export all spectra from the current sample in a single .csv file
+export all,export spectra of all samples to individual .csv files
+save project,save the current project
+save project as,save the current project as a new file

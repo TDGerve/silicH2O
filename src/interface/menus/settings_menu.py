@@ -60,7 +60,7 @@ class Settings_menu:
         menu.add_command(label="help", command=self.help)
 
     def help(*args):
-        webbrowser.open_new("https://github.com/TDGerve/silicH2O")
+        webbrowser.open_new("https://silich2o.readthedocs.io/en/latest/")
 
     def restore_defaults(self, type: str):
         on_restore_default_settings.send(type=type)

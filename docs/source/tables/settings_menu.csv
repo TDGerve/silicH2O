@@ -1,0 +1,6 @@
+Settings,,
+glass,current as default,Set glass baseline correction settings of the current sample as default. Default settings are applied to newly imported spectra
+,restore defaults,Restore the original |silich2o| default settings for baseline correction of glasses. |silich2o| default settings were designed for basaltic glasses
+interference,current as default,Set interference baseline correction settings of the current sample as default. Default settings are applied to newly imported interference spectra
+,restore defaults,Restore the original |silich2o| default settings for baseline correction of interference. |silich2o| default settings were designed for olivine
+help,,link to |silich2o| documentation

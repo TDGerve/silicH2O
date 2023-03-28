@@ -16,7 +16,7 @@ release = "1.0"
 
 extensions = ["myst_parser", "nbsphinx"]
 
-templates_path = ["_templates"]
+templates_path = ["../_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
@@ -25,3 +25,8 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["../_static"]
+
+# Add any paths that contain custom static files (such as style sheets) here,
+# relative to this directory. They are copied after the builtin static files,
+# so a file named "default.css" will overwrite the builtin "default.css".
+html_static_path = ["css"]
