@@ -18,4 +18,4 @@ interactive graphical user-interface. It can be used to:
 Documentation
 =============
 
-Documentation and usage instructions are a work in progress at [silicH2O.readthedocs.io](https://silich2o.readthedocs.io/en/latest/)
+Documentation and usage instructions are a work in progress at `silicH2O.readthedocs.io<https://silich2o.readthedocs.io/en/latest/>`_
