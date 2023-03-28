@@ -16,6 +16,7 @@ User interface
 --------------
 
 The main interface has six components:
+
 #. the menu bar
 #. the sample navigation menu
 #. the tool selection bar
