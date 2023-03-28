@@ -106,7 +106,7 @@ There are several tools for navigating the plot available:
 
 .. figure:: /images/plot_buttons.png
     :alt: main gui
-    :width: 800
+    :width: 400
 
 
 settings and results
