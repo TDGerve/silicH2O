@@ -9,7 +9,7 @@ Installation
 ------------
 PC
 **
-|silich2o| is installed by extracting the zipfile downloading the latest from `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer, but keep in mind that its folder structure should stay intact.
+|silich2o| is installed by extracting the zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer (keep in mind that its folder structure should stay intact).
 The |silich2o| shortcut file can still be moved to any location on your computer. You start |silich2o| by running this shortcut file, or by directly 
 running `silicH2O.exe` from the folder `.\\silicH2O`
 
