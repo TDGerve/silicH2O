@@ -81,7 +81,7 @@ sample navigation
 *****************
 Select a sample:
 
-    * by clicking their name
+    * by left-clicking its name
     * with the `next` and `previous` buttons
     * with the up and down arrow keyboard keys
 

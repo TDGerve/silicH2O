@@ -3,5 +3,5 @@ up arrow,select previous sample.
 down arrow,select next sample.
 ctrl+s,save settings and results for all samples.
 ctrl+z,reset current sample to its last saved state.
-ctrl+q,copy baseline correction settings of the current sample. When using the `interference subtraction` tool this copies settings for the interference.
+ctrl+q,copy baseline correction settings of the current sample (*BIR* positions and smoothing). When using the `interference subtraction` tool this copies settings for the interference.
 ctrl+w,paste baseline correction settings.
