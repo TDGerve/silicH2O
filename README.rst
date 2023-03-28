@@ -1,0 +1,19 @@
+.. |h2o| replace:: H\ :sub:`2`\O
+
+=============
+In a nutshell
+=============
+
+|silich2o| is an open-source software programme that uniformises and streamlines post-processing of silicate glass Raman spectra by providing an
+interactive graphical user-interface. It can be used to: 
+
+   * interactively baseline correct Raman spectra  
+   * remove unwanted peaks through interpolation and unmixing  
+   * set up |h2o| calibrations with reference materials  
+   * quantify |h2o| contents of unknown samples.
+   
+=============
+Documentation
+=============
+
+Documentation and usage instructions are a work in progress at [silicH2O.readthedocs.io](https://silich2o.readthedocs.io/en/latest/)
