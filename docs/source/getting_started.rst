@@ -102,6 +102,13 @@ interactive plot
 Plot of the current sample. Plot layout varies with the selected tool and each tool has interactive elements to set varies processing parameters.
 See :ref:`baseline correction<tutorial 1: baseline correction>`, :ref:`interpolation<tutorial 3: interpolation>` and :ref:`interference subtraction<tutorial 4: interference subtraction>`
 
+There are several tools for navigating the plot available:
+
+.. figure:: /images/plot_buttons.png
+    :alt: main gui
+    :width: 800
+
+
 settings and results
 ********************
 Shows settings and results of the current tool.
