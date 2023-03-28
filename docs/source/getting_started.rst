@@ -29,5 +29,9 @@ The main interface has six components:
 
     The main user interface of SilicH2O
 
+Menu bar
+********
+
+
 Exporting results
 -----------------
