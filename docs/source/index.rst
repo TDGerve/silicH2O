@@ -5,27 +5,12 @@
 
 .. include:: ./substitutions.rst
 
+==========
+|silich2o|
+==========
 
-
-========================
-|silich2o| documentation
-========================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   about
-   getting_started
-   tools
-   algorithms
-   changelog
-   support
-   license
-
-=============
 In a nutshell
-=============
+-------------
 
 |silich2o| is an open-source software programme that uniformises and streamlines post-processing of silicate glass Raman spectra by providing an
 interactive graphical user-interface. It can be used to: 
@@ -41,3 +26,19 @@ interactive graphical user-interface. It can be used to:
     :width: 800
 
     Main user interface of |silich2o|
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   about
+   getting_started
+   tools
+   algorithms
+   changelog
+   support
+   license
+
+
