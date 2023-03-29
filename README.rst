@@ -18,6 +18,12 @@ interactive graphical user-interface. It can be used to:
    * set up |h2o| calibrations with reference materials  
    * quantify |h2o| contents of unknown samples.
    
+ .. figure:: docs/source/images/baseline_correction/move_birs.gif
+    :alt: main gui
+    :width: 800
+
+    Main user interface of |silich2o|
+   
 =============
 Documentation
 =============
