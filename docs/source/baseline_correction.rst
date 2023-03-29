@@ -3,7 +3,8 @@
 ===================
 Baseline correction
 ===================
-The grey bars in the plot are baseline interpolation regions (*BIRs*) and are used to calculate baselines with the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method
+This tool calculates background signal baselines and subtracts them from the raw signal.
+Baseline interpolation regions (*BIRs*, grey bars in the plots) are used to calculate baselines with the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method
 from `ramCOH <https://ramcoh.readthedocs.io/en/latest>`_. Exact *BIR* positions are shown in the :ref:`settings bar </getting_started.rst#settings-and-results>`, with numbered *BIRs* in rows and their start and end coordinates in columns.
 With the plus and minus buttons next to the coordinates, *BIRs* can be added or removed, where new *BIRs* are placed to the right of the one where the button was pressed.
 
@@ -50,12 +51,15 @@ By clicking and dragging from inside a *BIR* the entire *BIR* can be moved aroun
     Moving *BIR* positions.
 
 
+Baseline correction settings (*BIR* positions and smoothing settings) can be copied with the keyboard shortcut *Ctrl+q* and applied to a different sample by pasting with *Ctrl+w*
+
+
 Baseline smoothing
 ------------------
 Baseline smoothing is adjusted via the smoothing parameter in the settings bar, with values between 0 and 100. At values close to zero the baseline will be linear, while at high values it will closely follow 
 the datapoints in the *BIRs*
 Default smoothing is set to 1.0, which generally works well for silicate glasses.
-Smoothing values are passed to the the `smooth_factor` parameter of the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method.
+Smoothing values are passed to the the ``smooth_factor`` parameter of the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method.
 
 Results
 -------

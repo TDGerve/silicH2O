@@ -123,6 +123,9 @@ On the righ-hand side there are several tools for plot navigation:
     :alt: plot navigation buttons
     :width: 400
 
+.. note:: 
+    Don't forget to deselect navigation tools when you no longer want to use them. 
+
 
 settings and results
 ********************

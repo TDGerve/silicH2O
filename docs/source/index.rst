@@ -17,7 +17,7 @@
 
    about
    getting_started
-   guides
+   tools
    algorithms
    changelog
    support
