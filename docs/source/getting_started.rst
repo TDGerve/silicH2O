@@ -92,7 +92,7 @@ Select a sample:
     * with the `next` and `previous` buttons
     * with the up and down arrow keyboard keys
 
-The `delete` button deletes the currently selected samples, where multi-selections are possible.
+The `delete` button deletes currently selected samples, where multi-selections are possible.
 
 tool selection
 **************
@@ -102,7 +102,8 @@ Choose from one of three processing tools:
     * :ref:`interpolation<Interpolation>`
     * :ref:`interference subtraction<Interference subtraction>`
 
-Plots and settings and results menus change based on which tool is selected.
+Plots and menus for settings and results change based on which tool is selected.
+
 |silich2o| processes spectra in the following order:
 
  `interference subtraction` → `interpolation` → `baseline correction`
