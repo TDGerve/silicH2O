@@ -65,6 +65,8 @@ menus
     :widths: 30, 70
     :header-rows: 1
 
+.. _menus_settings:
+
 .. csv-table:: 
     :file: tables/settings_menu.csv
     :widths: 10, 20, 70
@@ -126,8 +128,8 @@ sample to the last saved state and `save sample` and `save all` save the setting
     If you have not yet saved your data to a project file *Ctrl+s* functions the same as `save all`. Keep an eye on the messages in the lower left corner of the :ref:`info bar<info bar>`, they will
     tell you how your data have been saved.
 
-Calibration
------------
+Calibration window
+------------------
 The calibration window is where you :ref:`create new calibrations <|h2o| calibration>` and link them to projects.
 
 .. figure:: /images/calibration.png
@@ -168,4 +170,3 @@ Keyboard shortcuts
     :file: tables/keyboard_shortcuts.csv
     :widths: 30, 70
     :header-rows: 1
-
