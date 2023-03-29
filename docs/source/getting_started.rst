@@ -101,6 +101,16 @@ Choose from one of three processing tools:
     * :ref:`interference subtraction<Interference subtraction>`
 
 Plots and settings and results menus change based on which tool is selected.
+|silich2o| processes spectra in the following order:
+
+ `interference subtraction` → `interpolation` → `baseline correction`
+
+As a consequence, some types of processing are not possible, for example:
+
+    * interference subtraction on interpolated spectra, 
+    * interpolation on baseline corrected spectra.
+
+If this is needed, exporting processed spectra and re-importing them is a suitable workaround.
 
 interactive plot
 ****************

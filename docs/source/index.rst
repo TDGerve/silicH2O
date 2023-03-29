@@ -7,9 +7,9 @@
 
 
 
-=====================
-|silich2o| quickstart
-=====================
+========================
+|silich2o| documentation
+========================
 
 .. toctree::
    :maxdepth: 2
@@ -17,7 +17,7 @@
 
    about
    getting_started
-   tutorials
+   guides
    algorithms
    changelog
    support
