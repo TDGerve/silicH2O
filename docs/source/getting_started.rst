@@ -29,6 +29,8 @@ Calibration data are stored in `.cH2O` files, which can be assigned to any proje
 When saving a new calibration, calibration spectra are also saved as projects in the `.\\calibration\\projects` folder. These projects can later be imported from the :ref:`Calibration menu<menu_main_calibration>`
 to make changes or review the data.
 
+|silich2o| stores temporary files in the `.\\temp` folder, do not delete these while the programme is running, they are cleaned up automatically upon exiting |silich2o|.
+
 
 User interface
 --------------

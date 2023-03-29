@@ -14,7 +14,7 @@ the deconvolution has a good fit to the baseline corrected spectrum.
 
 Importing interference
 ----------------------
-Spectra of interference are imported via the `load` button in the :ref:`settings bar </getting_started.rst#settings-and-results>` and can be removed with the `remove` button.
+Spectra of interference are imported via the `load` button in the :ref:`settings bar </getting_started.rst#settings-and-results>` and removed with the `remove` button.
 
 .. figure:: /images/interference/interference_import.gif
     :alt: import interference
@@ -28,7 +28,16 @@ While you're in the interference subtraction tool tab, the keyboard shortcuts *C
 Deconvolution
 -------------
 :py:meth:`ramCOH.RamanProcessing.deconvolve() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.deconvolve>` is used for (optional) interference deconvolution, see its documentation for a comprehensive description
-of all its parameters. The deconvolution makes an initial guess for the positions of the convoluted peaks. The spectrum is then split into multiple deconvolution regions based on the initial guesses. 
+of all its parameters. 
+
+.. figure:: /images/interference/interference_deconvolve.gif
+    :alt: interference deconvolution
+    :width: 800
+
+    Deconvolution of an olivine spectrum.
+
+
+The deconvolution algorithm first makes initial guesses for the positions of the convoluted peaks. The spectrum is then split into multiple deconvolution regions based on the initial guesses. 
 More detailed estimates for convoluted peaks are made per region and more peaks are added iteratively if needed. Iterations are stopped once the residual of the baseline corrected and deconvoluted signals falls below a set threshold value, or when a maximum
 number of iterations is reached. Deconvolution results for all regions are merged to create the full deconvoluted spectrum.
 
