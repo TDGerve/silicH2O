@@ -36,7 +36,7 @@ interactive graphical user-interface. It can be used to:
    * quantify |h2o| contents of unknown samples.
 
 
-.. figure:: /images/gui_1.png
+.. figure:: /images/baseline_correction/move_birs.gif
     :alt: main gui
     :width: 800
 
