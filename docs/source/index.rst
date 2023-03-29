@@ -27,6 +27,8 @@ interactive graphical user-interface. It can be used to:
 
     Main user interface of |silich2o|
 
+.. note:: 
+   Click images to see them at full resolution!
 
 
 .. toctree::
