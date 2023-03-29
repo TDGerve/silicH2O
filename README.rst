@@ -2,6 +2,10 @@
 
 .. |silich2o| replace:: SilicH\ :sub:`2`\O
 
+.. image:: https://readthedocs.org/projects/silich2o/badge/?version=latest
+    :target: https://silich2o.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 =============
 In a nutshell
 =============
