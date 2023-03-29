@@ -14,10 +14,19 @@ release = "1.0"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["myst_parser", "nbsphinx", "sphinx.ext.autosectionlabel"]
+extensions = [
+    "myst_parser",
+    "nbsphinx",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.intersphinx",
+]
 
 templates_path = ["../_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+
+intersphinx_mapping = {
+    "ramcoh": ("https://ramcoh.readthedocs.io/en/latest", None),
+}
 
 
 # -- Options for HTML output -------------------------------------------------

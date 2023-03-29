@@ -22,7 +22,7 @@ File associations
 Currently, |silich2o| only supports text files (e.g. txt or csv) for importing raw spectra. Text files should contain no headers and have separate columns for Raman shifts (first) and signal intensity (second).
 Characters separating the columns can be whitespaces (any number) or commas.
 
-Once spectra are imported, they can be stored together in :ref:`project files<menus_main>` with `.h2o` extensions. These files are containers with all spectral data and processing settings 
+Once spectra are imported, they can be stored together in :ref:`project files<menus_main>` with `.h2o` extensions (:ref:`File<menus_main>` menu → *save project as*). These files are containers with all spectral data and processing settings 
 and can be exchanged and shared between users, encouraging transparent and reproducible data processing.
 
 Calibration data are stored in `.cH2O` files, which can be assigned to any project. By default these files are stored in the `.\\calibration` folder at the top level of the |silich2o| folder.
@@ -94,16 +94,16 @@ tool selection
 **************
 Choose from one of three processing tools:
 
-    * :ref:`baseline correction<tutorial 1: baseline correction>`
-    * :ref:`interpolation<tutorial 3: interpolation>`
-    * :ref:`interference subtraction<tutorial 4: interference subtraction>`
+    * :ref:`baseline correction<Baseline correction>`
+    * :ref:`interpolation<Interpolation>`
+    * :ref:`interference subtraction<Interference subtraction>`
 
 Plots and settings and results menus change based on which tool is selected.
 
 interactive plot
 ****************
-Plot of the current sample. Plot layout varies with the selected tool and each tool has interactive elements to set varies processing parameters.
-See :ref:`baseline correction<tutorial 1: baseline correction>`, :ref:`interpolation<tutorial 3: interpolation>` and :ref:`interference subtraction<tutorial 4: interference subtraction>`
+Plot of the current sample. Plot layout varies with the selected tool and each tool has interactive elements to adjust various parameters.
+See :ref:`baseline correction<Baseline correction>`, :ref:`interpolation<Interpolation>` and :ref:`interference subtraction<Interference subtraction>`
 
 On the righ-hand side there are several tools for plot navigation:
 
@@ -119,20 +119,46 @@ Shows settings and results of the current tool.
 info bar
 ********
 X-Y plot coordinates of the mouse location are displayed on the right and occasional information messages on the left. The `reset sample` button resets the current 
-sample to the last saved state and `save sample` and `save all` respectively save the current sample and all samples.
+sample to the last saved state and `save sample` and `save all` save the settings and results of the current sample and all samples respectively .
+
+.. note:: 
+    Saving a sample, or all samples, does not yet save the project. This can only be done via *File → save project (as)* or with the *Ctrl+s* keyboard shortcut.
+    If you have not yet saved your data to a project file *Ctrl+s* functions the same as `save all`. Keep an eye on the messages in the lower left corner of the :ref:`info bar<info bar>`, they will
+    tell you how your data have been saved.
 
 Calibration
 -----------
+The calibration window is where you :ref:`create new calibrations <|h2o| calibration>` and link them to projects.
 
 .. figure:: /images/calibration.png
     :alt: calibration window
     :width: 800
+
+    The calibration window
+
+    1 - menus
+        Importing and saving calibration data.
+    2 - calibration data
+        Set reference |h2o| contents and select which samples to use.
+    3 - calibration curve
+        Plot with calibration data and curve. Hover over symbols to see sample names.
+    4 - regression statistics
+        Statistics of the linear regression. Select the tickbox *use* to link the current calibration to the active project.
 
 .. _menus_calibration:
 
 menus
 *****
 
+.. csv-table:: 
+    :file: tables/calibration_import_menu.csv
+    :widths: 30, 70
+    :header-rows: 1
+
+.. csv-table:: 
+    :file: tables/calibration_file_menu.csv
+    :widths: 30, 70
+    :header-rows: 1
 
 
 

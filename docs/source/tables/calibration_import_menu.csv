@@ -1,0 +1,3 @@
+Import,
+current project,Create a new calibration based on the samples in the active project.
+from file,Import calibration data from a *.cH2O* file

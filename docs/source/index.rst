@@ -19,6 +19,7 @@
    getting_started
    tutorials
    algorithms
+   changelog
    support
    license
 
