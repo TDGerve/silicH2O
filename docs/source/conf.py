@@ -18,7 +18,8 @@ extensions = [
     "myst_parser",
     "nbsphinx",
     "sphinx.ext.autosectionlabel",
-    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.imgmath",
 ]
 
 templates_path = ["../_templates"]

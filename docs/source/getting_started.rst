@@ -95,7 +95,7 @@ Select a sample:
     * with the `next` and `previous` buttons
     * with the up and down arrow keyboard keys
 
-The `delete` button deletes currently selected samples, where multi-selections are possible.
+The `delete` button deletes currently selected samples, where multi-selections are possible with `shift + left-click` or `Ctrl + left-click`.
 
 tool selection
 **************
