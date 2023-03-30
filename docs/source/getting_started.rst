@@ -35,6 +35,9 @@ to make changes or review the data.
 User interface
 --------------
 
+.. note:: 
+    Keep an eye on the lower left corner of the :ref:`infobar </getting_started.rst#info-bar>`! Informational messages are displayed here frequently.
+
 The user interface has six main components:
 
 .. figure:: /images/gui_0.png

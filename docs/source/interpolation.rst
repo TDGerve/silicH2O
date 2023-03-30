@@ -26,7 +26,7 @@ Interpolation regions are set
     :alt: remove or add birs
     :width: 800
 
-    Removing olivine (795--875 |cm-1|) and resin peaks (2741--3117 and 1402--1675 |cm-1|) by interpolating.
+    Removing olivine (790--870 |cm-1|) and resin peaks (1390--1640 and 2800--3130 |cm-1|) by interpolating.
 
 
 Smoothing of the interpolated signal is set the same as :ref:`baseline smoothing </baseline_correction.rst#baseline-smoothing>`.

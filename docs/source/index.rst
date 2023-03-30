@@ -12,7 +12,7 @@
 In a nutshell
 -------------
 
-|silich2o| is an open-source software programme that uniformises and streamlines post-processing of silicate glass Raman spectra by providing an
+|silich2o| is an open-source software program that uniformises and streamlines post-processing of silicate glass Raman spectra by providing an
 interactive graphical user-interface. It can be used to: 
 
    * interactively baseline correct Raman spectra  
@@ -28,7 +28,7 @@ interactive graphical user-interface. It can be used to:
     Main user interface of |silich2o|
 
 .. note:: 
-   Click images to see them at full resolution!
+   Tip: click images to see them at full resolution!
 
 
 .. toctree::

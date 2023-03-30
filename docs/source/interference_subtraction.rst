@@ -4,13 +4,8 @@
 Interference subtraction
 ========================
 This tool can be used to unmix glass and interference signals if a separate spectrum of only the interfering phase is available.
-Unmixing is done with the :py:meth:`ramCOH.Glass.subtract_interference() <ramcoh:ramCOH.raman.glass.Glass.subtract_interference>` method, which subtracts baseline corrected inferference signal from the raw glass signal.
-Scaling and position of the interference is optimised by minimising the difference between the unmixed spectrum and a calculated unaffected spectrum within a region set by the user.
-This region should be narrow and contain ideally contain the highest interfering peak(s), while the areas directly left and right adjacent should be free from interference.
-The unaffected spectrum is calculated from a cubic spline interpolation across the minimisation region and nearby interference peaks would potentially give unrealstic results.
 
-Optionally, the interference can be deconvolved before subtraction from the glass. This has the added benefit that deconvolutions are noise-free, but care should be taken that 
-the deconvolution has a good fit to the baseline corrected spectrum.
+
 
 Importing interference
 ----------------------
@@ -20,10 +15,45 @@ Spectra of interference are imported via the `load` button in the :ref:`settings
     :alt: import interference
     :width: 800
 
-    importing an olivine spectrum as interference and setting its *BIRs*.
+    importing and removing an olivine spectrum as interference.
 
 Baseline correction of the interference is identical to the procedure for glasses, please refer to :ref:`its documentation </baseline_correction.rst>` for instructions.
 While you're in the interference subtraction tool tab, the keyboard shortcuts *Ctrl+q* and *Ctrl+w* can be used to respectively copy and paste interference baseline correction settings between different samples.
+
+Subtraction
+-----------
+
+Unmixing is done with the :py:meth:`ramCOH.Glass.subtract_interference() <ramcoh:ramCOH.raman.glass.Glass.subtract_interference>` method, which subtracts baseline corrected inferference signal from the raw glass signal.
+Scaling and position of the interference is optimised by minimising the difference between the unmixed spectrum and a calculated unaffected spectrum within a region set by the user.
+
+The minimisation interval is set the same way as :ref:`baseline interpolation regions </baseline_correction.rst#bir-positions>`:
+
+* by clicking and dragging the grey bar in the plot or
+* by typing absolute values in the :ref:`settings bar </getting_started.rst#settings-and-results>`
+
+
+This region should be narrow and ideally contain contain the highest interfering peak(s), while the areas directly left and right adjacent should be free from interference.
+Unaffected spectra are calculated from a cubic spline interpolation across the minimisation region and nearby interference peaks would potentially give unrealstic results.
+They are plotted
+
+
+Optionally, the interference can be deconvolved before subtraction from the glass. This has the added benefit that deconvolutions are noise-free, but care should be taken that 
+the deconvolution has a good fit to the baseline corrected spectrum.
+
+
+.. figure:: /images/interference/subtraction.PNG
+    :alt: subtraction settings
+    :width: 300
+
+    subtraction settings.
+
+
+.. figure:: /images/interference/interference_subtraction.gif
+    :alt: interference subtraction
+    :width: 800
+
+    subtraction of interference.
+
 
 Deconvolution
 -------------
@@ -105,22 +135,6 @@ Too high values slow down calculations and overfit data, while too low values gi
 
 Values of ca. 5 give good results for olivine.
 
-Subtraction
------------
-
-
-.. figure:: /images/interference/subtraction.PNG
-    :alt: subtraction settings
-    :width: 300
-
-    subtraction settings.
-
-
-.. figure:: /images/interference/interference_subtraction.gif
-    :alt: interference subtraction
-    :width: 800
-
-    subtraction of interference.
 
 
 
