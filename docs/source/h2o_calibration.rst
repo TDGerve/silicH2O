@@ -4,13 +4,13 @@
 |h2o| calibration
 =================
 The calibration window is opened from the :ref:`Calibrate </getting_started.rst#calibration-window>` menu.
-In this window new calibrations can be made by importing the results from the current project, or existing calibrations can
-be imported and linked with the current project. The menu structure is explained on the :ref:`getting started <menus_calibration>` page.
+In this window new calibrations can be made with the results from the active project, or existing calibrations can
+be imported and linked to the current project. The menu structure is explained on the :ref:`getting started <menus_calibration>` page.
 
 
 Creating calibrations
 ---------------------
-After importing results from the active project, all samples are listed in rows with data for :math:`\frac{{Area}_{silicate}}{{Area}_{H_2O}}` and reference |h2o| contents in columns.
+After importing results from the active project via the menu :ref:`Import<menus_calibration>` *→ current project*, all samples are listed in rows with data for :math:`\frac{{Area}_{silicate}}{{Area}_{H_2O}}` and reference |h2o| contents in columns.
 |h2o| contents have to be set by the user by typing values in the appropriate cells. For each sample, you have to indicate wether to include the sample in the calibration
 by clicking their respective ``use`` tickboxes. The calibration curve is updated in real-time and is calculated from
 a linear regression of :math:`\frac{{Area}_{silicate}}{{Area}_{H_2O}}` against |h2o|, as:
@@ -44,4 +44,4 @@ They are applied to the active project by clicking the ``use`` tickbox below the
     :alt: h2o calibration
     :width: 300
 
-    Rgression statistics.
+    Regression statistics.

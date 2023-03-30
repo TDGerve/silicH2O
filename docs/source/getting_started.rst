@@ -15,6 +15,7 @@ running `silicH2O.exe` from the folder `.\\silicH2O`
 
 Mac
 ***
+TBA
 
 
 File associations
@@ -96,6 +97,12 @@ Select a sample:
     * with the up and down arrow keyboard keys
 
 The `delete` button deletes currently selected samples, where multi-selections are possible with `shift + left-click` or `Ctrl + left-click`.
+
+.. figure:: /images/sample_navigation.gif
+    :alt: plot navigation
+    :width: 800
+
+    Sample navigation (with keystrokes displayed).
 
 tool selection
 **************
