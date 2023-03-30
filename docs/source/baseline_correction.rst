@@ -6,7 +6,7 @@ Baseline correction
 This tool calculates background signal baselines and subtracts them from the raw signal.
 Baseline interpolation regions (*BIRs*, grey bars in the plots) are used to calculate baselines with the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method
 from `ramCOH <https://ramcoh.readthedocs.io/en/latest>`_. Exact *BIR* positions are shown in the :ref:`settings bar </getting_started.rst#settings-and-results>`, with numbered *BIRs* in rows and their start and end coordinates in columns.
-With the plus and minus buttons next to the coordinates, *BIRs* can be added or removed, where new *BIRs* are placed to the right of the one where the button was pressed.
+With the ``+`` and ``-`` buttons next to the coordinates, *BIRs* can be added or removed, where new *BIRs* are placed to the right of the one where the button was pressed.
 
 .. figure:: /images/baseline_correction/baseline_settings.png
     :alt: baseline correction settings

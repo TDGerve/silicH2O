@@ -16,6 +16,8 @@ Interpolation regions are set
     * by typing absolute boundary values the :ref:`settings bar </getting_started.rst#settings-and-results>` or
     * by clicking and dragging the grey bars in the plot.
 
+Any number of interpolation regions can be used and they are added or removed by clicking the ``+`` and ``-`` buttons in the :ref:`settings bar </getting_started.rst#settings-and-results>`
+
 .. figure:: /images/interpolation/interpolation_settings.png
     :alt: interpolation settings
     :width: 300
@@ -30,7 +32,7 @@ Interpolation regions are set
 
 
 Smoothing of the interpolated signal is set the same as :ref:`baseline smoothing </baseline_correction.rst#baseline-smoothing>`.
-Interpolated signals are shown as blue lines and are recalculated in real-time and adjusted with each parameter change. If you are happy with the results, click the `use` tickbox in the :ref:`settings bar </getting_started.rst#settings-and-results>`
+Interpolated signals are shown as blue lines and are recalculated in real-time and adjusted with each parameter change. If you are happy with the results, click the ``use`` tickbox in the :ref:`settings bar </getting_started.rst#settings-and-results>`
 to continue using the interpolated spectrum in the :ref:`baseline correction tool </baseline_correction.rst>`.
 Only the datapoints inside the interpolation regions will be replaced by interpolated signal, the rest of the spectrum stays intact.
 

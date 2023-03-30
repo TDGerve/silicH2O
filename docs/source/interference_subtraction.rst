@@ -34,12 +34,13 @@ The minimisation interval is set the same way as :ref:`baseline interpolation re
 
 This region should be narrow and ideally contain contain the highest interfering peak(s), while the areas directly left and right adjacent should be free from interference.
 Unaffected spectra are calculated from a cubic spline interpolation across the minimisation region and nearby interference peaks would potentially give unrealstic results.
-They are plotted
+They are plotted in purple on top of the raw spectrum and the user should make sure that they approximate their interpretation of the unaffected signal as close as possible. Smoothing of the
+unaffected signal is adjusted in the :ref:`settings bar </getting_started.rst#settings-and-results>` with values between 0 and 100, identical to :ref:`baseline smoothing </baseline_correction.rst#baseline-smoothing>`.
 
 
-Optionally, the interference can be deconvolved before subtraction from the glass. This has the added benefit that deconvolutions are noise-free, but care should be taken that 
-the deconvolution has a good fit to the baseline corrected spectrum.
-
+Optionally, the interference can be :ref:`deconvolved </interference_subtraction.rst#deconvolution>` before subtraction from the glass. This has the added benefit that deconvolutions are noise-free, but care should be taken that 
+the deconvolution has a good fit to the baseline corrected spectrum. Which spectrum will be used for subtraction is selected in the :ref:`settings bar </getting_started.rst#settings-and-results>` by clicking either 
+``baseline*`` or ``deconvoluted``.
 
 .. figure:: /images/interference/subtraction.PNG
     :alt: subtraction settings
@@ -47,6 +48,8 @@ the deconvolution has a good fit to the baseline corrected spectrum.
 
     subtraction settings.
 
+Clicking the ``subtract`` button runs the unmixing algorithm and results are plotted in green. If you're happy with the results, click the ``use`` tickbox to 
+to continue using the unmixed spectrum in the :ref:`interpolation </interpolation.rst>` and/or :ref:`baseline correction </baseline_correction.rst>` tools.
 
 .. figure:: /images/interference/interference_subtraction.gif
     :alt: interference subtraction

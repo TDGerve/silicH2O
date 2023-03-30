@@ -38,7 +38,7 @@ interactive graphical user-interface. It can be used to:
    about
    getting_started
    tools
-   algorithms
+   backend
    changelog
    support
    license

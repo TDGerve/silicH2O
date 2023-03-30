@@ -133,14 +133,21 @@ On the righ-hand side there are several tools for plot navigation:
     Don't forget to deselect navigation tools when you no longer want to use them. 
 
 
+.. figure:: /images/plot_navigation.gif
+    :alt: plot navigation
+    :width: 800
+
+    Plot navigation.
+
+
 settings and results
 ********************
 Shows settings and results of the current tool.
 
 info bar
 ********
-X-Y plot coordinates of the mouse location are displayed on the right and occasional information messages on the left. The `reset sample` button resets the current 
-sample to the last saved state and `save sample` and `save all` save the settings and results of the current sample and all samples respectively .
+X-Y plot coordinates of the mouse location are displayed on the right and occasional information messages on the left. The ``reset sample`` button resets the current 
+sample to the last saved state and ``save sample`` and ``save all`` save the settings and results of the current sample and all samples respectively .
 
 .. note:: 
     Saving a sample, or all samples, does not yet save the project. This can only be done via *File → save project (as)* or with the *Ctrl+s* keyboard shortcut.
