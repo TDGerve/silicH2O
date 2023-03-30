@@ -16,11 +16,11 @@ on_clean_temp_files = bl.signal("clean temp files")
 
 
 class silicH2O:
-    def __init__(self, title):
+    def __init__(self):
 
         self.samples = Database_controller()
         self.calibration = Calibration_processor()
-        self.gui = App_interface(title=title)
+        self.gui = App_interface(title="Silic-H2O by Thomas van Gerve")
 
         self.database_listener = Database_listener(
             database_controller=self.samples, calibration=self.calibration
@@ -45,26 +45,7 @@ class silicH2O:
         """
         Runs on close
         """
-
         # self.clean_files()
         on_clean_temp_files.send()
         # close everything
         sys.exit()
-
-    # def clean_files(self):
-
-    #     file = pathlib.Path(__file__)
-    #     tempdir = file.parents[0] / "temp"
-
-    #     # delete temporary files
-    #     for root, dirs, files in os.walk(tempdir):
-
-    #         for f in files:
-    #             os.unlink(os.path.join(root, f))
-
-    #         for d in dirs:
-    #             try:
-    #                 shutil.rmtree(os.path.join(root, d))
-    #             except PermissionError:
-    #                 time.sleep(0.5)
-    #                 shutil.rmtree(os.path.join(root, d))

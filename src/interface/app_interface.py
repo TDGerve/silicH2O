@@ -24,9 +24,11 @@ class App_interface:
         title: str,
     ):
         self.plots: Dict[str, Any] = {}
+        # tk variables attached to widgets
         self.variables: Dict[str, Any] = {}
+        # tk widgets
         self.widgets: Dict[str, Any] = {}
-        # rRot
+
         self.main_window: Main_window = Main_window(
             title=title, variables=self.variables, widgets=self.widgets
         )
