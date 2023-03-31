@@ -9,9 +9,43 @@ Installation
 ------------
 PC
 **
-|silich2o| is installed by extracting the zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer (keep in mind that its folder structure should stay intact).
+|silich2o| is installed by extracting the zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
+The following folder structure should stay intact:
+
+.. code-block:: bash
+
+    calibration/
+    ├─ projects/
+    configuration/
+    ├─ general_settings.json
+    ├─ glass_settings.json
+    ├─ glass_settings_default.json
+    ├─ interference_settings.json
+    ├─ interference_settings_default.json
+    SilicH2O/
+    ├─ silicH2O.exe
+    temp/
+    theme/
+    silicH2O.exe shortcut
+
+`.\\calibration` 
+    `.cH2O` files and `.h2o` projects for :ref:`calibration </h2o_calibration.rst>` 
+`.\\configuration` 
+    `.json`  files with default :ref:`settings <menus_settings>` for spectral processing
+`.\\SilicH2O`
+    scripts, dependencies and the executable file.
+`.\\temp`
+    temporary files used while |silich2o| is running and cleaned upon closing.
+`.\\theme`
+    app theme (`Breeze <https://github.com/MaxPerl/ttk-Breeze>`_)
+
 The |silich2o| shortcut file can still be moved to any location on your computer. You start |silich2o| by running this shortcut file, or by directly 
-running `silicH2O.exe` from the folder `.\\silicH2O`
+running `silicH2O.exe` from the folder `.\\silicH2O`.
+
+
+
+
+
 
 Mac
 ***
