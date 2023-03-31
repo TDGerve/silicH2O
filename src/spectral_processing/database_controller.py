@@ -423,10 +423,9 @@ class Database_controller:
 
     def export_all(self, folderpath: pathlib.Path):
 
-        projectpath = folderpath / self.project.stem
-        projectpath.mkdir(parents=True, exist_ok=True)
+        folderpath.mkdir(parents=True, exist_ok=True)
 
         for sample in self.spectra:
             name = sample.name
-            filepath = projectpath / f"{name}.csv"
+            filepath = folderpath / f"{name}.csv"
             self.export_sample(filepath=filepath, sample=sample)

@@ -40,7 +40,7 @@ The following folder structure should stay intact:
     app theme (`Breeze <https://github.com/MaxPerl/ttk-Breeze>`_)
 
 The |silich2o| shortcut file can still be moved to any location on your computer. You start |silich2o| by running this shortcut file, or by directly 
-running `silicH2O.exe` from the folder `.\\silicH2O`.
+running `silicH2O.exe` from the `.\\silicH2O` folder.
 
 
 
@@ -164,7 +164,7 @@ interactive plot
 Plot of the current sample. Plot layout varies with the selected tool and each tool has interactive elements to adjust various parameters.
 See :ref:`baseline correction<Baseline correction>`, :ref:`interpolation<Interpolation>` and :ref:`interference subtraction<Interference subtraction>`
 
-On the righ-hand side there are several tools for plot navigation:
+On the righ-hand side are several tools for plot navigation:
 
 .. figure:: /images/plot_buttons.png
     :alt: plot navigation buttons
@@ -187,13 +187,23 @@ Shows settings and results of the current tool.
 
 info bar
 ********
-X-Y plot coordinates of the mouse location are displayed on the right and occasional information messages on the left. The ``reset sample`` button resets the current 
+mouse location X-Y plot coordinates are displayed on the right and information messages on the left. The ``reset sample`` button resets the current 
 sample to the last saved state and ``save sample`` and ``save all`` save the settings and results of the current sample and all samples respectively .
 
 .. note:: 
     Saving a sample, or all samples, does not yet save the project. This can only be done via *File → save project (as)* or with the *Ctrl+s* keyboard shortcut.
     If you have not yet saved your data to a project file *Ctrl+s* functions the same as `save all`. Keep an eye on the messages in the lower left corner of the :ref:`info bar<info bar>`, they will
     tell you how your data have been saved.
+
+
+Exporting data and results
+--------------------------
+Processed spectra are exported for single samples via *File → export sample* to a *.csv* file with columns for the x-axis and each individual
+spectrum (e.g. *raw*, *baseline_corrected*, *baseline*). *File → export all* exports spectra for all samples to the folder chosen by the user
+
+Results (noise, integrated areas, |h2o| contents etc.) together with processing settings (e.g. baseline smoothing, the use of interpolation and/or interference subtraction) 
+are exported via *File → export results* to a *.csv* file. An additional *.csv* file
+is generated in the same folder with all :ref:`baseline interpolation region </baseline_correction.rst#bir-positions>` and :ref:`interpolation region </interpolation.rst#interpolation>` positions.
 
 Calibration window
 ------------------

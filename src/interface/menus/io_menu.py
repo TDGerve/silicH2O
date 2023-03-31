@@ -163,7 +163,7 @@ class IO_menu:
 
     def export_all(self):
         try:
-            dir = filedialog.askdirectory(initialdir=init_dir)
+            dir = filedialog.askdirectory(initialdir=init_dir, mustexist=False)
         except AttributeError:
             print("Saving file cancelled by user")
             return
