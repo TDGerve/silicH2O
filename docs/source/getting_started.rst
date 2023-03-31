@@ -12,7 +12,7 @@ PC
 |silich2o| is installed by extracting the zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
 The following folder structure should stay intact:
 
-.. code-block:: bash
+.. code-block:: text
 
     calibration/
     ├─ projects/
@@ -35,7 +35,7 @@ The following folder structure should stay intact:
 `.\\SilicH2O`
     scripts, dependencies and the executable file.
 `.\\temp`
-    temporary files used while |silich2o| is running and cleaned upon closing.
+    temporary files; used while |silich2o| is running and cleaned upon closing.
 `.\\theme`
     app theme (`Breeze <https://github.com/MaxPerl/ttk-Breeze>`_)
 
@@ -54,7 +54,7 @@ TBA
 
 File associations
 -----------------
-Currently, |silich2o| only supports text files (e.g. txt or csv) for importing raw spectra. Text files should contain no headers and have separate columns for Raman shifts (first) and signal intensity (second).
+Currently, |silich2o| only supports text files (e.g. txt or csv) for importing raw spectra. Text files should contain no headers and two have separate columns for Raman shifts (first) and signal intensity (second).
 Characters separating the columns can be whitespaces (any number) or commas.
 
 Once spectra are imported, they can be stored together in :ref:`project files<menus_main>` with `.h2o` extensions (:ref:`File<menus_main>` menu → *save project as*). These files are containers with all spectral data and processing settings 
@@ -127,20 +127,21 @@ sample navigation
 Select a sample:
 
     * by left-clicking its name
-    * with the `next` and `previous` buttons
-    * with the up and down arrow keyboard keys
+    * with the ``next`` and ``previous`` buttons
+    * with the ↑ and ↓ keyboard keys
 
-The `delete` button deletes currently selected samples, where multi-selections are possible with `shift + left-click` or `Ctrl + left-click`.
+The ``delete`` button deletes currently selected samples, where multi-selections are possible with `shift + left-click` or `Ctrl + left-click`.
+The `delete` keyboard key can also be used instead.
 
 .. figure:: /images/sample_navigation.gif
     :alt: plot navigation
     :width: 800
 
-    Sample navigation (with keystrokes displayed).
+    Sample navigation (with keystrokes and mouse clicks displayed).
 
 tool selection
 **************
-Choose from one of three processing tools:
+Choose one of three processing tools:
 
     * :ref:`baseline correction<Baseline correction>`
     * :ref:`interpolation<Interpolation>`
