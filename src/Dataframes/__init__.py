@@ -45,19 +45,24 @@ class Results_DF(pd.DataFrame):
 
 def _match_columns(left: pd.DataFrame, right: Union[pd.DataFrame, pd.Series]):
 
-    if isinstance(right, pd.DataFrame):
-        right_names = right.columns
-    elif isinstance(right, pd.Series):
-        right_names = right.index
-
-    missing_right = left.columns.difference(right_names)
-    missing_left = right_names.difference(left.columns)
-
-    if all([len(missing) < 1 for missing in (missing_left, missing_right)]):
-        return [left, right]
+    # if isinstance(right, pd.DataFrame):
+    #     right_names = right.columns
+    # elif isinstance(right, pd.Series):
+    #     right_names = right.index
 
     new_left = left.copy()
     new_right = right.copy()
+
+    if isinstance(right, pd.Series):
+        new_right = pd.DataFrame(new_right).T
+
+    right_names = new_right.columns
+
+    missing_right = new_left.columns.difference(right_names)
+    missing_left = right_names.difference(new_left.columns)
+
+    if all([len(missing) < 1 for missing in (missing_left, missing_right)]):
+        return [new_left, new_right]
 
     dtypes_left = right[missing_left].dtypes
     dtypes_right = left[missing_right].dtypes
