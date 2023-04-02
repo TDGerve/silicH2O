@@ -8,7 +8,7 @@ Interpolation
     For spectra with with strong interference the unmixing tool is potentially a better suited option.
 
 With this tool you can get rid of regions with unwanted peaks by replacing them with interpolations. One or more regions can be selected by the user, across which interpolations are calculated with 
-the :py:meth:`interpolate() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.interpolate>` method from `ramCOH <https://ramcoh.readthedocs.io/en/latest>`_.
+the :py:meth:`~ramcoh:ramCOH.raman.baseclass.RamanProcessing.interpolate>` method from `ramCOH <https://ramcoh.readthedocs.io/en/latest>`_.
 The algorithm is similar to the one used for calculating :ref:`baselines </baseline_correction.rst>` and its settings are adjusted similarly as well. 
 
 Interpolation regions are set
