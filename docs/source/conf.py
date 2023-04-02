@@ -26,7 +26,7 @@ templates_path = ["../_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 intersphinx_mapping = {
-    "ramcoh": ("https://ramcoh.readthedocs.io/en/latest", None),
+    "ramcoh": ("https://ramcoh.readthedocs.io/en/latest/code_documentation.html", None),
 }
 
 
