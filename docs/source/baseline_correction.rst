@@ -4,7 +4,7 @@
 Baseline correction
 ===================
 This tool calculates background signal baselines and subtracts them from the raw signal.
-Baseline interpolation regions (*BIRs*, grey bars in the plots) are used to calculate baselines with the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method
+Baseline interpolation regions (*BIRs*, grey bars in the plots) are used to calculate baselines with the :py:meth:`~ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect` method
 from `ramCOH <https://ramcoh.readthedocs.io/en/latest>`_. Exact *BIR* positions are shown in the :ref:`settings bar </getting_started.rst#settings-and-results>`, with numbered *BIRs* in rows and their start and end coordinates in columns.
 With the ``+`` and ``-`` buttons next to the coordinates, *BIRs* can be added or removed, where new *BIRs* are placed to the right of the one where the button was pressed.
 
@@ -22,7 +22,7 @@ With the ``+`` and ``-`` buttons next to the coordinates, *BIRs* can be added or
 
 BIR positions
 -------------
-.. note:: 
+.. note::
     Default *BIRs* can be changed, see :ref:`settings <menus_settings>`.
 By default |silich2o| uses five *BIRs*:
 one at the end and start of the spectrum, one in between the silicate and |h2o| regions and two intermediate in the silicate region.
@@ -56,18 +56,18 @@ Baseline correction settings (*BIR* positions and smoothing settings) can be cop
 
 Baseline smoothing
 ------------------
-Baseline smoothing is adjusted via the smoothing parameter in the settings bar, with values between 0 and 100. At values close to zero the baseline will be linear, while at high values it will closely follow 
+Baseline smoothing is adjusted via the smoothing parameter in the settings bar, with values between 0 and 100. At values close to zero the baseline will be linear, while at high values it will closely follow
 the datapoints in the *BIRs*
 Default smoothing is set to 1.0, which generally works well for silicate glasses.
-Smoothing values are passed to the the ``smooth_factor`` parameter of the :py:meth:`baselineCorrect() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect>` method.
+Smoothing values are passed to the the ``smooth_factor`` parameter of the :py:meth:`~ramcoh:ramCOH.raman.baseclass.RamanProcessing.baselineCorrect` method.
 
 Results
 -------
-Baseline corrections produce two types of results: 
+Baseline corrections produce two types of results:
 
-    * signal-to-noise ratios, calculated with :py:meth:`ramCOH.Glass.calculate_SNR() <ramcoh:ramCOH.raman.glass.Glass.calculate_SNR>`
-    * integrated peak areas, calculated with :py:meth:`ramCOH.Glass.calculate_SiH2Oareas() <ramcoh:ramCOH.raman.glass.Glass.calculate_SiH2Oareas>`
-  
+    * signal-to-noise ratios, calculated with :py:meth:`~ramcoh:ramCOH.raman.glass.Glass.calculate_SNR`
+    * integrated peak areas, calculated with :py:meth:`~ramcoh:ramCOH.raman.glass.Glass.calculate_SiH2Oareas`
+
 both are updated in the :ref:`results bar </getting_started.rst#settings-and-results>` in real-time as parameters are adjusted:
 
 .. figure:: /images/baseline_correction/baseline_results.png
@@ -80,7 +80,7 @@ Signal strength is calculated separately for silicate and |h2o|, as the maximum 
 is calculated from datapoints within the *BIRs* as two standard deviations on the baseline corrected signal. Keep in mind that this only produces realistic noise values
 if these regions are free from peaks.
 
-Peak areas are calculated for the silicate and |h2o| regions, with boundaries from :py:meth:`ramCOH.Glass._get_Si_H2O_regions() <ramcoh:ramCOH.raman.glass.Glass._get_Si_H2O_regions>`.
+Peak areas are calculated for the silicate and |h2o| regions, with boundaries from :py:meth:`~ramcoh:ramCOH.raman.glass.Glass._get_Si_H2O_regions`.
 If a :ref:`calibration </h2o_calibration.rst>` is linked to the active project, sample |h2o| contents are shown in the bottom right corner.
 
 .. figure:: /images/baseline_correction/h2o.png

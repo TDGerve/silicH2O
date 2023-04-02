@@ -23,7 +23,7 @@ While you're in the interference subtraction tool tab, the keyboard shortcuts *C
 Subtraction
 -----------
 
-Unmixing is done with the :py:meth:`ramCOH.Glass.subtract_interference() <ramcoh:ramCOH.raman.glass.Glass.subtract_interference>` method, which subtracts baseline corrected inferference signal from the raw glass signal.
+Unmixing is done with the :py:meth:`~ramcoh:ramCOH.raman.glass.Glass.subtract_interference` method, which subtracts baseline corrected inferference signal from the raw glass signal.
 Scaling and position of the interference is optimised by minimising the difference between the unmixed spectrum and a calculated unaffected spectrum within a region set by the user.
 
 The minimisation interval is set the same way as :ref:`baseline interpolation regions </baseline_correction.rst#bir-positions>`:
@@ -38,8 +38,8 @@ They are plotted in purple on top of the raw spectrum and the user should make s
 unaffected signal is adjusted in the :ref:`settings bar </getting_started.rst#settings-and-results>` with values between 0 and 100, identical to :ref:`baseline smoothing </baseline_correction.rst#baseline-smoothing>`.
 
 
-Optionally, the interference can be :ref:`deconvolved </interference_subtraction.rst#deconvolution>` before subtraction from the glass. This has the added benefit that deconvolutions are noise-free, but care should be taken that 
-the deconvolution has a good fit to the baseline corrected spectrum. Which spectrum will be used for subtraction is selected in the :ref:`settings bar </getting_started.rst#settings-and-results>` by clicking either 
+Optionally, the interference can be :ref:`deconvolved </interference_subtraction.rst#deconvolution>` before subtraction from the glass. This has the added benefit that deconvolutions are noise-free, but care should be taken that
+the deconvolution has a good fit to the baseline corrected spectrum. Which spectrum will be used for subtraction is selected in the :ref:`settings bar </getting_started.rst#settings-and-results>` by clicking either
 ``baseline*`` or ``deconvoluted``.
 
 .. figure:: /images/interference/subtraction.PNG
@@ -48,7 +48,7 @@ the deconvolution has a good fit to the baseline corrected spectrum. Which spect
 
     subtraction settings.
 
-Clicking the ``subtract`` button runs the unmixing algorithm and results are plotted in green. If you're happy with the results, click the ``use`` tickbox to 
+Clicking the ``subtract`` button runs the unmixing algorithm and results are plotted in green. If you're happy with the results, click the ``use`` tickbox to
 to continue using the unmixed spectrum in the :ref:`interpolation </interpolation.rst>` and/or :ref:`baseline correction </baseline_correction.rst>` tools.
 
 .. figure:: /images/interference/interference_subtraction.gif
@@ -60,8 +60,8 @@ to continue using the unmixed spectrum in the :ref:`interpolation </interpolatio
 
 Deconvolution
 -------------
-:py:meth:`ramCOH.RamanProcessing.deconvolve() <ramcoh:ramCOH.raman.baseclass.RamanProcessing.deconvolve>` is used for (optional) interference deconvolution, see its documentation for a comprehensive description
-of all its parameters. 
+:py:meth:`~ramcoh:ramCOH.raman.baseclass.RamanProcessing.deconvolve` is used for (optional) interference deconvolution, see its documentation for a comprehensive description
+of all its parameters.
 
 .. figure:: /images/interference/interference_deconvolve.gif
     :alt: interference deconvolution
@@ -70,7 +70,7 @@ of all its parameters.
     Deconvolution of an olivine spectrum.
 
 
-The deconvolution algorithm first makes initial guesses for the positions of the convoluted peaks. The spectrum is then split into multiple deconvolution regions based on the initial guesses. 
+The deconvolution algorithm first makes initial guesses for the positions of the convoluted peaks. The spectrum is then split into multiple deconvolution regions based on the initial guesses.
 More detailed estimates for convoluted peaks are made per region and more peaks are added iteratively if needed. Iterations are stopped once the residual of the baseline corrected and deconvoluted signals falls below a set threshold value, or when a maximum
 number of iterations is reached. Deconvolution results for all regions are merged to create the full deconvoluted spectrum.
 
@@ -82,7 +82,7 @@ finished deconvolved peaks are plotted in grey and the total deconvolved signal 
     :width: 300
 
 |silich2o| uses default values for some of deconvolution parameters, but the following have to be set by the user:
-         
+
 min. peak height
 ****************
 Minimum absolute peak height of the initally guessed peaks. When this value is too low, too many peaks will be fitted and calculations will be very slow.
@@ -98,7 +98,7 @@ find the lowest peak you want fitted and check what its (baseline corrected) hei
 
 fit window
 **********
-fit window sets the width of the individual deconvolution regions. Widths are calculated as ``fit_window`` \ :math:`\times` ``full width of the guessed peak`` and when deconvolution regions overlap they are merged. 
+fit window sets the width of the individual deconvolution regions. Widths are calculated as ``fit_window`` \ :math:`\times` ``full width of the guessed peak`` and when deconvolution regions overlap they are merged.
 If ``fit window`` is set too high calculations become slow and deconvolution fits poor, especially for minor peaks. When its value is set too low, shoulder peaks might be missed.
 If two peaks actually overlap, but ``fit window`` is not set sufficiently high for them to be in the same deconvolution region, the total deconvoluted signal may also overestimate the real signal.
 This happens when overlapping tails from two adjacent deconvolution regions are added together when merging the full deconvoluted spectrum.
