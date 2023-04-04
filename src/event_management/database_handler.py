@@ -628,13 +628,32 @@ def remove_duplicate_names(
 ) -> List[str]:
 
     new_names = names.copy()
+    # Get the maxium suffix valeu for each sample in the current dataset
     if len(previous_names) > 0:
-        previous_names = [name[:-2] if "@" in name else name for name in previous_names]
+        previous_samples = [
+            name[: name.index("@")] if "@" in name else name for name in previous_names
+        ]
 
+        last_maximum = {}
+        for sample in set(previous_samples):
+            if previous_samples.count(sample) < 2:
+                continue
+            previous_suffix = max(
+                [
+                    int(name[name.index("@") + 1 :])
+                    for name in previous_names
+                    if f"{sample}@" in name
+                ]
+            )
+            last_maximum[sample] = previous_suffix
+
+    # Add a suffix the each name spectrum, start counting from the last maximum suffix value
     for i, _ in enumerate(new_names):
-        occurences = (new_names + previous_names).count(new_names[i])
-        if occurences < 2:
+        current_name = new_names[i]
+        new_occurences = (new_names).count(current_name)
+        previous_occurences = previous_samples.count(current_name)
+        if (new_occurences <= 1) & (previous_occurences == 0):
             continue
-        new_names[i] = f"{new_names[i]}@{occurences - 1}"
+        new_names[i] = f"{current_name}@{last_maximum[current_name] + new_occurences}"
 
     return new_names
