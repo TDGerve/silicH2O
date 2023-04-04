@@ -69,8 +69,8 @@ def _match_columns(left: pd.DataFrame, right: Union[pd.DataFrame, pd.Series]):
 
     new_left[missing_left] = _get_fill_values(dtypes_left)
     # Loop in case 'right' is a series
-    for missing, type in zip(missing_right, dtypes_right):
-        new_right[missing] = _get_fill_values(type)
+    # for missing, type in zip(missing_right, dtypes_right):
+    new_right[missing_right] = _get_fill_values(dtypes_right)
 
     return [new_left, new_right]
 
@@ -79,7 +79,7 @@ def _insert_row(df: pd.DataFrame, row: pd.Series):
 
     df_new, row_new = _match_columns(df, row)
 
-    df_new.loc[row_new.name] = row_new
+    df_new.loc[row_new.index[0]] = row_new.values
 
     return df_new
 

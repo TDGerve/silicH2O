@@ -42,6 +42,9 @@ class Calibration_menubar(tk.Menu):
             print("Opening files cancelled by user")
             return
 
+        if f is None:
+            return
+
         on_read_calibration_file.send(filepath=f)
 
     def save_calibration_as(self):
