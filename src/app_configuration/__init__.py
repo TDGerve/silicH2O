@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from ..Dataframes import Baseline_DF
+from ..spectral_processing.Dataframes import Baseline_DF
 
 if getattr(sys, "frozen", False):
     EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
