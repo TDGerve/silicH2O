@@ -6,9 +6,6 @@ import blinker as bl
 
 from .. import app_configuration
 
-# _font = app_configuration.gui["font"]["family"]
-# _fontsize = app_configuration.gui["font"]["size"]
-
 on_save_sample = bl.signal("save sample")
 on_reset_sample = bl.signal("reset sample")
 on_save_all = bl.signal("save all")
@@ -18,7 +15,6 @@ class Infobar(ttk.Frame):
     def __init__(
         self, parent: ttk.Frame, variables: Dict, widgets: Dict, *args, **kwargs
     ):
-
         super().__init__(parent, name="infobar", *args, **kwargs)
 
         self.variables = {}
@@ -37,7 +33,6 @@ class Infobar(ttk.Frame):
             widget.grid_configure(padx=3, pady=5)
 
     def create_label(self, frame, name, row, col, sticky="nse", width=20):
-
         var = tk.StringVar(name=name)
         widget = ttk.Label(
             frame,
@@ -52,7 +47,6 @@ class Infobar(ttk.Frame):
         self.variables[name] = var
 
     def create_save_buttons(self, frame, row, col):
-
         reset = ttk.Button(
             frame,
             text="reset sample",

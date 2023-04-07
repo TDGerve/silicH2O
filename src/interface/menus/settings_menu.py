@@ -1,15 +1,7 @@
-# import glob
-# import os
 import tkinter as tk
 import webbrowser
 
 import blinker as bl
-
-# from tkinter import filedialog, simpledialog, ttk
-# from typing import List
-
-
-# from ... import app_configuration
 
 on_new_project = bl.signal("new project")
 on_load_project = bl.signal("load project")
@@ -30,7 +22,6 @@ on_display_message = bl.signal("display message")
 
 class Settings_menu:
     def __init__(self, parent):
-
         menu = tk.Menu(parent)
         parent.add_cascade(menu=menu, label="Settings")
 
