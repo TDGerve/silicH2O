@@ -44,7 +44,6 @@ class Results_DF(pd.DataFrame):
 
 
 def _match_columns(left: pd.DataFrame, right: Union[pd.DataFrame, pd.Series]):
-
     # if isinstance(right, pd.DataFrame):
     #     right_names = right.columns
     # elif isinstance(right, pd.Series):
@@ -76,10 +75,9 @@ def _match_columns(left: pd.DataFrame, right: Union[pd.DataFrame, pd.Series]):
 
 
 def _insert_row(df: pd.DataFrame, row: pd.Series):
-
     df_new, row_new = _match_columns(df, row)
 
-    df_new.loc[row_new.index[0]] = row_new.values
+    df_new.loc[row_new.index[0]] = row_new.squeeze().values
 
     return df_new
 
