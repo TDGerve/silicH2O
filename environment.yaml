@@ -1,0 +1,19 @@
+name: silich2o
+
+dependencies:
+- Python=3.10
+- pip
+- pip:
+  - ramCOH
+- tk
+- numpy
+- pandas
+- blinker
+- pyarrow<=9.0
+- Pillow
+- matplotlib<=3.3
+- scipy
+- scikit-learn
+- pyinstaller
+- PySide2
+- PyQt
