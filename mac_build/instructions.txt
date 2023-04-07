@@ -7,3 +7,6 @@ https://haim.dev/posts/2020-08-08-python-macos-app/
 
 to delete all .DS_Store files run this in a terminal
 find dist/silich2o.app -name .DS_Store -delete
+
+then sign:
+codesign -s - --force --all-architectures --timestamp --deep dist/SilicH2O.app

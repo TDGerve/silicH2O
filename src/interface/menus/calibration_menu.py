@@ -30,14 +30,17 @@ on_activate_menus = bl.signal("activate menus")
 
 if getattr(sys, "frozen", False):
     EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
-    calibration_folder = EXE_LOCATION.parents[0] / "calibration"
+    if sys.platform == "darwin":
+        # from mac bundle
+        calibration_folder = EXE_LOCATION.parents[2] / "calibration"
+    else:
+        calibration_folder = EXE_LOCATION.parents[0] / "calibration"
 else:
     calibration_folder = pathlib.Path(__file__).parents[2] / "calibration"
 
 
 class Calibration_menu:
     def __init__(self, parent):
-
         menu = tk.Menu(parent)
         parent.add_cascade(
             menu=menu,

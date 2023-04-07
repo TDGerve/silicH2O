@@ -1,4 +1,6 @@
+import os
 import pathlib
+import sys
 import tkinter as tk
 from tkinter import filedialog, simpledialog
 
@@ -9,12 +11,21 @@ on_read_calibration_file = bl.signal("read calibration file")
 on_save_calibration_as = bl.signal("save calibration as")
 on_calibration_plot_change = bl.signal("refresh calibration plot")
 
-calibration_folder = pathlib.Path(__file__).parents[3] / "calibration"
+
+if getattr(sys, "frozen", False):
+    EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
+    if sys.platform == "darwin":
+        # from a mac bundle
+        calibration_folder = EXE_LOCATION.parents[2] / "calibration"
+    else:
+        calibration_folder = EXE_LOCATION.parents[0] / "calibration"
+
+else:
+    calibration_folder = pathlib.Path(__file__).parents[3] / "calibration"
 
 
 class Calibration_menubar(tk.Menu):
     def __init__(self, parent, name):
-
         super().__init__(parent, name=name)
 
         import_menu = tk.Menu()
@@ -48,7 +59,6 @@ class Calibration_menubar(tk.Menu):
         on_read_calibration_file.send(filepath=f)
 
     def save_calibration_as(self):
-
         f = simpledialog.askstring(
             title="calibration", prompt="Save calibration as ..."
         )

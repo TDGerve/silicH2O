@@ -26,7 +26,7 @@ data_folders = {
     "temp": temp_folder,
     "calibration": calibration_folder,
     "configuration": config_folder,
-    "theme": theme_folder,
+    # "theme": theme_folder,
     "examples": examples_folder,
 }
 
@@ -37,10 +37,13 @@ if __name__ == "__main__":
             f"--name={name}",
             "--onedir",
             "--clean",
+            "--noconfirm",
             f"--add-data={theme_folder}{sep}theme",
             "--exclude-module=.git",
             "--log-level=WARN",
-            # "--noconsole",
+            "--debug=all",
+            "--noconsole",
+            # "--windowed",
             "run_silicH2O.py",
         ]
     )

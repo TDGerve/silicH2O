@@ -38,7 +38,6 @@ class Raman_processor:
         settings: pd.Series,
         baseline_regions: pd.Series,
     ):
-
         self.name = name
 
         self.sample = ram.RamanProcessing(x, y)
@@ -61,36 +60,29 @@ class Raman_processor:
         return pd.concat(settings, axis=0)
 
     def apply_settings(self, settings: pd.Series, groups: List[str]):
-
         for group in groups:
             processor = getattr(self, group)
             setattr(processor, "settings", settings.loc[group].copy())
 
     def get_birs(self) -> Dict[str, int]:
-
         return self.baseline.interpolation_regions.dictionary
 
     def set_baseline(self, kwargs) -> None:
-
         self.baseline.apply_settings(kwargs)
 
     def get_baseline_settings(self) -> Dict:
-
         return self.baseline.get_settings()
 
     def add_bir(self, index: int):
-
         self.baseline.interpolation_regions.add(index=index)
 
     def remove_bir(self, index: int):
-
         self.baseline.interpolation_regions.remove(index=index)
 
     def calculate_baseline(self):
         self.baseline.calculate()
 
     def deconvolve(self):
-
         self.deconvolution.calculate()
 
     def get_deconvolution_settings(self) -> Dict:
@@ -100,11 +92,9 @@ class Raman_processor:
         self.deconvolution.apply_settings(kwargs)
 
     def calculate_noise(self):
-
         self.sample.calculate_noise()
 
     def _set_parameters(self, group: str, parameters: Dict, names: List[str]) -> None:
-
         for name in names:
             value = parameters.pop(name, None)
             if value is not None:
@@ -152,7 +142,6 @@ class h2o_processor(Raman_processor):
         baseline_regions: pd.Series,
         interpolation_regions: pd.Series,
     ):
-
         self.name = name
         self._H2Oreference: float = np.nan
 
@@ -248,7 +237,6 @@ class h2o_processor(Raman_processor):
         self.interpolation.regions.remove(index=index)
 
     def set_interference(self, x, y, settings, baseline_regions):
-
         self._interference_sample = Raman_processor(
             self.name,
             x,
@@ -276,7 +264,6 @@ class h2o_processor(Raman_processor):
         }
 
     def calculate_noise(self):
-
         super().calculate_noise()
         self.sample.calculate_SNR()
         self.results[["noise", "Si_SNR", "H2O_SNR"]] = [
@@ -285,7 +272,6 @@ class h2o_processor(Raman_processor):
         ]
 
     def calculate_areas(self):
-
         self.sample.calculate_SiH2Oareas()
         self.results[["SiArea", "H2Oarea"]] = self.sample.SiH2Oareas
         self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
@@ -296,13 +282,11 @@ class h2o_processor(Raman_processor):
         self.calculate_areas()
 
     def get_interpolation_regions(self) -> Dict[str, int]:
-
         return self.interpolation.regions.dictionary
 
     def calculate_interpolation(
         self, interference: bool
     ) -> Tuple[npt.NDArray, npt.NDArray]:
-
         kwargs = {"spectrum": self.interpolation_spectrum}
         if interference:
             kwargs["spectrum"] = "raw"
@@ -313,11 +297,9 @@ class h2o_processor(Raman_processor):
         return self.interpolation.calculate(**kwargs)
 
     def get_interpolation_settings(self) -> Dict:
-
         return self.interpolation.get_settings()
 
     def set_interpolation(self, kwargs: Dict) -> None:
-
         self.interpolation.apply_settings(kwargs)
 
     def set_subtraction_parameters(self, kwargs: Dict) -> None:
@@ -327,7 +309,6 @@ class h2o_processor(Raman_processor):
         return self.interference.get_settings()
 
     def subtract_interference(self) -> bool:
-
         return self.interference.calculate(interference=self.interference_sample.sample)
 
     def get_plot_spectra(self) -> Dict:
@@ -338,7 +319,6 @@ class h2o_processor(Raman_processor):
         }
 
     def get_plotdata(self) -> Dict[str, Any]:
-
         plotdata = super().get_plotdata()
         plotdata["subtraction_region"] = self.interference.minimisation_region
         plotdata["interpolation_regions"] = self.interpolation.regions.nested_array

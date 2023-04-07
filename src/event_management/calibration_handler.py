@@ -8,15 +8,17 @@ from ..spectral_processing import Calibration_processor, Database_controller
 
 if getattr(sys, "frozen", False):
     EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
-    calibration_folder = EXE_LOCATION.parents[0] / "calibration"
+    if sys.platform == "darwin":
+        # from a mac bundle
+        calibration_folder = EXE_LOCATION.parents[2] / "calibration"
+    else:
+        calibration_folder = EXE_LOCATION.parents[0] / "calibration"
 
 else:
-
     calibration_folder = pathlib.Path(__file__).parents[1] / "calibration"
 
 
 class Calibration_listener:
-
     on_import_calibration_project = bl.signal("project calibration")
     on_import_calibration_file = bl.signal("import calibration file")
 
@@ -65,7 +67,6 @@ class Calibration_listener:
         self.on_display_message.send(message="Project imported as calibration")
 
     def calibrate_with_file(self, *args, update_gui=True, **kwargs):
-
         self.calibration.import_calibration_data(**kwargs)
 
         if update_gui:
@@ -82,24 +83,20 @@ class Calibration_listener:
         self.on_reset_calibration_standards.send(sample_amount=sample_amount)
 
     def send_calibration_info(self, *args):
-
         self.reset_calibration_gui()
 
         self.send_sample_info()
         self.send_calibration_statistics()
 
     def send_sample_info(self):
-
         sample_info = self.calibration.get_sampleinfo_gui()
         self.on_update_gui_variables.send(calibration=sample_info)
 
     def send_calibration_statistics(self):
-
         calibration_params = self.calibration.get_calibration_parameters_gui()
         self.on_update_gui_variables.send(calibration_statistics=calibration_params)
 
     def set_reference_H2O(self, *args, sample_index: int, H2O: float):
-
         self.calibration.set_H2Oreference(sample_index=sample_index, H2O=H2O)
         sample_name = self.calibration.names[sample_index]
         self.database_controller.settings.loc[
@@ -110,14 +107,12 @@ class Calibration_listener:
             self.calibrate()
 
     def use_calibration_std(self, *args, sample_index: int):
-
         self.calibration.use.iloc[sample_index] = not self.calibration.use.iloc[
             sample_index
         ]
         self.calibrate()
 
     def calibrate(self, update_gui=True):
-
         self.calibration.calibrate()
 
         if not update_gui:
@@ -145,7 +140,6 @@ class Calibration_listener:
         self.calibration.use_calibration = use
 
     def refresh_plot(self, *args):
-
         plotdata = self.calibration.get_plotdata()
         self.on_plot_change.send(plot="calibration", plotdata=plotdata)
 

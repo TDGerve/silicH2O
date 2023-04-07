@@ -14,7 +14,11 @@ from ..spectral_processing.Dataframes import Baseline_DF
 
 if getattr(sys, "frozen", False):
     EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
-    config_path = EXE_LOCATION.parents[0] / "configuration"
+    if sys.platform == "darwin":
+        # from a mac bundle
+        config_path = EXE_LOCATION.parents[2] / "configuration"
+    else:
+        config_path = EXE_LOCATION.parents[0] / "configuration"
 
 else:
     config_path = __path__[0]
@@ -53,7 +57,6 @@ with open(f"{config_path}/general_settings.json") as f:
 def get_default_settings(
     names: List[str], type: str
 ) -> Tuple[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]]:
-
     setting_names, dicts = get_settings_from_json(type)
 
     baseline_interpolation_regions = []
@@ -73,7 +76,6 @@ def get_default_settings(
         setting_names,
         dicts,
     ):
-
         df = pd.DataFrame(dic, index=names)
         df.columns = pd.MultiIndex.from_product([[name], df.columns])
         settings.append(df)
