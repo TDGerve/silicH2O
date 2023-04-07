@@ -441,18 +441,20 @@ class Database_listener:
 
         paths = self.move_project_files(filepath=filepath, name=projectname)
 
-        setting_files = glob.glob(f"{paths['project']}{os.sep}*.parquet")
-        # setting_files.extend(glob.glob(f"{paths['project']}{os.sep}*.csv"))  # DELETE
+        setting_files = glob.glob(os.path.join(paths["project"], "*.parquet"))
+        # f"{paths['project']}{os.sep}*.parquet"
 
         # spectrum_files = glob.glob(f"{paths['data']}{os.sep}*.sp")  # DELETE
-        spectrum_files = glob.glob(f"{paths['data']}{os.sep}*.npz")
+        spectrum_files = glob.glob(os.path.join(paths["data"], "*.npz"))
+        # f"{paths['data']}{os.sep}*.npz"
 
-        interference_files = glob.glob(f"{paths['interference']}{os.sep}*.npz")
+        interference_files = glob.glob(os.path.join(paths["interference"], "*.npz"))
         interference_setting_files = glob.glob(
-            f"{paths['interference']}{os.sep}*.parquet"
+            os.path.join(paths["interference"], "*.parquet")
+            # f"{paths['interference']}{os.sep}*.parquet"
         )
 
-        processed_files = glob.glob(f"{paths['processed']}{os.sep}*.npz")
+        processed_files = glob.glob(os.path.join(paths["processed"], "*.npz"))
 
         names = [pathlib.Path(s).stem for s in spectrum_files]
         interference_names = [pathlib.Path(s).stem for s in interference_files]
