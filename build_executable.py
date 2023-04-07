@@ -4,7 +4,6 @@ import sys
 
 import PyInstaller.__main__
 
-
 name = "SilicH2O"
 theme_folder = pathlib.Path(__file__).parents[0] / "src/theme"
 
@@ -31,6 +30,7 @@ if __name__ == "__main__":
 temp_folder = pathlib.Path(__file__).parents[0] / "src/temp"
 calibration_folder = pathlib.Path(__file__).parents[0] / "src/calibration/"
 config_folder = pathlib.Path(__file__).parents[0] / "src/app_configuration"
+examples_folder = pathlib.Path(__file__).parents[0] / "examples"
 
 
 dist = pathlib.Path(__file__).parents[0] / "dist"
@@ -40,6 +40,7 @@ data_folders = {
     "calibration": calibration_folder,
     "configuration": config_folder,
     "theme": theme_folder,
+    "examples": examples_folder,
 }
 
 for name, folder in data_folders.items():
