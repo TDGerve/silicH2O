@@ -323,7 +323,9 @@ class Database_listener:
                 title="Silic-H2O", message="Calibration file not found!"
             )
             return
-        calibration_data = pd.read_parquet(calibration_folder / f"{name}.cH2O")
+        calibration_data = pd.read_parquet(
+            calibration_folder / f"{name}.cH2O"
+        ).sort_index()
         return calibration_data, name
 
     def read_calibration_settings(self, projectpath: pathlib.Path):
@@ -449,7 +451,8 @@ class Database_listener:
         # f"{paths['project']}{os.sep}*.parquet"
 
         # spectrum_files = glob.glob(f"{paths['data']}{os.sep}*.sp")  # DELETE
-        spectrum_files = glob.glob(os.path.join(paths["data"], "*.npz"))
+        spectrum_files = np.array(glob.glob(os.path.join(paths["data"], "*.npz")))
+        spectrum_files = np.sort(spectrum_files)
         # f"{paths['data']}{os.sep}*.npz"
 
         interference_files = glob.glob(os.path.join(paths["interference"], "*.npz"))
@@ -460,15 +463,11 @@ class Database_listener:
 
         processed_files = glob.glob(os.path.join(paths["processed"], "*.npz"))
 
-        names = [pathlib.Path(s).stem for s in spectrum_files]
-        interference_names = [pathlib.Path(s).stem for s in interference_files]
-        processed_names = [pathlib.Path(s).stem for s in processed_files]
-
         settings_dict = {}
         for setting in setting_files:
             name = pathlib.Path(setting).stem
             try:
-                settings_dict[name] = pd.read_parquet(str(setting))
+                settings_dict[name] = pd.read_parquet(str(setting)).sort_index()
             except pa.ArrowInvalid:
                 # header = [[0, 1], "infer"][name == "settings"]  # DELETE
                 settings_dict[name] = pd.read_csv(
@@ -478,7 +477,13 @@ class Database_listener:
         interference_settings_dict = {}
         for setting in interference_setting_files:
             name = pathlib.Path(setting).stem
-            interference_settings_dict[name] = pd.read_parquet(str(setting))
+            interference_settings_dict[name] = pd.read_parquet(
+                str(setting)
+            ).sort_index()
+
+        names = [pathlib.Path(s).stem for s in spectrum_files]
+        interference_names = [pathlib.Path(s).stem for s in interference_files]
+        processed_names = [pathlib.Path(s).stem for s in processed_files]
 
         self.database_controller.__init__()
         # Add calibration
@@ -496,7 +501,10 @@ class Database_listener:
         # )
         # Read samples
         self.database_controller.read_files(
-            spectrum_files, names=names, settings=settings_dict, calculate_results=False
+            spectrum_files,
+            names=names,
+            settings=settings_dict,
+            calculate_results=False,
         )
         # Read processed spectra
         self.database_controller.add_processed_spectra(
