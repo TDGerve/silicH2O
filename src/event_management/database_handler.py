@@ -38,7 +38,6 @@ else:
 
 
 class Database_listener:
-
     on_samples_added = bl.signal("samples added")
     on_load_project = bl.signal("load project")
     on_new_project = bl.signal("new project")
@@ -123,7 +122,6 @@ class Database_listener:
         reset_default_settings(type=type)
 
     def remove_samples(self, *args, index: List[int]) -> None:
-
         if self.database_controller.has_project:
             names = self.database_controller.names[index]
             if isinstance(names, str):
@@ -137,7 +135,6 @@ class Database_listener:
         self.on_update_gui_variables.send(sample_navigation={"samplelist": names})
 
     def remove_data(self, names: List[str]):
-
         temp_path = temp_folder / self.database_controller.project.stem
         temp_datapath = temp_path / "data"
 
@@ -146,7 +143,6 @@ class Database_listener:
                 file.unlink()
 
     def add_samples(self, *args, files: List[str], name_delimiter: str) -> None:
-
         previous_names = list(self.database_controller.names)
         names = get_names_from_files(
             files, previous_names=previous_names, delimiter=name_delimiter
@@ -176,7 +172,6 @@ class Database_listener:
         self.on_interference_added.send()
 
     def new_project(self, *args):
-
         self.clean_temp_files()
         self.database_controller.__init__()
         self.calibration.__init__()
@@ -186,7 +181,6 @@ class Database_listener:
         self.on_clear_plot.send("new project")
 
     def save_project(self, *args, filepath: Optional[str] = None):
-
         self.on_display_message.send(message="saving project...", duration=5)
 
         if filepath is not None:
@@ -209,7 +203,6 @@ class Database_listener:
     def save_calibration_as(
         self, *args, name: Optional[str] = None, import_as_project=False
     ):
-
         if name is None:
             name = self.calibration.name
 
@@ -222,7 +215,6 @@ class Database_listener:
         self.save_calibration_data(name=name)
 
         if self.calibration._database_controller:
-
             filepath = calibration_folder / "projects" / f"{name}.h2o"
             self.save_project_data(filepath=filepath, name=name)
 
@@ -239,7 +231,6 @@ class Database_listener:
             self.database_controller.set_project(filepath=filepath)
 
     def _make_project_folders(self, name: str, base_folder=temp_folder) -> Dict:
-
         paths = {"project": base_folder / name}
         paths["data"] = paths["project"] / "data"
         paths["processed"] = paths["data"] / "processed"
@@ -253,7 +244,6 @@ class Database_listener:
         return paths
 
     def save_calibration_data(self, *args, name: Optional[str] = None):
-
         if name is None:
             name = self.calibration.name
 
@@ -311,7 +301,6 @@ class Database_listener:
     def read_calibration_file(
         self, *args, filepath: str, which: Optional[List[str]] = None, update_gui=True
     ):
-
         filepath = pathlib.Path(filepath)
         calibration_data, name = self.open_calibration_file(filepath=filepath)
         data = calibration_data.to_dict(orient="series")
@@ -323,7 +312,6 @@ class Database_listener:
         self.on_import_calibration_file.send(update_gui=update_gui, **data)
 
     def open_calibration_file(self, filepath: pathlib.Path):
-
         name = filepath.stem
 
         if not filepath.is_file():
@@ -335,7 +323,6 @@ class Database_listener:
         return calibration_data, name
 
     def read_calibration_settings(self, projectpath: pathlib.Path):
-
         with open(projectpath / "calibration.json", "r") as f:
             calibration = json.load(f)
             if name := calibration.get("name", None):
@@ -343,13 +330,12 @@ class Database_listener:
                 return calibration_filepath
 
     def save_calibration_to_project(self, projectpath):
-
+        name = self.calibration.name if self.calibration.use_calibration else None
         with open(projectpath / "calibration.json", "w") as f:
-            data = {"name": self.calibration.name}
+            data = {"name": name}
             json.dump(data, f, ensure_ascii=False, indent=4, allow_nan=True)
 
     def save_project_data(self, filepath: pathlib.Path, name: str):
-
         paths = self._make_project_folders(name)
 
         self.save_calibration_to_project(paths["project"])
@@ -403,7 +389,6 @@ class Database_listener:
             tar.add(paths["project"], arcname="")
 
     def export_results(self, *args, filepath: str):
-
         on_display_message.send(message="exporting results...", duration=5)
 
         filepath = pathlib.Path(filepath)
@@ -415,7 +400,6 @@ class Database_listener:
         on_display_message.send(message="results exported!")
 
     def move_project_files(self, filepath, name):
-
         # temp_path = temp_folder / name
         # temp_datapath = temp_path / "data"
         # temp_interferencepath = temp_datapath / "interference"
@@ -427,7 +411,6 @@ class Database_listener:
         to_path = paths["project"]
 
         with tarfile.open(str(filepath), "r") as tar:
-
             for info in tar:
                 path = pathlib.Path(info.name)
 
@@ -444,7 +427,6 @@ class Database_listener:
         return paths
 
     def load_project(self, *args, filepath: str):
-
         self.on_clear_plot.send("new project")
 
         self.clean_temp_files()
@@ -533,12 +515,10 @@ class Database_listener:
         #     self.gui.set_state(GUI_state.ACTIVE)
 
     def save_sample(self, *args):
-
         self.database_controller.save_sample()
         self.on_display_message.send(message="sample saved")
 
     def save_all_samples(self, *args):
-
         self.database_controller.save_all_samples()
         self.on_display_message.send(message="saved all")
 
@@ -548,11 +528,9 @@ class Database_listener:
             self.save_project()
 
     def clean_temp_files(self, *args):
-
         # delete temporary files
         for folder in (temp_folder, calibration_folder / "temp"):
             for root, dirs, files in os.walk(folder):
-
                 for f in files:
                     os.unlink(os.path.join(root, f))
 
@@ -626,7 +604,6 @@ def get_names_from_files(
 def remove_duplicate_names(
     names: List[str], previous_names: List[str] = []
 ) -> List[str]:
-
     new_names = names.copy()
     last_maximum = {}
     # Get the maxium suffix valeu for each sample in the current dataset
