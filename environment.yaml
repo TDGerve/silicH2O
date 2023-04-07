@@ -8,9 +8,9 @@ dependencies:
 - numpy
 - pandas
 - blinker
-- pyarrow<=7.0.0
+- pyarrow=7.0.0
 - Pillow
-- matplotlib<=3.4.0
+- matplotlib>=3.4.0
 - scipy
 - scikit-learn
 - pyinstaller

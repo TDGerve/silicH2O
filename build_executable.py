@@ -32,7 +32,6 @@ data_folders = {
 
 
 if __name__ == "__main__":
-
     PyInstaller.__main__.run(
         [
             f"--name={name}",
@@ -41,7 +40,7 @@ if __name__ == "__main__":
             f"--add-data={theme_folder}{sep}theme",
             "--exclude-module=.git",
             "--log-level=WARN",
-            "--noconsole",
+            # "--noconsole",
             "run_silicH2O.py",
         ]
     )
