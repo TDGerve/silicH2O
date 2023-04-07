@@ -26,7 +26,6 @@ class Computer_screen:
 
     def get_scaling(self):
         if "win32" in sys.platform:
-
             scaling = 1
 
             # For windows
