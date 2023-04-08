@@ -1,7 +1,10 @@
+import sys
 import tkinter as tk
 import webbrowser
 
 import blinker as bl
+
+from ...version import __version__
 
 on_new_project = bl.signal("new project")
 on_load_project = bl.signal("load project")
@@ -48,7 +51,14 @@ class Settings_menu:
         )
 
         menu.add_separator()
+
+        menu.add_command(label="about", command=self.about)
         menu.add_command(label="help", command=self.help)
+
+    def about(*args):
+        platform = {"win32": "Windows", "darwin": "MacOS"}[sys.platform]
+        message = f"You are running\nSilicH2O v{__version__} on {platform}"
+        tk.messagebox.showinfo(title="About", message=message, icon="info")
 
     def help(*args):
         webbrowser.open_new("https://silich2o.readthedocs.io/en/latest/")

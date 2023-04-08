@@ -14,8 +14,6 @@ from .spectral_processing import Calibration_processor, Database_controller
 
 on_clean_temp_files = bl.signal("clean temp files")
 
-__version__ = "1.0.0"
-
 
 class silicH2O:
     def __init__(self):

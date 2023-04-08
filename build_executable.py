@@ -3,6 +3,8 @@ import pathlib
 import shutil
 import sys
 
+from .src.version import __version__
+
 """
 When bundeling for Mac, pyinstaller will probably finish with a warning that the app could not be signed.
 To fix that run these commands (from the project folder) in a terminal
@@ -46,6 +48,7 @@ if __name__ == "__main__":
     PyInstaller.__main__.run(
         [
             f"--name={name}",
+            f"--version={__version__}",
             "--onedir",
             "--clean",
             "--noconfirm",
