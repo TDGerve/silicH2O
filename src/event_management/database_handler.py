@@ -29,7 +29,7 @@ on_display_message = bl.signal("display message")
 
 if getattr(sys, "frozen", False):
     EXE_LOCATION = pathlib.Path(os.path.dirname(sys.executable))  # cx_Freeze frozen
-    temp_folder = EXE_LOCATION.parents[0] / "temp"
+    temp_folder = EXE_LOCATION / "temp"
     if sys.platform == "darwin":
         # from a mac bundle
         calibration_folder = EXE_LOCATION.parents[2] / "calibration"
