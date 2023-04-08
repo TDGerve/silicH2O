@@ -14,10 +14,11 @@ from .spectral_processing import Calibration_processor, Database_controller
 
 on_clean_temp_files = bl.signal("clean temp files")
 
+__version__ = "1.0.0"
+
 
 class silicH2O:
     def __init__(self):
-
         self.samples = Database_controller()
         self.calibration = Calibration_processor()
         self.gui = App_interface(title="Silic-H2O by Thomas van Gerve")
@@ -36,7 +37,6 @@ class silicH2O:
         self.gui_listener = Gui_listener(self.gui)
 
     def run(self) -> None:
-
         on_clean_temp_files.send()
         self.gui.main_window.protocol("WM_DELETE_WINDOW", self.close)
         self.gui.main_window.mainloop()
