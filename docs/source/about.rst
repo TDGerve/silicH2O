@@ -16,3 +16,5 @@ Source code is is available on `GitHub <https://github.com/TDGerve/silicH2O>`_.
 The code is under continous development and the latest update can be found in the *main* branch. The latest stable version is packaged in the most recent release. 
 If you find any bugs of issues, please raise them as an issue on github or open a pull request. 
 
+SilicH2O is (`Tkinter <https://tkdocs.com/index.html>`_) based and uses the (`Breeze <https://github.com/MaxPerl/ttk-Breeze>`_) theme.
+
