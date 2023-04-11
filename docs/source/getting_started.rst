@@ -9,7 +9,7 @@ Installation
 ------------
 PC
 **
-|silich2o| is installed by extracting the *SilicH2O_vX.X.X_win* zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
+|silich2o| is installed by extracting the *SilicH2O_vX.X.X_win* zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to a new folder on your computer.
 The following folder structure should stay intact:
 
 .. code-block:: text
@@ -24,7 +24,7 @@ The following folder structure should stay intact:
     ├─ interference_settings_default.json
     SilicH2O/
     ├─ silicH2O.exe
-    silicH2O.exe shortcut
+
 
 `.\\calibration` 
     `.cH2O` files and `.h2o` projects for :ref:`calibration </h2o_calibration.rst>` 
@@ -34,14 +34,14 @@ The following folder structure should stay intact:
     scripts, dependencies and the executable file.
 
 
-The |silich2o| shortcut file can still be moved to any location on your computer. You start |silich2o| by running this shortcut file, or by directly 
-running `silicH2O.exe` from the `.\\silicH2O` folder.
+You start |silich2o| by running `silicH2O.exe` from the `.\\silicH2O` folder. You can create a shortcut to this file by righ-clicking it and selecting *Create shortcut*.
+The shortcut file that is then created can be moved to anywhere on your computer.
 
 
 Mac
 ***
 |silich2o| is installed by extracting the *SilicH2O_vX.X.X_mac* zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
-The folder structure is the same as for windows except that the main folder contains the SilicH2O app bundle. You start |silich2o| by double clicking the app file.
+The folder structure is essentially the same as for windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file. You start |silich2o| by double clicking this app file.
 
 
 File associations
