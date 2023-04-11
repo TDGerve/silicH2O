@@ -22,6 +22,12 @@ The following folder structure should stay intact:
     ├─ glass_settings_default.json
     ├─ interference_settings.json
     ├─ interference_settings_default.json
+    examples/
+    ├─ azores.h2o
+    ├─ azores_unmixed.h2o
+    ├─ calibration_materials_KUL.h2o
+    ├─ iceland.h2o
+    ├─ MedardGrove.h2o
     SilicH2O/
     ├─ silicH2O.exe
 
@@ -30,6 +36,8 @@ The following folder structure should stay intact:
     `.cH2O` files and `.h2o` projects for :ref:`calibration </h2o_calibration.rst>` 
 `.\\configuration` 
     `.json`  files with default :ref:`settings <menus_settings>` for spectral processing
+`.\\examples` 
+    `.h2o` project files with processing examples.
 `.\\SilicH2O`
     scripts, dependencies and the executable file.
 
