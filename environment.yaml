@@ -3,7 +3,7 @@ dependencies:
 - Python<=3.11
 - pip
 - pip:
-  - ramCOH
+  - ramCOH>=1.1.2
 - tk
 - numpy
 - pandas
