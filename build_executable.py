@@ -26,7 +26,7 @@ then sign:
     with certificate and entitlements:
         codesign -s CERTIFICATE-NAME --timestamp --deep --force --entitlements entitlements.plist  ./dist/silicH2O.app
 
-    -> this may take a few mins
+        -> this may take a few mins
 
     or without local certificate:
         codesign -s - --force --all-architectures --timestamp --deep --entitlements entitlements.plist dist/SilicH2O.app
@@ -36,7 +36,7 @@ The app should now run on your local computer and can be shared with others via 
 
 
 HOWEVER, When downloading SilicH2O from GitHub or elsewhere on the internet, MacOS puts all files in quarantine and the app will not run.
-Remove all files from the bundle from quarantine with:
+Lift quarantine on all files in the bundle with:
     sudo xattr -r -d com.apple.quarantine ./silicH2O.app
 
 note that you need admin rights to do this.
