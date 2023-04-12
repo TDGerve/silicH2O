@@ -49,7 +49,7 @@ The shortcut file that is then created can be moved to anywhere on your computer
 Mac
 ***
 |silich2o| is installed by extracting the files in *SilicH2O_vX.X.X_mac.dmg* from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
-The folder structure is essentially the same as for windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file.
+The folder structure is essentially the same as in windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file.
 
 .. warning::
     MacOS will initially not trust the app downloaded from the internet. It will put all downloaded files in quarantine and the app will not run.
