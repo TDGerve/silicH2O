@@ -56,7 +56,7 @@ The folder structure is essentially the same as for windows except that there is
     To fix this, follow the steps below BEFORE running |silich2o|
 
 Find your terminal app by typing *terminal* in spotlight and open it.
-The terminal will open in your home directory, you have to tell it to go to the directory where you extracted all the SilicH2O folders and files by typing:
+The terminal will open in your home directory, you have to tell it to go to the directory where you extracted all the |silich2o| folders and files by typing:
 
 .. code-block:: bash
 
