@@ -58,7 +58,7 @@ The folder structure is essentially the same as for windows except that there is
 Find your terminal app by typing *terminal* in spotlight and open it.
 The terminal will open in your home directory, you have to tell it to go to the directory where you extracted all the SilicH2O folders and files by typing:
 
-.. code-block:: bash
+.. code-block:: sh
     cd path/to/your/silich2o/folder
 
 You can use relative paths by starting with *./*, i.e. if your |silich2o| files are in a folder called *silicH2O* located directly in your homefolder you can use *./silicH2O/*,
@@ -66,7 +66,7 @@ or, if the silicH2O folder is on your desktop: *./desktop/silicH2O*
 
 Next lift the quarantine of all files in the app by running the following line in the terminal:
 
-.. code-block:: bash
+.. code-block:: sh
     sudo xattr -r -d com.apple.quarantine ./silicH2O.app
 
 The terminal will ask you to type your admin password, which you confirm by pressing the *Enter* key.
