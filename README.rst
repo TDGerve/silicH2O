@@ -25,8 +25,8 @@ interactive graphical user-interface. It can be used to:
 
     Main user interface of |silich2o|
    
-=============
-Documentation
-=============
+================
+Gettings started
+================
 
 Documentation, installation and and usage instructions are available at `silicH2O.readthedocs.io <https://silich2o.readthedocs.io/en/latest/>`_
