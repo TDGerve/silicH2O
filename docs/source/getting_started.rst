@@ -32,11 +32,11 @@ The following folder structure should stay intact:
     ├─ silicH2O.exe
 
 
-`.\\calibration` 
-    `.cH2O` files and `.h2o` projects for :ref:`calibration </h2o_calibration.rst>` 
-`.\\configuration` 
+`.\\calibration`
+    `.cH2O` files and `.h2o` projects for :ref:`calibration </h2o_calibration.rst>`
+`.\\configuration`
     `.json`  files with default :ref:`settings <menus_settings>` for spectral processing
-`.\\examples` 
+`.\\examples`
     `.h2o` project files with processing examples.
 `.\\SilicH2O`
     scripts, dependencies and the executable file.
@@ -48,8 +48,30 @@ The shortcut file that is then created can be moved to anywhere on your computer
 
 Mac
 ***
-|silich2o| is installed by extracting the *SilicH2O_vX.X.X_mac* zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
-The folder structure is essentially the same as for windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file. You start |silich2o| by double clicking this app file.
+|silich2o| is installed by extracting the files in *SilicH2O_vX.X.X_mac.dmg* from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
+The folder structure is essentially the same as for windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file.
+
+.. warning::
+    MacOS will initially not trust the app downloaded from the internet. It will put all downloaded files in quarantine and the app will not run.
+    To fix this, follow the steps below BEFORE running SilicH2O
+
+Find your terminal app by typing *terminal* in spotlight and open it.
+The terminal will open in your home directory, you have to tell it to go to the directory where you extracted all the SilicH2O folders and files by typing:
+
+.. code-block:: bash
+    cd path/to/your/silich2o/folder
+
+You can use relative paths by starting with *./*, i.e. if your |silicH2O| files are in a folder called *silicH2O* located directly in your homefolder () you can use *./silicH2O/*.
+Or, if the silicH2O folder is on your desktop: *./desktop/silicH2O*
+
+Next lift the quarantine of all files in the app by running the following line in the terminal:
+
+.. code-block:: bash
+    sudo xattr -r -d com.apple.quarantine ./silicH2O.app
+
+The terminal will ask you to type your admin password, which you confirm by pressing the *Enter* key.
+This should fix all issues and you can now start |silich2o| by double clicking the downloaded app file.
+There is no need to repeat these steps if you share the files via a usb drive.
 
 
 File associations
@@ -57,7 +79,7 @@ File associations
 Currently, |silich2o| only supports text files (e.g. txt or csv) for importing raw spectra. Text files should contain no headers and two have separate columns for Raman shifts (first) and signal intensity (second).
 Characters separating the columns can be whitespaces (any number) or commas.
 
-Once spectra are imported, they can be stored together in :ref:`project files<menus_main>` with `.h2o` extensions (:ref:`File<menus_main>` menu → *save project as*). These files are containers with all spectral data and processing settings 
+Once spectra are imported, they can be stored together in :ref:`project files<menus_main>` with `.h2o` extensions (:ref:`File<menus_main>` menu → *save project as*). These files are containers with all spectral data and processing settings
 and can be exchanged and shared between users, encouraging transparent and reproducible data processing.
 
 Calibration data are stored in `.cH2O` files, which can be assigned to any project. By default these files are stored in the `.\\calibration` folder at the top level of the |silich2o| folder.
@@ -70,7 +92,7 @@ to make changes or review the data.
 User interface
 --------------
 
-.. note:: 
+.. note::
     Keep an eye on the lower left corner of the :ref:`infobar </getting_started.rst#info-bar>`! Informational messages are displayed here frequently.
 
 The user interface has six main components:
@@ -84,7 +106,7 @@ The user interface has six main components:
     1 - menus
         Import and export spectra, change settings and set calibrations.
     2 - sample navigation
-        Change samples.    
+        Change samples.
     3 - tool selection
         Select baseline correctin, interpolation or interference correction.
     4  - interactive plot
@@ -94,20 +116,20 @@ The user interface has six main components:
     6 - info bar
         displays information messages and X-Y plot coordinates and has buttons for saving and resetting samples.
 
-    
+
 .. _menus_main:
 
 menus
 *****
 
-.. csv-table:: 
+.. csv-table::
     :file: tables/file_menu.csv
     :widths: 30, 70
     :header-rows: 1
 
 .. _menus_settings:
 
-.. csv-table:: 
+.. csv-table::
     :file: tables/settings_menu.csv
     :widths: 10, 20, 70
     :header-rows: 1
@@ -116,7 +138,7 @@ Default settings are stored in `.json` files in the `.\\configuration` folder, a
 
 .. _menu_main_calibration:
 
-.. csv-table:: 
+.. csv-table::
     :file: tables/calibration_menu.csv
     :widths: 30, 70
     :header-rows: 1
@@ -155,7 +177,7 @@ Plots and menus for settings and results change based on which tool is selected.
 
 As a consequence, some types of processing are not possible, for example:
 
-    * interference subtraction on interpolated spectra, 
+    * interference subtraction on interpolated spectra,
     * interpolation on baseline corrected spectra.
 
 If this is needed, exporting processed spectra and re-importing them is a suitable workaround.
@@ -171,8 +193,8 @@ On the righ-hand side are several tools for plot navigation:
     :alt: plot navigation buttons
     :width: 400
 
-.. note:: 
-    Don't forget to deselect navigation tools when you no longer want to use them. 
+.. note::
+    Don't forget to deselect navigation tools when you no longer want to use them.
 
 
 .. figure:: /images/plot_navigation.gif
@@ -188,10 +210,10 @@ Shows settings and results of the current tool.
 
 info bar
 ********
-mouse location X-Y plot coordinates are displayed on the right and information messages on the left. The ``reset sample`` button resets the current 
+mouse location X-Y plot coordinates are displayed on the right and information messages on the left. The ``reset sample`` button resets the current
 sample to the last saved state and ``save sample`` and ``save all`` save the settings and results of the current sample and all samples respectively .
 
-.. note:: 
+.. note::
     Saving a sample, or all samples, does not yet save the project. This can only be done via *File → save project (as)* or with the *Ctrl+s* keyboard shortcut.
     If you have not yet saved your data to a project file *Ctrl+s* functions the same as `save all`. Keep an eye on the messages in the lower left corner of the :ref:`info bar<info bar>`, they will
     tell you how your data have been saved.
@@ -202,7 +224,7 @@ Exporting data and results
 Processed spectra are exported for single samples via *File → export sample* to a *.csv* file with columns for the x-axis and each individual
 spectrum (e.g. *raw*, *baseline_corrected*, *baseline*). *File → export all* exports spectra for all samples to the folder chosen by the user
 
-Results (noise, integrated areas, |h2o| contents etc.) together with processing settings (e.g. baseline smoothing, the use of interpolation and/or interference subtraction) 
+Results (noise, integrated areas, |h2o| contents etc.) together with processing settings (e.g. baseline smoothing, the use of interpolation and/or interference subtraction)
 are exported via *File → export results* to a *.csv* file. An additional *.csv* file
 is generated in the same folder with all :ref:`baseline interpolation region </baseline_correction.rst#bir-positions>` and :ref:`interpolation region </interpolation.rst#interpolation>` positions.
 
@@ -230,12 +252,12 @@ The calibration window is where you :ref:`create new calibrations <|h2o| calibra
 menus
 *****
 
-.. csv-table:: 
+.. csv-table::
     :file: tables/calibration_import_menu.csv
     :widths: 30, 70
     :header-rows: 1
 
-.. csv-table:: 
+.. csv-table::
     :file: tables/calibration_file_menu.csv
     :widths: 30, 70
     :header-rows: 1
@@ -244,7 +266,7 @@ menus
 
 Keyboard shortcuts
 ------------------
-.. csv-table:: 
+.. csv-table::
     :file: tables/keyboard_shortcuts.csv
     :widths: 30, 70
     :header-rows: 1
