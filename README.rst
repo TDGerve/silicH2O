@@ -29,4 +29,4 @@ interactive graphical user-interface. It can be used to:
 Gettings started
 ================
 
-Documentation, installation and and usage instructions are available at `silicH2O.readthedocs.io <https://silich2o.readthedocs.io/en/latest/>`_
+Documentation and installation and and usage instructions are available at `silicH2O.readthedocs.io <https://silich2o.readthedocs.io/en/latest/>`_
