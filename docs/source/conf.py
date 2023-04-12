@@ -30,6 +30,7 @@ intersphinx_mapping = {
     "ramcoh": ("https://ramcoh.readthedocs.io/en/latest/", None),
 }
 
+pygments_style = "sphinx"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
