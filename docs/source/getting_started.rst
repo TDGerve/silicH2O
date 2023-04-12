@@ -53,7 +53,7 @@ The folder structure is essentially the same as for windows except that there is
 
 .. warning::
     MacOS will initially not trust the app downloaded from the internet. It will put all downloaded files in quarantine and the app will not run.
-    To fix this, follow the steps below BEFORE running SilicH2O
+    To fix this, follow the steps below BEFORE running |silich2o|
 
 Find your terminal app by typing *terminal* in spotlight and open it.
 The terminal will open in your home directory, you have to tell it to go to the directory where you extracted all the SilicH2O folders and files by typing:
@@ -61,7 +61,7 @@ The terminal will open in your home directory, you have to tell it to go to the 
 .. code-block:: bash
     cd path/to/your/silich2o/folder
 
-You can use relative paths by starting with *./*, i.e. if your |silicH2O| files are in a folder called *silicH2O* located directly in your homefolder () you can use *./silicH2O/*.
+You can use relative paths by starting with *./*, i.e. if your |silich2o| files are in a folder called *silicH2O* located directly in your homefolder () you can use *./silicH2O/*.
 Or, if the silicH2O folder is on your desktop: *./desktop/silicH2O*
 
 Next lift the quarantine of all files in the app by running the following line in the terminal:
