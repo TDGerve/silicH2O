@@ -51,6 +51,10 @@ Mac
 |silich2o| is installed by extracting the files in *SilicH2O_vX.X.X_mac.dmg* from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
 The folder structure is essentially the same as in windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file.
 
+
+.. note:: 
+    Currently, |silich2o| only work on Macs with Apple Silicon (M1 or M2 chips). A version for older, Intel chip based Macs will potentially be released soon.
+
 .. warning::
     MacOS will initially not trust the app downloaded from the internet. It will put all downloaded files in quarantine and the app will not run.
     To fix this, follow the steps below BEFORE running |silich2o|
