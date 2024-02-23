@@ -9,7 +9,7 @@ Installation
 ------------
 PC
 **
-|silich2o| is installed by extracting the *SilicH2O_vX.X.X_win* zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to a new folder on your computer.
+|silich2o| is installed by extracting the *SilicH2O_vX.X.X_win* zipfile downloaded from the latest release on `GitHub <https://github.com/TDGerve/silicH2O/releases/>`_ to a new folder on your computer.
 The following folder structure should stay intact:
 
 .. code-block:: text
@@ -48,7 +48,7 @@ The shortcut file that is then created can be moved to anywhere on your computer
 
 Mac
 ***
-|silich2o| is installed by extracting the files in *SilicH2O_vX.X.X_mac.dmg* from the latest release on `GitHub <https://github.com/TDGerve/silicH2O>`_ to any location on your computer.
+|silich2o| is installed by extracting the files in *SilicH2O_vX.X.X_mac.dmg* from the latest release on `GitHub <https://github.com/TDGerve/silicH2O/releases/>`_ to any location on your computer.
 The folder structure is essentially the same as in windows except that there is no SilicH2O folder as everything is bundled in the SilicH2O app file.
 
 
