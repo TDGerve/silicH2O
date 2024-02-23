@@ -35,6 +35,5 @@ Documentation and installation and usage instructions are available at `silicH2O
 ===========================
 How to reference |silich2o|
 ===========================
-A manuscript reviewing the main features of |silich2o| has been submitted at Volcanica.
-While it is still under consideration, a non-peer reviewed preprint is available at `EarthArXiv <https://doi.org/10.31223/X5XH33>`_.
-Please reference this preprint for the time being.
+A manuscript reviewing the main features of |silich2o| has been published in `Volcanica <https://doi.org/10.30909/vol.06.02.405413>`_.
+Please reference this paper if you use |silich2o| in your work.
