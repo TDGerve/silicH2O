@@ -4,8 +4,9 @@ import blinker as bl
 import numpy as np
 import pandas as pd
 import scipy.stats as stat
+from scipy.stats._stats_py import LinregressResult
 import sklearn.metrics as met
-from scipy.stats._stats_mstats_common import LinregressResult
+
 
 from .database_controller import Database_controller
 
@@ -19,7 +20,7 @@ class Calibration_processor:
         self._H2Oreference = pd.Series(dtype=float, name="H2Oref")
         self.use = pd.Series(dtype=bool, name="use")
 
-        self._calibration: Optional[stat.LinregressResult] = None
+        self._calibration: Optional[LinregressResult] = None
         self.name: Optional[str] = None
         self.use_calibration = False
 
