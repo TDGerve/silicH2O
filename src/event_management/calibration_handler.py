@@ -115,7 +115,7 @@ class Calibration_listener:
     def calibrate(self, update_gui=True):
         self.calibration.calibrate()
 
-        if not update_gui:
+        if not update_gui or (self.calibration._calibration is None):
             return
 
         self.send_sample_info()

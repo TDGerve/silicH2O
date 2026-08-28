@@ -133,8 +133,12 @@ class Calibration_processor:
             return self.on_display_message.send(
                 message="Not enough samples in calibration!"
             )
+        if self.H2Oreference.notna().sum() < 2:
+            return self.on_display_message.send(
+                message="Please indicate reference H2O wt.%"
+            )
 
-        self._calibration = stat.linregress(self.H2OSi, self.H2Oreference)
+        self._calibration = stat.linregress(self.H2OSi[self.H2Oreference.index], self.H2Oreference)
 
     def _calculate_H2O(self, H2OSi):
         if self._calibration is None:
@@ -184,7 +188,7 @@ class Calibration_processor:
 
     def get_plotdata(self) -> Dict:
         return {
-            "standards": (self.H2OSi, self.H2Oreference),
+            "standards": (self.H2OSi[self.H2Oreference.index], self.H2Oreference),
             "calibration_line": self._calculate_H2O,
             "name": self.name,
         }
