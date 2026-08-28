@@ -164,9 +164,8 @@ class h2o_processor(Raman_processor):
         )
 
         self.results = pd.Series(
-            {
-                data: np.nan
-                for data in [
+            np.nan,
+            index = [
                     "SiArea",
                     "H2Oarea",
                     "rWS",
@@ -174,8 +173,7 @@ class h2o_processor(Raman_processor):
                     "Si_SNR",
                     "H2O_SNR",
                     "H2O",
-                ]
-            }
+                ], dtype=float
         )
 
         self._interference_sample: Optional[Raman_processor] = None
@@ -267,14 +265,14 @@ class h2o_processor(Raman_processor):
         super().calculate_noise()
         self.sample.calculate_SNR()
         self.results[["noise", "Si_SNR", "H2O_SNR"]] = [
-            round(i, 2)
+            round(float(i), 2)
             for i in (self.sample.noise, self.sample.Si_SNR, self.sample.H2O_SNR)
         ]
 
     def calculate_areas(self):
         self.sample.calculate_SiH2Oareas()
         self.results[["SiArea", "H2Oarea"]] = self.sample.SiH2Oareas
-        self.results["rWS"] = self.results["H2Oarea"] / self.results["SiArea"]
+        self.results["rWS"] = float(self.results["H2Oarea"] / self.results["SiArea"])
 
     def calculate_results(self):
         self.calculate_baseline()

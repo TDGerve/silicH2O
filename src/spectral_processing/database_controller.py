@@ -369,7 +369,7 @@ class Database_controller:
         for sample in self.spectra:
             name = sample.name
             sample.calculate_results()
-            self.results.loc[name] = sample.results.copy()
+            self.results.loc[name] = sample.results.astype("float32")
             self.results.loc[name, "H2O"] = self.calculate_H2O(sample.results["rWS"])
 
     def export_results(
