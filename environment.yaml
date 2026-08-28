@@ -5,13 +5,13 @@ dependencies:
 - pip:
   - ramCOH>=1.1.2
 - tk
-- numpy
-- pandas
-- blinker
-- pyarrow=7.0.0
-- Pillow
-- matplotlib>=3.4.0
-- scipy
-- scikit-learn
-- pyinstaller
-- PySide2
+- numpy<=1.26.4
+- pandas<=1.5.3
+- blinker<=1.9.0
+- pyarrow<=25.0.1
+- Pillow<=9.4.0
+- matplotlib==3.5.0
+- scipy<= 1.15.2
+- scikit-learn<=1.3
+- pyinstaller<=6.7.0
+- PySide2<=5.15.8
